@@ -1,87 +1,81 @@
-## Pendências pré-EPIC (decisões e confirmações)
+# Pre-EPIC open items (unresolved only)
 
-Este arquivo lista **pendências que precisam ser respondidas/confirmadas antes da criação do EPIC** (ou, quando aplicável, explicitamente marcadas como “deferidas com racional” para o revisor do EPIC).
+Resolved and deferred-baseline decisions moved to **[pre_epic_resolved_decisions.md](pre_epic_resolved_decisions.md)** (includes FR-008 v0 rule, Rio+DF intent, `Plan/06_Models` inventory, Topics C/F/G/K, and decided part of Topic B).
 
-### 1) FR-008 — “document names” (nomes de documentos esperados) para classificação
+---
 
-**Contexto**: para documentos reais de processos antigos, não há padrão de nome. Um “documento necessário” pode:
-- estar como arquivo separado com nome ruim,
-- estar dentro de outro PDF,
-- ter o “nome do documento” apenas no cabeçalho/título interno.
+## Topic A — FR-008: remaining work (Action 1 crosswalk and product rules)
 
-**Regra v0 (já acordada)**: **não existe lista fixa de nomes esperados** nesta fase; a classificação deve registrar o método utilizado:
-- **Método 1 (melhor caso)**: match por **nome do arquivo**.
-- **Método 2**: match por **título/cabeçalho extraído** do próprio PDF.
-- **Método 3**: match por **similaridade semântica** do conteúdo.
+**Status:** Open (implementation and data artefacts)
 
-**Pendência (a resolver antes do EPIC)**: verificar se faz sentido introduzir uma lista de “tipos/títulos esperados” já no v0.
+**Done conceptually**  
+Rio + TCDF materials support **synonyms** and **procedure/description** text for retrieval and evaluation context; **Grau** defined as closeness to pattern (**M5D + Rio + DF**). Files live under [Plan/06_Models](../06_Models/).
 
-**Possíveis resultados (definidos pelo PO)**:
-1. **Nome/tipo pode ser extraído do próprio M5D** (framework passa a carregar “nomes/tipos esperados” por ação).
-2. **Não há nome/tipo nesta etapa**: seguimos com v0 sem nomes esperados (pular qualquer etapa dependente disso; ir direto para header + semântica).
-3. **Novo documento estático complementar** será adicionado (fora do M5D) com a lista de documentos esperados e nomes/tipos.
-   - Implica criar **estrutura de relacionamento** entre M5D e esse documento (mapeamento “ação → documentos esperados”).
+**Still required**
 
-### 2) Ação vertical slice (FR-007…FR-015) — identificador e ID estável
+1. **Machine-readable crosswalk** (CSV/JSON/SQL) for **Ação 1** — to be built together: sub-task ↔ artifact names ↔ procedures ↔ citations ↔ `Grau` ↔ optional equivalence groups (Rio vs DF). Chat tables are not sufficient for versioned automation.
+2. **“Bundled PDF” policy** — when one upload contains several logical documents (annexes, merged files): agree whether we split by TOC, by headings, by human tagging in v0, or retrieval-only without splitting (scheduled deep dive).
+3. **Grau → product behaviour** — confirm whether `Alto`/`Médio`/`Baixo` drives **retrieval weighting only**, **quality rubric text**, or **numeric score** (last option may require PRD trace / addendum).
+4. **Actions 2–16** — same crosswalk pattern as Action 1, **after** Action 1 pipeline is stable.
 
-**Decisão já confirmada**: começar pela **Ação 1**; expandir até **Ação 16** (fim do ciclo “Proposta Inicial de Investimento”).
+---
 
-**O que “ID estável” significa (para testes/EPIC)**:
-- Definir um identificador interno **imutável** para cada ação, por exemplo:
-  - `action_1` para “Ação 1”
-  - `action_2` para “Ação 2”
-  - …
-  - `action_16` para “Ação 16”
-- O título em PT-BR pode mudar por edição/normalização, mas o `action_N` deve permanecer como chave lógica.
+## Topic B — Confirm stable primary key (FR-001)
 
-**Pendência**:
-- Confirmar que usaremos o esquema `action_<N>` como ID primário no armazenamento estruturado do framework (FR-001).
+**Status:** Open (single confirmation)
 
-### 3) OQ-001 — pesos (FR-002 / FR-013)
+Confirm **`action_<N>`** (e.g. `action_1`) as the **primary key** for every M5D action in the structured framework store.
 
-**Fechado**: pesos **iguais** por enquanto (equal weights). Custom weights ficam fora até serem fornecidos.
+---
 
-### 4) OQ-002 — vínculo “sub-task ↔ complement row”
+## Topic D — OQ-002: Sub-task ↔ complement row linkage
 
-**Pendência**: definir, junto com o PO, a regra de vínculo entre:
-- sub-tasks da ação
-- e as “complement rows”/tabela-resumo relevante
+**Status:** Open  
 
-Saída esperada desta pendência:
-- regra objetiva (“quando existir linha X…”, “quando não existir…”) para orientar o contexto usado em FR-009/FR-014.
+Define the objective rule linking sub-tasks to summary-table / complement rows for FR-009 / FR-014 evaluation context.
 
-### 5) OQ-004 / NFR-006 — latência
+---
 
-**Deferido**: sem meta de tempo agora; prioridade é “funcionar primeiro”.
+## Topic E — OQ-004 / NFR-006: Latency
 
-### 6) OQ-006 — threshold de UNCERTAINTY
+**Status:** Deferred (still “open” for a complete NFR-006 spec)  
 
-**Fechado**: threshold = **70%** (confiança abaixo disso gera flag UNCERTAINTY).
+No SLO numbers yet; add measurable targets when the system runs end-to-end.
 
-### 7) OQ-007 — documentos pré-M5D
+---
 
-**Fechado**: avaliar documentos pré-M5D **pelos critérios M5D** (objetivo é evidenciar o gap de maturidade).
+## Topic H — OQ-005 / NFR-008: deployment boundary documentation
 
-### 8) OQ-005 / NFR-008 — LLM local e fronteira de dados
+**Status:** Open (documentation only; policy archived)
 
-**Fechado (diretriz)**:
-- Usar **LLM local**.
-- Preparar/segmentar documentos **antes** da inferência.
-- Evitar que qualquer ferramenta auxiliar envie texto para fora por padrão.
+Write the **deployment boundary** for the EPIC / sign-off pack: local LLM default, **opt-in** only for any service that sends document text outside the environment (e.g. future cloud OCR / intelligent document).
 
-**Pendência (para documentação no EPIC/Sign-off pack)**:
-- Registrar explicitamente a “fronteira” (o que é local vs opt-in), especialmente se houver OCR/extração em nuvem como upgrade futuro.
+---
 
-### 9) Segmentation + retrieval architecture (vector vs não-vector)
+## Topic I — FR-001: Canonical PDF → structured data
 
-**Pendência**: decidir se haverá embeddings (vector) ou retrieval sem embeddings (não-vector).
+**Status:** Open  
 
-**Informações que você precisará definir (quando decidir)**:
-- **OCR**: PDFs chegam com texto extraível ou muitos são “imagem”?
-- **Estrutura**: existe índice, títulos, seções, numeração consistente?
-- **Tamanho**: páginas típicas por documento; quantidade de PDFs por caso.
-- **Precisão desejada**: prioridade em “recall” (não perder evidência) vs “precision” (não trazer lixo).
-- **Custos/infra**: se rodará tudo local (CPU/GPU), limites de memória/disco.
+Pipeline and ownership: canonical framework PDF → structured store (manual vs automated extraction, edition updates). v0 Python extraction; optional cloud IDP remains **opt-in** under NFR-008.
 
-**Nota**: “vectorless” não é um produto específico; significa apenas “retrieval sem embeddings” (ex.: full-text/BM25 + filtros + heurísticas de estrutura).
+---
 
+## Topic J — Segmentation and retrieval (vector vs non-vector)
+
+**Status:** Open  
+
+Decide chunking and **dense (embeddings) vs sparse (BM25/structure)** retrieval after sampling real case PDFs (see facts list in resolved archive if you copy it into EPIC — or gather fresh in architecture phase).
+
+---
+
+## Quick reference (unresolved only)
+
+| ID | Topic | Status |
+|----|--------|--------|
+| A | FR-008 — Action 1 crosswalk, bundled PDF, Grau→score | Open |
+| B | Confirm `action_<N>` PK | Open |
+| D | OQ-002 complement linkage | Open |
+| E | OQ-004 latency SLO | Deferred |
+| H | NFR-008 boundary write-up | Open |
+| I | FR-001 PDF → structure | Open |
+| J | Segmentation + retrieval | Open |

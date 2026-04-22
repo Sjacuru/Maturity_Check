@@ -7,9 +7,10 @@ Repository for the **M5D Evaluation System** — tooling to support public audit
 At this stage the repo mainly holds **planning and reference material**:
 
 - **[Plan/01_PRD/prd.md](Plan/01_PRD/prd.md)** — Product requirements
-- **[Plan/00_PENDENCIES/pendencias_pre_epic.md](Plan/00_PENDENCIES/pendencias_pre_epic.md)** — Open decisions before EPIC
+- **[Plan/00_PENDENCIES/pendencias_pre_epic.md](Plan/00_PENDENCIES/pendencias_pre_epic.md)** — **Unresolved** pre-EPIC items only  
+- **[Plan/00_PENDENCIES/pre_epic_resolved_decisions.md](Plan/00_PENDENCIES/pre_epic_resolved_decisions.md)** — Resolved / deferred-baseline decisions (archive)
 - **[UNIVERSAL_PHASE_GATES.md](UNIVERSAL_PHASE_GATES.md)** — Governance for PRD → EPIC → MDAP → architecture
-- **[M5D.md](M5D.md)** — Secondary/dev copy of the M5D guide text (canonical source for framework ingest is the official PDF per project decisions)
+- **[Plan/06_Models/](Plan/06_Models/)** — Reference models: `M5D.md`, normative PDFs (e.g. TCDF IN 01/2024, Rio manual), and related materials (canonical framework PDF for ingest remains per project decisions)
 
 Application code (Python, LangGraph, local LLM integration, etc.) will be added as the implementation phase proceeds.
 

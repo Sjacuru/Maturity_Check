@@ -4,7 +4,7 @@ Status: Awaiting human sign-off before EPIC phase
 Constraints active: GC-1, GC-2, GC-4, GC-5, GC-8, GC-9
 
 Section 1 — Executive Summary
-The M5D Evaluation System is a document analysis tool that supports public auditors in assessing whether procurement processes contain the substantive elements required by the Modelo de Cinco Dimensões (M5D) framework. The system receives documents from a completed or in-progress procurement case, evaluates their content against structured M5D directives, and produces a scored, evidence-backed audit report for human review.
+The M5D Evaluation System is a document analysis tool that supports public auditors in assessing whether procurement processes contain the substantive elements required by the Modelo de Cinco Dimensões (M5D or "The Five Case Model") framework. The system receives documents from a completed or in-progress procurement case, evaluates their content against structured M5D directives, and produces a scored, evidence-backed audit report for human review.
 The primary user is a public auditor who currently performs this evaluation manually — a process that is time-consuming, inconsistent across auditors, and produces outputs with limited traceability. The system reduces evaluation time and enforces structural consistency while preserving the auditor as the final authority on every result.
 The single most important measurable outcome that defines success is: an auditor completes a full evaluation of one M5D Action against a case's documents and receives a structured, scored result with traceable evidence, without performing any manual document search.
 Scope Ceiling: This PRD covers the evaluation of procurement documents against the M5D framework for a single case at a time, producing scored and evidence-backed action-level reports subject to auditor review. Any requirement not traceable to a stated user need or business goal in this document is out of scope by default.
@@ -140,7 +140,10 @@ action using a three-step classification process: first by
 exact document name match against expected document names
 for that action, second by approximate name match if exact
 match fails, third by semantic content match across all
-uploaded documents if name matching fails.
+uploaded documents if name matching fails. Even if the name 
+matches on first and second try, the third try needs to run
+to make sure the content on the document or the chunk has 
+conection with the subject.
 
 Acceptance criteria: For a given action, the system returns
 at least one document reference or a flag indicating no
