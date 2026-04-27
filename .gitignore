@@ -75,3 +75,6 @@ checkpoints/
 tmp/
 temp/
 .cache/
+
+# Project data artifacts
+data/

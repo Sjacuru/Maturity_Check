@@ -1,0 +1,27 @@
+[project]
+name = "maturity-check"
+version = "0.1.0"
+description = "M5D evaluation system (planning -> implementation)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic>=2.7",
+  "lancedb>=0.10.0",
+  "pyarrow>=15.0.0",
+  "numpy>=1.26",
+  "tqdm>=4.66",
+  "sentence-transformers>=3.0.0",
+]
+
+[project.scripts]
+maturity-check = "maturity_check.cli:main"
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

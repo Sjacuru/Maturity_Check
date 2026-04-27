@@ -31,6 +31,33 @@ Note: PERSONA-002 interacts with the system only in read and annotation mode. Th
 
 Section 4 — Functional Requirements
 
+Architecture binding — retrieval, validation, and audit (v1)
+This subsection records an **engineering product decision** for v1: the crosswalk remains the **retrieval policy layer** (FR-008A); case-corpus retrieval is implemented as **hybrid sparse + dense retrieval with deterministic fusion** (new FR-008D); **deterministic gates** validate evidence packets before LLM evaluation; a **single structured output-assurance pass** (“judge”, new FR-021) validates evaluator outputs before persistence. **Unconstrained tool-using agent loops** and **multi-agent debate** are **out of scope for v1** (defer to later engineering) — see Plan/07_RETRIEVAL/retrieval_satisficing_rules.md.
+
+Hard constraints (governance + PRD alignment)
+C1 — Evidence traceability: every persisted evidence item SHALL map to a **source segment/chunk identifier** and to a **crosswalk artifact_id** (or an explicitly logged “no-overlay” path when no crosswalk exists for that sub-task). Satisfies FR-014 evidence linkage intent and NFR-003 persistence expectations.
+C2 — Retrieval audit log: every retrieval decision SHALL be logged in a structured, replayable artifact (hook list, ranked candidates, fusion inputs/outputs, overlay weights). Supports FR-014A and internal audit needs.
+C3 — Explainability: auditor-facing outputs SHALL separate **facts** (citations, scores, flags) from **model narrative**; “black box only” outputs are not acceptable. Aligns with FR-018 reporting and PERSONA-001 review behavior.
+C4 — Bounded cost/latency: per-sub-task budgets for retrieval expansion (FR-008C/FR-008B) and model calls (FR-009/FR-010 plus FR-021 when enabled) SHALL be documented; NFR-006 threshold (OQ-004) MUST include the additional assurance pass.
+C5 — No autonomous adjudication: the system produces **recommendations**; the auditor remains final authority (PERSONA-001). Aligns with FR-016/FR-017 and FR-015 semantics.
+
+FR mapping (where each layer lands)
+- Crosswalk policy + pooled hooks: **FR-008A** (and FR-001 for structured framework store feeding prompts/context).
+- Three-step discovery + semantic connection: **FR-008** (steps 1–3 remain; hybrid retrieval implements the retrieval mechanics behind step 3 and supports step 2 where applicable).
+- Tiered expansion + satisficing: **FR-008C** (SHOULD), **FR-008B** (MUST early exit rules).
+- Hybrid BM25+dense+fusion on segments: **FR-008D** (new MUST).
+- Segment store supports sparse+dense indices: **FR-006** (clarified acceptance).
+- Evaluator inputs/outputs: **FR-009**, **FR-010** (and **FR-011**, **FR-012** on the same retrieval path).
+- Structured record + traceability: **FR-014** (extended to reference linked audit payloads), **FR-014A** (SHOULD dispositions).
+- Output assurance / judge: **FR-021** (new MUST) — post-generation validation placement.
+- Flags: **FR-015** (UNCERTAINTY / MISSING INFORMATION / etc., including assurance-triggered UNCERTAINTY alignment with OQ-006).
+- Scoring: **FR-013** uses the persisted, assurance-reviewed record fields as inputs.
+- Confidence scale + records: **NFR-002**.
+- Modularity/tests: **NFR-005** (retrieval, evaluation, assurance separable).
+- Data residency / external models: **NFR-008**, **OQ-005** (still a hard gate for any external document-text processing).
+
+EPIC readiness (explicit): merging this binding **does not replace** human PRD sign-off. **EPIC drafting** for FR-008D/FR-021 MAY proceed on **local-first** assumptions while OQ-005 remains open, provided EPIC branches explicitly on OQ-005 outcomes and does not assume external transmission of procurement text by default. **Committed EPIC execution** (scheduled implementation) that depends on an external inference posture for document text remains blocked until OQ-005 is cleared. OQ-004 SHALL set NFR-006 numeric budgets including the assurance pass. Tool interfaces for a future bounded agent (v2+) SHOULD be implemented as plain callable modules per NFR-005, without enabling an agent loop in v1.
+
 FR-001 [MUST]: The system shall store the complete M5D framework
 as structured data, including all stages, dimensions, actions,
 sub-tasks, expected outputs, and summary table complements,
@@ -114,7 +141,12 @@ Acceptance criteria: Given a document with status ACCEPTED,
 its text content is stored as retrievable segments before any
 evaluation action is triggered. A document with status WARNED
 may be processed for retrieval only after auditor confirmation.
-A document with status REJECTED is not processed.
+A document with status REJECTED is not processed. The stored
+segment representation SHALL support both **lexical retrieval**
+(for example inverted-index / BM25-style search) and **dense
+vector retrieval** over identical segment identifiers, so hybrid
+retrieval (FR-008D) can be executed without duplicate chunking
+pipelines.
 
 Source: Phase 1 document ingestion — embed at upload for reuse
 across multiple action evaluations.
@@ -155,6 +187,97 @@ after all three steps, the system raises a MISSING DOCUMENT flag.
 Source: Phase 1 classification engine — three-step discovery pipeline.
 Depends on: FR-006, FR-007
 
+FR-008A [MUST]: When a jurisdiction overlay (crosswalk) links
+sub-tasks to expected artifacts from more than one reference
+source (e.g. Rio Manual and IN 01/2024 TCDF), the system shall
+treat all overlay artifacts for the active sub-task as one
+pooled set of labeled retrieval hooks. Retrieval shall rank
+and aggregate candidate segments from this pool. TCDF artifacts
+expand vocabulary and semantic coverage; they are not a second
+case jurisdiction in v1 (evaluated cases are Rio). The engine
+shall not treat “Rio hooks first, then TCDF hooks only if Rio
+fails” as the only correct behavior unless a staged strategy is
+proven equivalent in recall to pooled ranking or unless a second
+stage is automatically triggered when the best Rio-biased score
+is below **retrieval_floor_stage2** (see below).
+
+**retrieval_floor_stage2 (staged retrieval only):** If the
+implementation uses a Rio-biased first retrieval stage, it SHALL
+automatically run a second stage (full pooled ranking or explicit
+TCDF-expanded queries) when the best segment score from the first
+stage is strictly below **retrieval_floor_stage2**. The scalar
+SHALL be documented in MDAP together with the similarity metric
+(cosine, inner product, or other) and normalization. Initial
+calibration target band **0.35–0.50** on the chosen normalized
+similarity unless MDAP records a different value justified by a
+pilot corpus. The PRD does not fix a single numeric constant
+across embedding models.
+
+Acceptance criteria: EPIC/MDAP describes pooled retrieval and
+any staged optimization; MDAP names **retrieval_floor_stage2**
+and the metric; tests include at least one sub-task where the
+strongest segment is associated with a TCDF-labeled hook while
+Rio-labeled hooks remain in the ranked set; if staged retrieval
+is used, tests include one case where first-stage max score is
+below **retrieval_floor_stage2** and second stage executes.
+
+Source: Rio v1 crosswalk design — alignment with FR-008 and
+evidence traceability.
+
+FR-008B [MUST]: Satisficing early exit for sub-task evidence
+collection. If overlay metadata identifies an artifact with
+tipo Direta and grau Alto, and the evaluation record for the
+sub-task tied to that evidence reports confidence greater than
+or equal to 0.90 (NFR-002 scale 0.0–1.0), the system may cease
+further artifact-specific retrieval expansions for that sub-task.
+Semantic validation required by FR-008 (connection of content
+to subject) shall still be satisfied for the selected document
+or chunk before a final presence decision is recorded.
+
+Acceptance criteria: Pipeline logs or structured metadata show
+early exit when the rule fires; no additional overlay-driven
+queries run after exit; FR-008 step three is not skipped for
+the chosen evidence path.
+
+Source: Product decision — audit efficiency vs exhaustive search.
+
+FR-008C [SHOULD]: When FR-008B early exit does not apply, expand
+artifact-driven retrieval in tier order: (1) Direta by grau Alto,
+then Médio, then Baixo; (2) Indireta with the same grau order;
+(3) Contextual with the same grau order. Within each tier,
+rank by retrieval score with overlay weighting (tipo, grau) and
+enforce a fixed candidate budget per sub-task (EPIC/MDAP).
+
+Acceptance criteria: Documented tier order and budget; retrieval traces show tier progression when early exit does not occur.
+
+Source: Crosswalk retrieval rules — see Plan/07_RETRIEVAL/
+retrieval_satisficing_rules.md for full sequential specification.
+
+FR-008D [MUST]: For uploaded case documents, the system shall
+retrieve candidate evidence segments using a **hybrid retrieval**
+approach that combines (1) **lexical retrieval** (for example BM25 or equivalent sparse scoring) over the segment corpus to
+strengthen exact artifact titles and procedural phrases, with
+(2) **dense vector similarity** over embeddings of the same
+segments, and (3) a **deterministic merge** of ranked lists (for
+example Reciprocal Rank Fusion or another documented fusion rule).
+The system shall then apply FR-008A overlay metadata (tipo, grau, jurisdiction_layer) as part of ranking / weighting before forming an **approved evidence packet** for evaluation.
+
+Acceptance criteria: EPIC/MDAP SHALL document the sparse method,
+embedding model family, fusion formula, and any constants; each
+sub-task evaluation SHALL persist a **retrieval decision log**
+sufficient for audit replay, including: crosswalk hook
+artifact_ids used, top-K sparse candidates with scores, top-K
+dense candidates with scores, fused ordering, and the FR-008
+classification method recorded per selected path (exact name /
+approximate name / semantic content). Tests SHALL include at
+least one scenario where sparse ranking differs materially from
+dense ranking and the fused output changes ordering.
+
+Source: Engineering decision — jurisdiction synonym coverage
+without unconstrained agent loops; complements FR-008A and
+Plan/07_RETRIEVAL/vector_storage_options.md.
+Depends on: FR-006, FR-008, FR-008A
+
 FR-009 [MUST]: The system shall evaluate whether each sub-task
 of the selected action is present in the retrieved document
 content, using the sub-task text, its expected output
@@ -169,8 +292,9 @@ context used is recorded as one of: sub-task only / sub-task
 and output / sub-task, output, and complement.
 
 Source: Phase 1 evaluation model — presence check with full
-context (sub-task + output + complement always included).
-Depends on: FR-008
+context (sub-task + expected output; complement included only
+when a linked complement row exists per OQ-002).
+Depends on: FR-008, FR-008A, FR-008D
 
 FR-010 [MUST]: The system shall evaluate the quality of each
 sub-task found present in the document content, producing a
@@ -185,6 +309,43 @@ no quality score is produced.
 Source: Phase 1 scoring model — quality layer for sub-tasks.
 Depends on: FR-009
 
+FR-021 [MUST]: After draft sub-task evaluation outputs are
+produced per FR-009 and FR-010 from an **approved evidence packet**
+(only segments/chunks that are linked to a crosswalk
+artifact_id, plus stable segment identifiers), the system shall
+execute exactly **one** structured **output assurance** pass per
+sub-task that validates, without introducing new facts or new
+evidence: (1) citations reference only chunk IDs present in the
+packet; (2) unsupported claims are flagged relative to the
+packet; (3) confidence is consistent with evidence strength. When
+assurance adjudicates confidence below **0.70**, the evaluation
+record SHALL carry **UNCERTAINTY** per OQ-006 / FR-015. The
+assurance pass SHALL use **deterministic decoding defaults**
+(for example temperature 0) unless MDAP documents an approved
+exception for reproducibility.
+
+Acceptance criteria: Assurance inputs and outputs are persisted
+and visible to the auditor with the sub-task record; assurance
+SHALL NOT add new document text not present in the packet; logs
+SHALL include a reference to the packet version (hash/checksum
+or equivalent) used. FR-014 persistence for the sub-task SHALL
+occur only after FR-021 completes or after an explicit,
+auditor-visible bypass path documented in EPIC (default: no
+bypass in v1).
+
+Source: Engineering decision — mitigates plausible-but-wrong
+chunk failure mode while preserving auditability.
+Depends on: FR-009, FR-010, NFR-002
+Out of scope v1: unconstrained tool-using agent loops and
+multi-agent debate (see Plan/07_RETRIEVAL/retrieval_satisficing_rules.md).
+
+Scope note (expected outputs): FR-021 is **mandatory for
+sub-task** evaluation records in v1. EPIC/MDAP SHALL decide
+whether the **same** assurance pass is applied per **expected
+output** item (FR-011/FR-012) or only to sub-tasks; if omitted,
+expected-output evaluations SHALL document the rationale and any
+additional deterministic checks used instead.
+
 FR-011 [MUST]: The system shall evaluate whether each expected
 output item of the selected action is present in the retrieved
 document content.
@@ -196,7 +357,7 @@ evidence excerpt. Assessment follows the same evidence
 retrieval path used in FR-009.
 
 Source: Phase 1 evaluation model — expected output presence check.
-Depends on: FR-008
+Depends on: FR-008, FR-008A, FR-008D
 
 FR-012 [MUST]: The system shall evaluate the quality of each
 expected output item found present in the document content,
@@ -222,7 +383,10 @@ Acceptance criteria: Given completed evaluations for all
 sub-tasks and expected output items of an action, the system
 produces a single numeric score between 0 and 100 inclusive.
 The score is reproducible: given the same sub-task and output
-results, the formula always produces the same score.
+results, the formula always produces the same score. For
+sub-tasks that complete FR-021, the sub-task presence and
+quality inputs to this formula SHALL be the **post-assurance**
+adjudicated values recorded on the persisted FR-014 record.
 
 Source: Phase 1 scoring model — confirmed formula structure.
 Depends on: FR-009, FR-010, FR-011, FR-012
@@ -237,17 +401,28 @@ Acceptance criteria: Given a completed sub-task evaluation,
 the record contains all nine fields. Any field that cannot
 be populated due to absence of content contains a null value
 and a flag explaining the reason for absence. Records are
-stored persistently and retrievable by case and action.
+stored persistently and retrievable by case and action. The
+persisted sub-task record (or an auditable linked payload)
+SHALL also include references to: (a) the FR-008D retrieval
+decision log for that sub-task run, and (b) the FR-021 output
+assurance result when LLM evaluation is used.
 
 Source: Phase 1 — confirmed LLM output format specification.
-Depends on: FR-009, FR-010
+Depends on: FR-009, FR-010, FR-021
+
+FR-014A [SHOULD]: When a jurisdiction overlay lists multiple
+artifacts for a sub-task, the system should store per-artifact retrieval disposition for audit traceability: hit (strong match), weak (marginal match), or none (no match), each with retrieval score or similarity and the FR-008 method (file name / approximate name / semantic content) where applicable.
+
+Acceptance criteria: For an evaluated sub-task with an overlay, the report or API exposes per-artifact disposition fields or an embedded structure; absent overlay, this structure may be omitted or null.
+
+Source: Crosswalk operational visibility — complements FR-014.
 
 FR-015 [MUST]: The system shall flag evaluation results that
 meet one of four defined conditions: MISSING DOCUMENT (expected
 document not uploaded), MISSING INFORMATION (document present
 but required content absent), CONFLICTING INFORMATION
 (contradictory evidence found across documents), or UNCERTAINTY
-(confidence score below acceptable threshold [THRESHOLD NEEDED]).
+(confidence score below 0.70 on the evaluation record per OQ-006).
 
 Acceptance criteria: When any flag condition is met, the system
 attaches the flag to the relevant evaluation record with a
@@ -255,7 +430,7 @@ description of the condition detected. Flags are visible in
 the evaluation result before the auditor reviews it.
 
 Source: Phase 1 error and uncertainty handling model.
-Depends on: FR-008, FR-009, FR-011
+Depends on: FR-008, FR-009, FR-011, FR-021
 
 FR-016 [SHOULD]: The system shall allow an auditor to add a
 manual annotation to any evaluation record produced by the
@@ -408,11 +583,15 @@ step-by-step validation required.
 
 NFR-006 [SHOULD]: The system evaluation pipeline shall
 complete the evaluation of one sub-task and return a
-structured result within [THRESHOLD NEEDED — no source
-provided] seconds under normal operating conditions.
+structured result within a documented time budget under
+normal operating conditions.
 
-Acceptance criteria: [THRESHOLD NEEDED — to be defined
-before EPIC phase. See OQ-004]
+Acceptance criteria: EPIC/MDAP SHALL record baseline
+measured wall-clock latency for the full sub-task pipeline
+(retrieval + fusion per FR-008D, evaluator per FR-009/FR-010,
+and output assurance per FR-021). A numeric seconds target
+(SLO) MAY be added after pilot data; until then, absence of
+a fixed threshold does not block EPIC drafting. See OQ-004.
 
 Source: Phase 1 — latency noted as a concern when
 discussing complement inclusion strategy.
@@ -448,7 +627,7 @@ Conflicts with: Any FR that implies external LLM API calls
 with document content as input — see OQ-005.
 
 Section 6 — MoSCoW Priority Summary
-PriorityRequirement IDsMUSTFR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012, FR-013, FR-014, FR-015, FR-018, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-008SHOULDFR-016, FR-017, FR-019, NFR-006, NFR-007COULDFR-020WONT— (see Section 7)
+PriorityRequirement IDsMUSTFR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-008A, FR-008B, FR-008D, FR-009, FR-010, FR-021, FR-011, FR-012, FR-013, FR-014, FR-015, FR-018, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, NFR-008SHOULDFR-008C, FR-014A, FR-016, FR-017, FR-019, NFR-006, NFR-007COULDFR-020WONT— (see Section 7)
 
 Section 7 — Out of Scope
 1. Multi-user workflow management
@@ -491,8 +670,11 @@ Options: (A) Equal distribution until provided externally.
 (B) Block evaluation of any action until weights are
 formally defined.
 Required by: EPIC phase
-Status: Pending input from Rodrigo — equal distribution
-confirmed as interim default and must be asked and properly provided by the developer before continue building the software in the parts that affect this disscussion
+Status: Resolved — **Option (A)**. Equal distribution per
+action until an external weight table is provided. EPIC
+implements FR-002 defaults accordingly; custom weights
+replace defaults when supplied for all sub-tasks of an
+action (FR-002).
 
 OQ-002
 Question: For sub-tasks that have no linked summary table
@@ -504,7 +686,12 @@ Options: (A) Sub-task and output only when no complement
 row is linked. (B) Full summary table appended as general
 context regardless of direct linkage.
 Required by: Module 4 Spec (Evaluation Engine)
-Status: Unresolved — flagged from Phase 1.
+Status: Resolved — **Option (A)**. When no complement row
+is linked, evaluation context is sub-task + expected output
+only. When a complement row exists (FR-001 or crosswalk),
+include it per FR-009. Ação 1 complement mapping is
+documented in Plan/06_Models/crosswalk/OQ-002_action1_complement_rule.md;
+other actions follow the same pattern when authored.
 
 OQ-003
 Question: What is the authorization model for PERSONA-002
@@ -514,31 +701,46 @@ Options: (A) Superior has access to all cases within their
 institution. (B) Superior is explicitly assigned to specific
 cases by the auditor.
 Required by: EPIC phase (if FR-020 is included in scope)
-Status: [ASSUMPTION] — not specified in input.
+Status: Resolved — **Option (A)** for v1 product baseline:
+superiors read all cases within their institution/tenant.
+Option (B) remains available if multi-tenant policy requires
+explicit assignment.
 
 OQ-004
 Question: What is the acceptable response time for a
 single sub-task evaluation?
-Impact: NFR-006
-Options: No options — a numeric threshold must be defined
-by the product owner before this NFR can be written as
-a testable requirement.
-Required by: PRD sign-off
-Status: [THRESHOLD NEEDED — no source provided]
+Impact: NFR-006, FR-008D, FR-009, FR-010, FR-021
+Options: (A) Defer numeric SLO until pilot metrics exist;
+require baseline measurement logging in EPIC/MDAP. (B) Set
+a numeric seconds target before first release candidate.
+The eventual threshold SHALL include the **full** sub-task
+pipeline time budget (retrieval + fusion per FR-008D,
+evaluator per FR-009/FR-010, and the single output-assurance
+pass per FR-021) unless MDAP explicitly documents excluded
+phases for a given deployment mode.
+Required by: NFR-006 completion for release hardening (not
+blocking EPIC drafting).
+Status: Deferred — **Option (A)** for EPIC: measure and log
+baselines first; numeric SLO optional until pilot data exists.
 
 OQ-005
 Question: Does NFR-008 (data residency) prohibit sending
 document content to external LLM APIs? If so, FR-009
 through FR-012 (which depend on LLM evaluation) conflict
 with NFR-008 unless a locally hosted model is used.
-Impact: FR-009, FR-010, FR-011, FR-012, NFR-008
+Impact: FR-009, FR-010, FR-011, FR-012, FR-021, NFR-008
 Options: (A) Use external LLM API — requires explicit
 compliance exception. (B) Use locally hosted model —
 no data leaves the deployment environment.
 Required by: PRD sign-off — this is a hard blocker
 if NFR-008 is enforced strictly.
-Status: Flagged as compliance conflict. Requires
-legal/security review before EPIC phase.
+Status: Engineering default resolved — **Option (B)** for
+all inference that consumes **uploaded case document text**
+(local hosting by default). Option (A) remains a **branch**
+requiring explicit configuration, audit logging, and
+**legal/security sign-off before production**. EPIC drafting
+SHALL assume local-first unless a task explicitly implements
+an opt-in external path. See Plan/07_RETRIEVAL/nfr_008_deployment_boundary.md.
 
 OQ-006
 Question: What constitutes an UNCERTAINTY flag trigger —
@@ -547,7 +749,10 @@ is flagged as uncertain?
 Impact: FR-015, NFR-002
 Options: No options — a numeric threshold must be defined.
 Required by: Module 4 Spec (Evaluation Engine)
-Status: [THRESHOLD NEEDED — no source provided]
+Status: Resolved — threshold 0.70 (70%). Values strictly below
+0.70 on the evaluation record confidence field trigger UNCERTAINTY
+per FR-015. Early exit for retrieval expansion uses 0.90 per FR-008B
+and does not change this flag threshold.
 
 OQ-007
 Question: Should the system support evaluation of
@@ -558,9 +763,25 @@ Options: (A) Same evaluation methodology regardless of
 document date. (B) Different scoring interpretation for
 pre-M5D documents flagged by auditor.
 Required by: EPIC phase
-Status: Phase 1 confirmed the system must handle pre-M5D
-documents using expected output as primary evidence — but
-the scoring formula does not differentiate. [ASSUMPTION]
+Status: Resolved — **Option (A)** for methodology: same
+M5D-based evaluation regardless of document date. Pre-M5D
+processes are evaluated to surface a **maturity gap**; the
+FR-013 formula does not change by era. Option (B) narrative
+disclaimers may appear in FR-018 reporting text if the auditor
+flags vintage, but scores use the same rule set.
+
+OQ-008
+Question: For FR-021 output assurance, should the judge use
+the same local LLM as FR-009/FR-010 with stricter decoding,
+or a separate smaller model (SLM)?
+Impact: FR-021, NFR-006, OQ-005
+Options: (A) Same model, temperature 0, judge-only prompt.
+(B) Separate SLM for cost/latency experiments.
+Required by: EPIC / Module 4
+Status: Resolved — **Option (A)** as v1 default (same local
+model, deterministic decoding, judge restricted to scoring and
+flags — no new facts). EPIC may pilot Option (B) under local
+NFR-008 posture only.
 
 Section 9 — Success Metrics
 SM-001
@@ -602,7 +823,7 @@ Note: A high override rate indicates evaluation quality
 is below acceptable threshold.
 
 Section 10 — Coverage Matrix
-PRD IDRequirement SummaryModuleStatusFR-001Store M5D as structured dataModule 1✓ CoveredFR-002Sub-task weights with default equalModule 1✓ CoveredFR-003Case creation with metadataModule 2A✓ CoveredFR-004Document upload per caseModule 2A✓ CoveredFR-005Document pre-validationModule 2B✓ CoveredFR-006Text extraction and segmentationModule 2A✓ CoveredFR-007Select action for evaluationModule 3✓ CoveredFR-008Three-step document classificationModule 3✓ CoveredFR-009Sub-task presence evaluationModule 4✓ CoveredFR-010Sub-task quality evaluationModule 4✓ CoveredFR-011Expected output presence evaluationModule 4✓ CoveredFR-012Expected output quality evaluationModule 4✓ CoveredFR-013Action score calculationModule 5✓ CoveredFR-014Structured evaluation record per sub-taskModule 4✓ CoveredFR-015Flag conditionsModule 4✓ CoveredFR-016Auditor annotationModule 7⚠ PartialFR-017Re-evaluation triggerModule 7⚠ PartialFR-018Action-level reportModule 6✓ CoveredFR-019Pause and resumeModule 2A⚠ PartialFR-020Superior read accessModule 7✗ UncoveredNFR-001Portuguese languageAll modules✓ CoveredNFR-002Confidence score in every recordModule 4✓ CoveredNFR-003Persistent record storageAll modules✓ CoveredNFR-004System vs auditor content separationModule 6, 7✓ CoveredNFR-005Modular testabilityAll modules✓ CoveredNFR-006Evaluation latency thresholdModule 4✗ Threshold neededNFR-007Framework versioningModule 1⚠ PartialNFR-008Data residencyAll modules⚠ Compliance conflict — OQ-005
+PRD IDRequirement SummaryModuleStatusFR-001Store M5D as structured dataModule 1✓ CoveredFR-002Sub-task weights with default equalModule 1✓ CoveredFR-003Case creation with metadataModule 2A✓ CoveredFR-004Document upload per caseModule 2A✓ CoveredFR-005Document pre-validationModule 2B✓ CoveredFR-006Text extraction and segmentationModule 2A✓ CoveredFR-007Select action for evaluationModule 3✓ CoveredFR-008Three-step document classificationModule 3✓ CoveredFR-008DHybrid sparse+dense retrieval + fusionModule 3✓ CoveredFR-009Sub-task presence evaluationModule 4✓ CoveredFR-010Sub-task quality evaluationModule 4✓ CoveredFR-021Structured output assurance (judge)Module 4✓ CoveredFR-011Expected output presence evaluationModule 4✓ CoveredFR-012Expected output quality evaluationModule 4✓ CoveredFR-013Action score calculationModule 5✓ CoveredFR-014Structured evaluation record per sub-taskModule 4✓ CoveredFR-015Flag conditionsModule 4✓ CoveredFR-016Auditor annotationModule 7⚠ PartialFR-017Re-evaluation triggerModule 7⚠ PartialFR-018Action-level reportModule 6✓ CoveredFR-019Pause and resumeModule 2A⚠ PartialFR-020Superior read accessModule 7✗ UncoveredNFR-001Portuguese languageAll modules✓ CoveredNFR-002Confidence score in every recordModule 4✓ CoveredNFR-003Persistent record storageAll modules✓ CoveredNFR-004System vs auditor content separationModule 6, 7✓ CoveredNFR-005Modular testabilityAll modules✓ CoveredNFR-006Evaluation latency thresholdModule 4⚠ Baseline first (OQ-004 deferred)NFR-007Framework versioningModule 1⚠ PartialNFR-008Data residencyAll modules⚠ Production gate — OQ-005 external path
 
 Handoff Block
 [PRD_HANDOFF_BLOCK]
@@ -616,12 +837,18 @@ FR_IN_SCOPE:
 - FR-006: Extract and segment document text
 - FR-007: Auditor selects action for evaluation
 - FR-008: Three-step document classification
+- FR-008A: Pooled crosswalk retrieval hooks (Rio + TCDF)
+- FR-008B: Satisficing early exit (Direta + Alto + confidence >= 0.90)
+- FR-008C: Tiered artifact expansion when early exit does not apply
+- FR-008D: Hybrid lexical + dense retrieval + deterministic fusion on case segments (auditable)
 - FR-009: Sub-task presence evaluation with context
 - FR-010: Sub-task quality evaluation
+- FR-021: Structured output assurance pass (single judge call per sub-task; no new facts)
 - FR-011: Expected output presence evaluation
 - FR-012: Expected output quality evaluation
 - FR-013: Action score via weighted formula
 - FR-014: Structured evaluation record per sub-task
+- FR-014A: Per-artifact retrieval disposition (hit/weak/none) when overlay exists [SHOULD]
 - FR-015: Four-type flag system on evaluation results
 - FR-016: Auditor annotation on evaluation records
 - FR-017: Re-evaluation trigger on flagged records
@@ -652,31 +879,62 @@ PERSONAS:
 - PERSONA-002: Audit Superior / Reviewer
 
 UNRESOLVED_ASSUMPTIONS:
-- OQ-001: Sub-task weight values pending — equal default interim
-- OQ-002: Complement linkage for sub-tasks without table row and must be asked and properly provided by the developer before continue building the software.
-- OQ-003: Authorization model for PERSONA-002
-- OQ-007: Scoring differentiation for pre-M5D documents
+- (none for EPIC drafting — structural OQs closed in Section 8;
+  see archive [pre_epic_resolved_decisions.md](../00_PENDENCIES/pre_epic_resolved_decisions.md))
+
+RESOLVED_THRESHOLDS:
+- OQ-006: UNCERTAINTY when evaluation confidence < 0.70 (FR-015);
+  satisficing early exit for retrieval expansion when confidence >= 0.90
+  per FR-008B (Direta + Alto + tied evidence).
+- Architecture binding (Section 4 preamble): v1 retrieval uses
+  crosswalk policy (FR-008A) + hybrid sparse+dense fusion (FR-008D)
+  + deterministic pre-generation gates + single structured output assurance pass (FR-021); unconstrained agent loops deferred.
+- OQ-001: Equal sub-task weights until external table (FR-002).
+- OQ-002: Complement context Option (A) — sub-task + output only
+  when no complement row linked.
+- OQ-003: PERSONA-002 read access Option (A) — institution scope.
+- OQ-007: Pre-M5D documents — same methodology (maturity gap narrative).
+- OQ-008: FR-021 judge — same local model, temperature 0, judge-only prompt (default).
 
 UNRESOLVED_THRESHOLDS:
-- OQ-004: NFR-006 — sub-task evaluation response time
-- OQ-006: FR-015 — confidence threshold for UNCERTAINTY flag
+- OQ-004: NFR-006 numeric seconds SLO — deferred until pilot
+  measurements (baseline logging required in EPIC/MDAP).
 
-HARD_BLOCKER:
-- OQ-005: NFR-008 data residency vs external LLM API conflict
-  requires legal/security review before EPIC phase can begin.
+HARD_BLOCKER (production only):
+- OQ-005: Legal/security sign-off still required before **production**
+  deployment that sends **case document text** to **external**
+  inference services. **Engineering default is local-only (Option B)**;
+  see Plan/07_RETRIEVAL/nfr_008_deployment_boundary.md. EPIC/MDAP
+  **drafting** proceeds local-first; no silent cloud default.
 
 [/PRD_HANDOFF_BLOCK]
 
 Advancement Gate — Human Action Required
 ⚠️ RULE 1 — NO AUTOMATIC CHAINING
 
-This PRD is complete as a draft. Before any EPIC is written:
+This PRD is complete as a draft. Before **committed EPIC
+execution** (scheduled build work) begins:
 
+0. You must review the **Architecture binding** subsection at
+   the start of Section 4 (FR-008D hybrid retrieval + FR-021
+   output assurance; agent loops deferred)
 1. You must review every FR and NFR
 2. You must verify OQ-005 (data residency vs LLM conflict)
-   with appropriate authority — this is a HARD BLOCKER
-3. You must resolve OQ-004 and OQ-006 (numeric thresholds)
+   with appropriate authority before **production** external
+   inference — engineering default is **local-first** (see
+   Plan/07_RETRIEVAL/nfr_008_deployment_boundary.md)
+3. You must resolve OQ-004 (numeric latency threshold); OQ-006
+   resolved at 0.70 UNCERTAINTY and 0.90 satisficing per FR-008B
 4. You must complete the ADVANCEMENT GATE SIGN-OFF using
    the template in UNIVERSAL_PHASE_GATES.md (Rules 2A–2J)
 
-I will not begin EPIC phase until you confirm sign-off.
+I will not treat EPIC execution as approved until you confirm
+sign-off.
+
+Planning clarification: **EPIC drafting** (local-first
+architecture for FR-008D + FR-021, modular tool surfaces per
+NFR-005) may proceed in parallel with OQ-005 **only** if the EPIC
+explicitly treats external LLM/API usage as a gated branch and
+does not assume cloud execution of procurement text by default.
+**Committed implementation scheduling** for any path that sends
+document text out of the deployment boundary remains blocked until OQ-005 is resolved.

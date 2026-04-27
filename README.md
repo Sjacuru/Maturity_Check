@@ -6,11 +6,14 @@ Repository for the **M5D Evaluation System** — tooling to support public audit
 
 At this stage the repo mainly holds **planning and reference material**:
 
-- **[Plan/01_PRD/prd.md](Plan/01_PRD/prd.md)** — Product requirements
+- **[Plan/01_PRD/prd.md](Plan/01_PRD/prd.md)** — Product requirements (FR-008A–C, FR-008D hybrid retrieval, FR-021 output assurance)
+- **[Plan/07_RETRIEVAL/retrieval_satisficing_rules.md](Plan/07_RETRIEVAL/retrieval_satisficing_rules.md)** — Retrieval tiers, satisficing 0.90, UNCERTAINTY 0.70, disposition model  
+- **[Plan/07_RETRIEVAL/vector_storage_options.md](Plan/07_RETRIEVAL/vector_storage_options.md)** — Local vs Azure vs Hugging Face (models vs vectors), NFR-008 notes
+- **[Plan/07_RETRIEVAL/nfr_008_deployment_boundary.md](Plan/07_RETRIEVAL/nfr_008_deployment_boundary.md)** — NFR-008 default posture (local case text; external opt-in)
 - **[Plan/00_PENDENCIES/pendencias_pre_epic.md](Plan/00_PENDENCIES/pendencias_pre_epic.md)** — **Unresolved** pre-EPIC items only  
 - **[Plan/00_PENDENCIES/pre_epic_resolved_decisions.md](Plan/00_PENDENCIES/pre_epic_resolved_decisions.md)** — Resolved / deferred-baseline decisions (archive)
 - **[UNIVERSAL_PHASE_GATES.md](UNIVERSAL_PHASE_GATES.md)** — Governance for PRD → EPIC → MDAP → architecture
-- **[Plan/06_Models/](Plan/06_Models/)** — Reference models: `M5D.md`, normative PDFs (e.g. TCDF IN 01/2024, Rio manual), and related materials (canonical framework PDF for ingest remains per project decisions)
+- **[Plan/06_Models/](Plan/06_Models/)** — Reference models: `M5D.md`, normative PDFs (e.g. TCDF IN 01/2024, Rio manual), crosswalk templates under `crosswalk/`, and related materials (canonical framework PDF for ingest remains per project decisions)
 
 Application code (Python, LangGraph, local LLM integration, etc.) will be added as the implementation phase proceeds.
 
