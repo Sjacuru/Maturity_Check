@@ -8,9 +8,7 @@ Resolved and deferred-baseline decisions are in **[pre_epic_resolved_decisions.m
 
 ## What remains before **production** (not blocking EPIC **draft**)
 
-1. **OQ-005 — legal / security sign-off** for any deployment that sends **case document text** to an **external** LLM or document service. Engineering default is **local-only** (documented in [Plan/07_RETRIEVAL/nfr_008_deployment_boundary.md](../07_RETRIEVAL/nfr_008_deployment_boundary.md)). EPIC may proceed on the local branch.
-
-2. **OQ-004 / NFR-006 — numeric latency SLO** (optional): no hard seconds target until pilot metrics exist; EPIC/MDAP record **measured** wall-clock per sub-task pipeline (retrieval + FR-009/FR-010 + FR-021). You indicated this is acceptable to defer.
+1. **OQ-004 / NFR-006 — numeric latency SLO** (optional): no hard seconds target until pilot metrics exist; EPIC/MDAP record **measured** wall-clock per sub-task pipeline (retrieval + FR-009/FR-010 + FR-021). You indicated this is acceptable to defer.
 
 ---
 
@@ -29,6 +27,6 @@ Tune on real Rio cases (not logic blockers for EPIC authorship):
 |----|--------|--------|
 | — | Most pre-EPIC structural items | **Resolved** → see [pre_epic_resolved_decisions.md](pre_epic_resolved_decisions.md) |
 | — | Code written **before** EPIC | **Trace** → [pre_epic_implementation_trace.md](pre_epic_implementation_trace.md) (map to EPIC when the prompt runs) |
-| OQ-005 | External inference / residency — **production** gate | Open until legal/security |
+| OQ-005 | External inference / residency — local Ollama + optional Groq | **Resolved** → see [../07_RETRIEVAL/OQ-005_resolution.md](../07_RETRIEVAL/OQ-005_resolution.md) |
 | OQ-004 | Numeric NFR-006 SLO | Deferred (measure first) |
 | Pilot | Vector thresholds + floor + hit/weak | Open (metrics-driven) |
