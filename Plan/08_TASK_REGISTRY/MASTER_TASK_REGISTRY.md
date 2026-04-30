@@ -48,20 +48,20 @@
 **Status:** `not-started`  
 **Evidence:** `None yet`  
 **Completed:** 0%  
-**Notes:** Prerequisites for all subsequent work. Requires: Python extension, Pylance, Git Graph, Markdown All in One.
+**Notes:** Prerequisites for all subsequent work. Requires: Python extension, Pylance, Markdown All in One.
 
 ---
 
-#### T1.1.2 — Install Python 3.11+ & Create venv
-**PT:** Instalar Python 3.11+ e criar venv  
+#### T1.1.2 — Install Python 3.11+ via Anaconda & Create Environment
+**PT:** Instalar Python 3.11+ via Anaconda e criar ambiente  
 **Phase:** 1 | **Week:** 1 | **Hours:** 2  
 **PRD-Map:** FR-001  
 **EPIC-Map:** Local_LLM_Architecture  
-**Deliverables:** requirements.txt, venv_created_screenshot.png  
+**Deliverables:** requirements.txt, conda_env_created_screenshot.png  
 **Status:** `not-started`  
 **Evidence:** `None yet`  
 **Completed:** 0%  
-**Notes:** Python must be 3.11+. venv in project root or external.
+**Notes:** Python must be 3.11+. Use Anaconda: `conda create -n maturity_check python=3.11` then `conda activate maturity_check`.
 
 ---
 
@@ -113,7 +113,7 @@
 **Status:** `not-started`  
 **Evidence:** `None yet`  
 **Completed:** 0%  
-**Notes:** Verify: VS Code launches, Python 3.11 works, venv active, Ollama responds on localhost:11434, SQLite creates schema, LanceDB directory writable.
+**Notes:** Verify: VS Code launches, Python 3.11 works, Anaconda environment active, Ollama responds on localhost:11434, SQLite creates schema, LanceDB directory writable.
 
 ---
 

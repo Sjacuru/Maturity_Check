@@ -4,7 +4,7 @@
 **Data / Date:** 28 de Abril de 2026 / April 28, 2026  
 **Desenvolvedor / Developer:** Solo Developer  
 **Responsáveis / Stakeholders:** 2 Internal Bosses + Master's Degree Adviser  
-**Localização Projeto / Project Location:** `c:\Users\sanseri\Documents\Projetos\Maturity_Check`
+**Localização Projeto / Project Location:** `c:\Users\sanseri\Documents\Projetos\Maturity_Check` and Github: https://github.com/Sjacuru/Maturity_Check
 
 ---
 
@@ -43,7 +43,7 @@
 
 #### SEMANA 1 — Ambiente & Ferramentas (28 Abr — 4 Mai)
 - ✅ Tarefa 1.1: VS Code + Extensões
-- ✅ Tarefa 1.2: Python 3.11+ + venv
+- ✅ Tarefa 1.2: Python 3.11+ + Anaconda
 - ✅ Tarefa 1.3: Ollama + Modelo Mistral
 - ✅ Tarefa 1.4: Dependências Python
 - ✅ Tarefa 1.5: SQLite + LanceDB setup
@@ -231,7 +231,7 @@ Semana 2: Criar estrutura do banco de dados
 
 ## Objectives Completed:
 ✅ Task 1.1: VS Code installation with Python + Pylance extensions
-✅ Task 1.2: Python 3.11 + venv configuration
+✅ Task 1.2: Python 3.11 + Anaconda environment configuration
 ✅ Task 1.3: Ollama installation + Mistral model pull
 ✅ Task 1.4: Dependency installation (pydantic, lancedb, etc.)
 ✅ Task 1.5: Database infrastructure setup
@@ -240,7 +240,7 @@ Semana 2: Criar estrutura do banco de dados
 ## Technical Details:
 - Ollama running on localhost:11434
 - Mistral model (~4GB) cached locally
-- venv in project directory for isolation
+- Anaconda environment (maturity_check) for isolation
 - Dependencies resolved: pydantic>=2.7, lancedb>=0.10.0, etc.
 
 ## Architecture Decision:

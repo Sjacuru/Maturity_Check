@@ -29,7 +29,7 @@ Use this to:
 
 **Tasks / Tarefas:**
 - T1.1.1 → Install VS Code + Extensions
-- T1.1.2 → Install Python 3.11+ & venv
+- T1.1.2 → Install Python 3.11+ via Anaconda
 - T1.1.3 → Install Ollama + Mistral
 - T1.1.4 → Install Python Dependencies
 - T1.1.5 → Setup SQLite + LanceDB Directories
@@ -567,7 +567,7 @@ Use this to validate requirement coverage before phase closure:
 - [ ] Weekly reports for 5 weeks complete
 - [ ] Screenshots for weekly deliverables captured
 - [ ] Code committed to GitHub with clean history
-- [ ] MVP runs on fresh venv without errors
+- [ ] MVP runs on fresh Anaconda environment without errors
 
 ### Before Phase 2 Start (May 29)
 

@@ -826,6 +826,10 @@ Section 10 — Coverage Matrix
 PRD IDRequirement SummaryModuleStatusFR-001Store M5D as structured dataModule 1✓ CoveredFR-002Sub-task weights with default equalModule 1✓ CoveredFR-003Case creation with metadataModule 2A✓ CoveredFR-004Document upload per caseModule 2A✓ CoveredFR-005Document pre-validationModule 2B✓ CoveredFR-006Text extraction and segmentationModule 2A✓ CoveredFR-007Select action for evaluationModule 3✓ CoveredFR-008Three-step document classificationModule 3✓ CoveredFR-008DHybrid sparse+dense retrieval + fusionModule 3✓ CoveredFR-009Sub-task presence evaluationModule 4✓ CoveredFR-010Sub-task quality evaluationModule 4✓ CoveredFR-021Structured output assurance (judge)Module 4✓ CoveredFR-011Expected output presence evaluationModule 4✓ CoveredFR-012Expected output quality evaluationModule 4✓ CoveredFR-013Action score calculationModule 5✓ CoveredFR-014Structured evaluation record per sub-taskModule 4✓ CoveredFR-015Flag conditionsModule 4✓ CoveredFR-016Auditor annotationModule 7⚠ PartialFR-017Re-evaluation triggerModule 7⚠ PartialFR-018Action-level reportModule 6✓ CoveredFR-019Pause and resumeModule 2A⚠ PartialFR-020Superior read accessModule 7✗ UncoveredNFR-001Portuguese languageAll modules✓ CoveredNFR-002Confidence score in every recordModule 4✓ CoveredNFR-003Persistent record storageAll modules✓ CoveredNFR-004System vs auditor content separationModule 6, 7✓ CoveredNFR-005Modular testabilityAll modules✓ CoveredNFR-006Evaluation latency thresholdModule 4⚠ Baseline first (OQ-004 deferred)NFR-007Framework versioningModule 1⚠ PartialNFR-008Data residencyAll modules⚠ Production gate — OQ-005 external path
 
 Handoff Block
+
+### 4A — Phase Transition Note (PRD → EPIC) — alias header
+Downstream prompts that look for “Section 4A” MUST treat the delimiter block bounded by `[PRD_HANDOFF_BLOCK]` and `[/PRD_HANDOFF_BLOCK]` as the authoritative handoff payload.
+
 [PRD_HANDOFF_BLOCK]
 
 FR_IN_SCOPE:

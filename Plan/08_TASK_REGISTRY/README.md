@@ -138,7 +138,7 @@ EPIC Decision Local_LLM_Architecture
   ↓ deliverables ↓
 - vs_code_setup.md
 - requirements.txt
-- venv_created_screenshot.png
+- conda_env_created_screenshot.png
 ```
 
 ---

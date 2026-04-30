@@ -341,7 +341,7 @@ RELATED FILES (For context):
 @Claude: UPDATE TASK T1.1.1
 Status: completed
 Evidence: commit:abc123def456 screenshot:screenshots/vs_code_setup.png doc:docs/VS_CODE_GUIDE.md
-Details: Installed VS Code with Python, Pylance, Git Graph extensions. Created setup guide. Verified all extensions working.
+Details: Installed VS Code with Python, Pylance extensions. Created setup guide. Verified all extensions working.
 Hours: 3
 ```
 
@@ -352,7 +352,7 @@ Hours: 3
 Tasks completed: T1.1.1, T1.1.2, T1.1.3, T1.1.4, T1.1.5, T1.1.6
 Evidence: [6 screenshots + 6 doc links]
 Hours: 18 (planned 16–20)
-Summary: All environment setup complete. Ollama running. Python venv active. Database directories created. Ready for Week 2.
+Summary: All environment setup complete. Ollama running. Python Anaconda environment active. Database directories created. Ready for Week 2.
 ```
 
 ### Phase Validation / Validação de Fase:
@@ -440,7 +440,7 @@ Please resubmit with evidence links.
 **Step 1: Developer Creates Schema**
 - Designs SQLite schema with 8 tables
 - Writes db.py with init_schema() function
-- Commits to GitHub: `git commit -m "Add database schema with evidence linking"`
+- Commits via Git (terminal): `git add . && git commit -m "Add database schema with evidence linking" && git push`
 - Takes screenshot of schema diagram
 - Writes schema_design.md (PT + EN)
 

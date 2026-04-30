@@ -25,7 +25,7 @@
 | ID | Task / Tarefa | Status | Evidence | Hours | Notes / Notas |
 |----|----|--------|----------|-------|-------|
 | T1.1.1 | Install VS Code + Extensions | ☐ | | | |
-| T1.1.2 | Install Python 3.11+ & venv | ☐ | | | |
+| T1.1.2 | Install Python 3.11+ via Anaconda | ☐ | | | |
 | T1.1.3 | Install Ollama + Mistral Model | ☐ | | | |
 | T1.1.4 | Install Python Dependencies | ☐ | | | |
 | T1.1.5 | Setup SQLite + LanceDB Dirs | ☐ | | | |

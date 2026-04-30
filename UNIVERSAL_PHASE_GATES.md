@@ -230,7 +230,6 @@ Items flagged as "requires human review" or marked with ⚠️ are BLOCKERS.
 
 **Definition of Blocker:**
 - Authentication flows (must be reviewed by security engineer)
-- Payment processing (must be reviewed by security + compliance)
 - External integrations (must be reviewed by infrastructure)
 - Complex algorithms (must be reviewed by domain expert)
 - Unresolved assumptions (must be reviewed by stakeholder)
@@ -400,10 +399,10 @@ Do not skip this step. Print it, fill it out, sign it, and file it with your pro
 
 Use this template BEFORE EVERY PHASE TRANSITION:
 
-1. Print it (or copy to document)
+1. Read the document
 2. Go through Rule 2A-2J
 3. Mark [PASS] or [FAIL] for each rule
-4. Sign and date
+4. Confirm
 5. File with project records
 
 This checklist is static and reusable across all projects.
@@ -420,7 +419,6 @@ ADVANCEMENT GATE SIGN-OFF
 Phase Completed: [PRD / EPIC / ARCHITECTURE / MDAP / FOLDER STRUCTURE]
 Output Date: [date]
 Reviewer Name: [human reviewer]
-Email: [reviewer contact]
 
 ---
 
@@ -430,73 +428,63 @@ Rule 2A — Scope Creep Check
 - [ ] No features beyond PRD_HANDOFF_BLOCK
 - [ ] Scope ceiling respected
 - [ ] No "good idea" decisions without requirement trace
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2B — Traceability Verification
 - [ ] Every decision traced to requirement
 - [ ] No orphaned decisions
 - [ ] All TBDs acknowledged and resolved
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2C — Flagged Items Resolved
 - [ ] All "requires human review" items have expert sign-off
 - [ ] No flagged items deferred
 - [ ] Decisions documented with expert name/date
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2D — Authoritative Source Verification
 - [ ] All tech choices cited with evidence
 - [ ] All decisions have authoritative justification
 - [ ] Research documented (if ARCHITECTURE phase)
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2E — Bounded Scope Enforcement
 - [ ] No speculative features
 - [ ] No "nice to have" padding
 - [ ] Only traced scope included
 - [ ] Rejected scope documented
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2F — Handoff Clarity Test
 - [ ] New engineer can understand all decisions
 - [ ] Context provided for unexplained terms
 - [ ] Evidence linked to prior phases
 - [ ] All sections self-contained
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2G — No Self-Audit
 - [ ] LLM did not self-validate output
 - [ ] Human independently verified
 - [ ] No "I have verified" statements in output
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2H — No Autonomous Auth/Payments
 - [ ] Security decisions flagged (not auto-approved)
 - [ ] Expert review documented
 - [ ] No autonomous money movement authorized
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2I — Output Completeness
 - [ ] All required sections from template present
 - [ ] No sections skipped with "N/A"
 - [ ] Missing sections documented with WHY
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 Rule 2J — Acceptance Criteria Traceability
 - [ ] Every story/module/component has binary criteria
 - [ ] Criteria are measurable and testable
 - [ ] Criteria trace to PRD or prior phase
-Status: [PASS / FAIL]
-Notes (if FAIL): _______________________________________________
+Status: [PASS / FAIL / Why? {describe}]
 
 ---
 

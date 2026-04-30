@@ -46,9 +46,9 @@ Ter todas as ferramentas instaladas, configuradas e testadas localmente. Nenhuma
 - [ ] VS Code instalado (versão 1.88+)
 - [ ] Extensão "Python" (Microsoft) instalada
 - [ ] Extensão "Pylance" instalada (para type checking)
-- [ ] Extensão "Git Graph" instalada (para rastreabilidade)
 - [ ] Settings do VS Code configurados: formato automático (Black), linter (Pylint)
-- [ ] Terminal PowerShell configurado no VS Code
+- [ ] Terminal (PowerShell ou CMD) configurado no VS Code
+- [ ] GitHub integrado ou Git instalado para commits
 
 #### Entrega / Deliverable:
 📸 **Screenshot:** VS Code aberto com extensões visíveis no painel Extensions  
@@ -62,17 +62,17 @@ Ter todas as ferramentas instaladas, configuradas e testadas localmente. Nenhuma
 **Data Conclusão / Completion Date:** 29 de Abril / April 29  
 
 #### Verificações / Verification Checklist:
-- [ ] Python 3.11 ou superior instalado (Windows Installer)
+- [ ] Python 3.11 ou superior instalado via Anaconda
 - [ ] `python --version` mostra 3.11+
-- [ ] `pip --version` funciona
-- [ ] Criado diretório do projeto: `c:\Users\sanseri\Documents\Projetos\Maturity_Check`
-- [ ] Criado venv no projeto: `python -m venv venv`
-- [ ] Ativado venv (PowerShell): `.\venv\Scripts\Activate.ps1`
+- [ ] `conda --version` funciona
+- [ ] Ambiente Anaconda criado: `conda create -n maturity_check python=3.11`
+- [ ] Ambiente ativado: `conda activate maturity_check`
+- [ ] `pip --version` funciona no ambiente
 - [ ] `pip install --upgrade pip setuptools wheel`
 - [ ] Repositório Git clonado/inicializado no diretório do projeto
 
 #### Entrega / Deliverable:
-📸 **Screenshot:** PowerShell mostrando `(venv)` ativo + `python --version` com 3.11+  
+📸 **Screenshot:** Terminal (PowerShell ou CMD) mostrando `(maturity_check)` ativo + `python --version` com 3.11+  
 📄 **Documento:** `SETUP_WEEK1_PYTHON.md` (PT + EN) com comandos executados
 
 ---
@@ -90,11 +90,11 @@ Ollama é uma ferramenta para rodar modelos de linguagem (LLM) localmente no seu
 #### Verificações / Verification Checklist:
 - [ ] Ollama baixado e instalado (ollama.ai)
 - [ ] Ollama adicionado ao PATH do Windows
-- [ ] Comando `ollama --version` funciona no PowerShell
+- [ ] Comando `ollama --version` funciona no terminal (PowerShell ou CMD)
 - [ ] Serviço Ollama iniciado: `ollama serve` (deixar rodando em terminal separado)
 - [ ] Modelo Mistral baixado: `ollama pull mistral:latest` (esperar download completo, ~4GB)
 - [ ] Modelo testado: `ollama list` mostra `mistral:latest`
-- [ ] API local testada: curl/PowerShell `Invoke-WebRequest http://localhost:11434/api/generate` retorna resposta
+- [ ] API local testada: `curl http://localhost:11434/api/generate` (ou `Invoke-WebRequest` no PowerShell) retorna resposta
 
 #### Entrega / Deliverable:
 📸 **Screenshot 1:** Janela de comando mostrando `ollama serve` rodando (com "listening on..." visível)  
@@ -111,13 +111,13 @@ Ollama é uma ferramenta para rodar modelos de linguagem (LLM) localmente no seu
 #### Verificações / Verification Checklist:
 - [ ] Repositório Maturity_Check clonado localmente
 - [ ] `cd` para diretório do projeto
-- [ ] Venv ativado (`.\venv\Scripts\Activate.ps1`)
+- [ ] Ambiente Anaconda ativado: `conda activate maturity_check`
 - [ ] `pip install -r requirements.txt` executado com sucesso (ou instalar direto: `pip install pydantic lancedb pyarrow numpy tqdm sentence-transformers`)
 - [ ] Packages instalados verificados: `pip list | findstr pydantic`
 - [ ] Teste de import no Python: `python -c "import pydantic, lancedb, sentence_transformers; print('OK')"`
 
 #### Entrega / Deliverable:
-📸 **Screenshot:** PowerShell mostrando `pip list` com todas as dependências  
+📸 **Screenshot:** Terminal (PowerShell ou CMD) mostrando `pip list` com todas as dependências  
 📄 **Documento:** `SETUP_WEEK1_DEPENDENCIES.md` (PT + EN) com versões de cada package
 
 ---
@@ -133,14 +133,19 @@ Ollama é uma ferramenta para rodar modelos de linguagem (LLM) localmente no seu
 
 #### Verificações / Verification Checklist:
 - [ ] SQLite3 CLI instalado ou acessível via Python `sqlite3`
+
 - [ ] Diretório `data/` criado no projeto
+
 - [ ] Teste de criação de banco: `python -c "import sqlite3; sqlite3.connect('data/test.sqlite')"`
+
 - [ ] LanceDB instalado via pip (já incluído em requirements.txt)
+
 - [ ] Diretório `data/lancedb/` criado
+
 - [ ] Teste de inicialização LanceDB: `python -c "import lancedb; db = lancedb.connect('data/lancedb/test')"`
 
 #### Entrega / Deliverable:
-📸 **Screenshot:** PowerShell mostrando diretórios criados e Python test executado com sucesso  
+📸 **Screenshot:** Terminal (PowerShell ou CMD) mostrando diretórios criados e Python test executado com sucesso  
 📄 **Documento:** `SETUP_WEEK1_DATABASE.md` (PT + EN) explicando arquitetura de dados
 
 ---
@@ -152,15 +157,15 @@ Ollama é uma ferramenta para rodar modelos de linguagem (LLM) localmente no seu
 
 #### Verificações / Verification Checklist:
 - [ ] VS Code abre projeto sem erros
-- [ ] Terminal PowerShell no VS Code com venv ativado
+- [ ] Terminal (PowerShell ou CMD) no VS Code com ambiente Anaconda ativado
 - [ ] Ollama rodando em background (`ollama serve` em terminal separado)
 - [ ] Python consegue importar todas as dependências
 - [ ] SQLite consegue criar/ler banco de dados
 - [ ] LanceDB consegue inicializar diretório
-- [ ] Git repositório pronto com `.gitignore` configurado (venv/, data/, .env, __pycache__)
+- [ ] Git repositório pronto com `.gitignore` configurado (data/, .env, __pycache__)
 
 #### Entrega / Deliverable:
-📸 **Screenshot:** VS Code aberto com projeto; terminal PowerShell ativo mostrando Python + venv; Ollama em background  
+📸 **Screenshot:** VS Code aberto com projeto; terminal ativo mostrando Python + ambiente Anaconda; Ollama em background  
 📄 **Relatório:** `WEEK1_COMPLETE_SUMMARY.md` (PT + EN) resumindo setup; lista de checklist completada
 
 ---
@@ -170,7 +175,7 @@ Ollama é uma ferramenta para rodar modelos de linguagem (LLM) localmente no seu
 | Tarefa / Task | Status | Entrega / Deliverable |
 |---------------|--------|---------------------|
 | VS Code + Extensões | ✅ Concluído | Screenshot + docs |
-| Python 3.11 + venv | ✅ Concluído | Screenshot + docs |
+| Python 3.11 + Anaconda | ✅ Concluído | Screenshot + docs |
 | Ollama + Mistral | ✅ Concluído | 2 screenshots + docs |
 | Dependências Python | ✅ Concluído | Screenshot + docs |
 | SQLite + LanceDB | ✅ Concluído | Screenshot + docs |
@@ -242,7 +247,7 @@ Maturity_Check/
 #### Verificações / Verification Checklist:
 - [ ] Todos os diretórios criados conforme estrutura acima
 - [ ] `__init__.py` criado em cada subpacote Python
-- [ ] Arquivo `.gitignore` configurado (venv/, data/, .env, __pycache__)
+- [ ] Arquivo `.gitignore` configurado (data/, .env, __pycache__)
 - [ ] `config/` com templates JSON para configuração
 - [ ] Estrutura testada: `python -c "from maturity_check import *"`
 

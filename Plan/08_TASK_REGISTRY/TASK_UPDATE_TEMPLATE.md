@@ -217,7 +217,7 @@ Details: [Paste contents of section 2 above]
 @Claude: UPDATE TASK T1.1.1
 Status: completed
 Evidence: commit:abc123def screenshot:screenshots/vs_code_setup.png doc:docs/VS_CODE_GUIDE.md
-Details: Installed VS Code with Python, Pylance, Git Graph extensions on Windows 11. Created detailed installation guide (PT+EN). Verified all extensions working correctly with test workspace.
+Details: Installed VS Code with Python, Pylance extensions on Windows 11. Created detailed installation guide (PT+EN). Verified all extensions working correctly with test workspace.
 ```
 
 ---
