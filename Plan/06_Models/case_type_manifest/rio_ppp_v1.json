@@ -1,0 +1,599 @@
+{
+  "schema_version": "0.1",
+  "case_type": "rio_ppp",
+  "scope_note": "Expected document types for Rio de Janeiro PPP procurement cases evaluated under M5D. Documents may arrive as individual files (one file per document type) or combined in a single file (one large PDF/DOCX containing multiple document types as sections). Both scenarios are handled by FR-008 classification logic: filename_patterns covers step 1 (exact/approximate file-level match), heading_patterns covers step 2 (title/heading match within any file), and combined_file_section_hints covers step 2 applied inside a combined file.",
+  "m5d_actions_covered": ["action_1"],
+  "notes": "Scope is Ação 1 (sub-tasks 1.1–1.6). Document registry will be extended as additional actions are implemented. Cross-jurisdiction documents (required by both Rio Manual and TCDF IN 01/2024) appear once under their primary jurisdiction_layer with a cross_jurisdiction_note.",
+  "documents": [
+
+    {
+      "document_id": "rio-PubJustif-001",
+      "document_name_pt": "Publicação de Justificativa",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.1-rio-001",
+      "filing_context": "Ato de publicação formal contendo identificação do objeto e valor estimado. Exigido antes do lançamento da licitação. Quadro 12 (p. 47) do Manual Rio.",
+      "filename_patterns": [
+        "*justificativa*",
+        "*publicacao*justif*",
+        "*aviso*justificativa*"
+      ],
+      "heading_patterns": [
+        "Publicação de Justificativa",
+        "Justificativa da Contratação",
+        "Justificativa do Projeto"
+      ],
+      "combined_file_section_hints": [
+        "justificativa",
+        "objeto da contratação",
+        "valor estimado"
+      ],
+      "typically_combined": false,
+      "notes": "Pode aparecer como parte de um relatório maior de análise preliminar ou como documento autônomo."
+    },
+
+    {
+      "document_id": "rio-AprovETP-001",
+      "document_name_pt": "Aprovação de Estudos Técnicos Preliminares",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.1-rio-002",
+      "filing_context": "Validação interna da necessidade fundamentada em estudos técnicos. Aprovação formal pelo órgão promotor. Quadro 12 (p. 47) do Manual Rio.",
+      "filename_patterns": [
+        "*ETP*",
+        "*estudo*tecnico*preliminar*",
+        "*aprovacao*ETP*",
+        "*aprovacao*estudo*"
+      ],
+      "heading_patterns": [
+        "Estudo Técnico Preliminar",
+        "ETP",
+        "Aprovação de ETP",
+        "Estudos de Viabilidade Técnica"
+      ],
+      "combined_file_section_hints": [
+        "estudo técnico preliminar",
+        "ETP",
+        "viabilidade técnica",
+        "necessidade da contratação"
+      ],
+      "typically_combined": false,
+      "notes": "O ETP pode conter ou ser acompanhado da Aprovação. Verifique se o documento inclui ato formal de aprovação ou se este é separado."
+    },
+
+    {
+      "document_id": "rio-RelViab-001",
+      "document_name_pt": "Relatório de Viabilidade",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.1-rio-003",
+      "filing_context": "Diagnóstico situacional com detalhe da viabilidade técnica. Originado na fase de Avaliação. Item 3 (p. 15) do Manual Rio.",
+      "filename_patterns": [
+        "*viabilidade*",
+        "*relatorio*viabilidade*",
+        "*estudo*viabilidade*",
+        "*EVT*"
+      ],
+      "heading_patterns": [
+        "Relatório de Viabilidade",
+        "Estudo de Viabilidade",
+        "Análise de Viabilidade",
+        "EVT"
+      ],
+      "combined_file_section_hints": [
+        "viabilidade",
+        "diagnóstico",
+        "situação atual",
+        "análise de viabilidade técnica"
+      ],
+      "typically_combined": false,
+      "notes": "Pode coincidir parcialmente com o ETP dependendo da estrutura documental do caso."
+    },
+
+    {
+      "document_id": "rio-PlanEst-001",
+      "document_name_pt": "Plano Estratégico Municipal",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.2-rio-001",
+      "filing_context": "Documento de planejamento estratégico da prefeitura. O projeto deve ser submetido à análise baseada no Plano vigente. Etapa 1 (p. 7) do Manual Rio.",
+      "filename_patterns": [
+        "*plano*estrategico*",
+        "*PEI*",
+        "*planejamento*estrategico*municipal*"
+      ],
+      "heading_patterns": [
+        "Plano Estratégico",
+        "Plano Estratégico Municipal",
+        "Diretrizes Estratégicas",
+        "PEI"
+      ],
+      "combined_file_section_hints": [
+        "plano estratégico",
+        "metas municipais",
+        "programa de metas",
+        "planejamento estratégico"
+      ],
+      "typically_combined": false,
+      "notes": "Documento público da prefeitura. No caso Rio de Janeiro, é o Plano Estratégico vigente publicado pela Prefeitura."
+    },
+
+    {
+      "document_id": "rio-ParCasaCivil-001",
+      "document_name_pt": "Parecer da Casa Civil (CVL)",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.2-rio-002",
+      "filing_context": "Manifestação sobre o enquadramento do projeto nas políticas públicas municipais. Emitido pela Casa Civil / CVL. Quadro 12 (p. 47) do Manual Rio.",
+      "filename_patterns": [
+        "*parecer*casa*civil*",
+        "*CVL*",
+        "*nota*casa*civil*",
+        "*manifestacao*casa*civil*"
+      ],
+      "heading_patterns": [
+        "Parecer da Casa Civil",
+        "CVL",
+        "Nota Técnica — Casa Civil",
+        "Manifestação da Casa Civil"
+      ],
+      "combined_file_section_hints": [
+        "casa civil",
+        "CVL",
+        "conveniência",
+        "mérito",
+        "enquadramento"
+      ],
+      "typically_combined": false,
+      "notes": "Pode ser denominado Nota Técnica, Manifestação ou Parecer dependendo da formalização adotada."
+    },
+
+    {
+      "document_id": "rio-DecPROPAR-001",
+      "document_name_pt": "Decreto de Inclusão no PROPAR-RIO",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.2-rio-003",
+      "filing_context": "Ato do Prefeito que oficializa a inclusão do projeto no programa de parcerias estratégico (PROPAR-RIO). Etapa 9 (p. 11) do Manual Rio.",
+      "filename_patterns": [
+        "*decreto*PROPAR*",
+        "*PROPAR*RIO*",
+        "*inclusao*PROPAR*",
+        "*decreto*parceria*"
+      ],
+      "heading_patterns": [
+        "PROPAR-RIO",
+        "Programa de Parcerias",
+        "Decreto de Inclusão",
+        "PROPAR"
+      ],
+      "combined_file_section_hints": [
+        "PROPAR",
+        "programa de parcerias",
+        "inclusão no programa",
+        "decreto municipal"
+      ],
+      "typically_combined": false,
+      "notes": "Ato normativo formal; pode estar disponível no Diário Oficial do Município."
+    },
+
+    {
+      "document_id": "rio-RelBeneficios-001",
+      "document_name_pt": "Relatório de Avaliação de Benefícios",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.3-rio-001",
+      "filing_context": "Análise específica sobre os benefícios sociais que o projeto trará à população. Emitido pelo CGP. Etapa 8 (p. 10) do Manual Rio.",
+      "filename_patterns": [
+        "*beneficios*",
+        "*avaliacao*beneficios*",
+        "*relatorio*beneficios*",
+        "*analise*beneficios*"
+      ],
+      "heading_patterns": [
+        "Avaliação de Benefícios",
+        "Benefícios do Projeto",
+        "Análise de Benefícios Sociais",
+        "Benefícios Esperados"
+      ],
+      "combined_file_section_hints": [
+        "benefícios",
+        "impacto social",
+        "ganhos para a população",
+        "valor para a sociedade"
+      ],
+      "typically_combined": false,
+      "notes": "Pode estar integrado ao ETP ou ao relatório de viabilidade dependendo da estrutura do caso."
+    },
+
+    {
+      "document_id": "rio-EspecDesempenho-001",
+      "document_name_pt": "Especificações de Desempenho / Análise de Performance",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifacts 1.3-rio-002 e 1.4-rio-002",
+      "filing_context": "Tradução dos objetivos estratégicos em requerimentos de performance técnica e verificação de aspectos de performance social. Item 10 (p. 44) do Manual Rio. Referenciado nos sub-tasks 1.3 e 1.4.",
+      "filename_patterns": [
+        "*especificacao*desempenho*",
+        "*performance*",
+        "*requisitos*desempenho*",
+        "*indicadores*desempenho*"
+      ],
+      "heading_patterns": [
+        "Especificações de Desempenho",
+        "Requisitos de Performance",
+        "Indicadores de Desempenho",
+        "Performance Social",
+        "Metas Contratuais"
+      ],
+      "combined_file_section_hints": [
+        "desempenho",
+        "performance",
+        "metas contratuais",
+        "indicadores",
+        "especificações técnicas"
+      ],
+      "typically_combined": false,
+      "notes": "O mesmo documento (Item 10) é referenciado como evidência de 1.3 (objetivos estratégicos como metas) e 1.4 (performance social). Pode ser seção dentro de proposta técnica maior."
+    },
+
+    {
+      "document_id": "rio-PlanoAmbiental-001",
+      "document_name_pt": "Plano Ambiental",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.4-rio-001",
+      "filing_context": "Parte da proposta técnica que detalha a conformidade com normas ambientais e gestão de impactos. Item 7.3.1 (p. 33) do Manual Rio.",
+      "filename_patterns": [
+        "*plano*ambiental*",
+        "*gestao*ambiental*",
+        "*PGA*",
+        "*programa*ambiental*"
+      ],
+      "heading_patterns": [
+        "Plano Ambiental",
+        "Gestão Ambiental",
+        "Programa de Gestão Ambiental",
+        "PGA"
+      ],
+      "combined_file_section_hints": [
+        "plano ambiental",
+        "gestão ambiental",
+        "conformidade ambiental",
+        "impactos ambientais",
+        "normas ambientais"
+      ],
+      "typically_combined": true,
+      "notes": "Frequentemente aparece como seção dentro de uma proposta técnica ou estudo de viabilidade maior, não como documento autônomo."
+    },
+
+    {
+      "document_id": "rio-LicAmbiental-001",
+      "document_name_pt": "Licença Ambiental Prévia (ou Diretrizes Ambientais)",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifacts 1.5-rio-001 (Rio) e 1.5-tcdf-002 (TCDF, mesmo documento físico)",
+      "filing_context": "Emitida pelo órgão ambiental competente. Obrigatória para lançamento da licitação PPP. Quadro 12 (p. 48) do Manual Rio e Art. 4º, III da IN 01/2024 TCDF.",
+      "filename_patterns": [
+        "*licenca*ambiental*",
+        "*LAP*",
+        "*diretriz*ambiental*",
+        "*licenciamento*ambiental*"
+      ],
+      "heading_patterns": [
+        "Licença Ambiental Prévia",
+        "LAP",
+        "Diretrizes Ambientais",
+        "Licenciamento Ambiental"
+      ],
+      "combined_file_section_hints": [
+        "licença ambiental",
+        "LAP",
+        "INEA",
+        "SMAC",
+        "diretrizes ambientais",
+        "licenciamento"
+      ],
+      "typically_combined": false,
+      "cross_jurisdiction_note": "Referenciado por Rio Manual (artifact 1.5-rio-001) e TCDF IN 01/2024 (artifact 1.5-tcdf-002, Art. 4º III). É o mesmo documento físico; o registro é único sob jurisdiction_layer rio_manual.",
+      "notes": "Pode chegar como Diretrizes Ambientais fixadas pelo órgão ambiental se a licença plena ainda não foi emitida no momento da avaliação."
+    },
+
+    {
+      "document_id": "rio-DDAmbiental-001",
+      "document_name_pt": "Due Diligence Ambiental",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.5-rio-002",
+      "filing_context": "Análise de passivos e riscos ambientais que podem inviabilizar a implementação. Item 2 (p. 14) do Manual Rio.",
+      "filename_patterns": [
+        "*due*diligence*ambiental*",
+        "*DD*ambiental*",
+        "*passivo*ambiental*",
+        "*auditoria*ambiental*"
+      ],
+      "heading_patterns": [
+        "Due Diligence Ambiental",
+        "Passivo Ambiental",
+        "Auditoria Ambiental",
+        "Riscos Ambientais"
+      ],
+      "combined_file_section_hints": [
+        "due diligence ambiental",
+        "passivo ambiental",
+        "risco ambiental",
+        "auditoria ambiental"
+      ],
+      "typically_combined": false,
+      "notes": null
+    },
+
+    {
+      "document_id": "rio-DDRegulatorio-001",
+      "document_name_pt": "Due Diligence Regulatória",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.6-rio-002",
+      "filing_context": "Análise legal sobre propriedade de terrenos e riscos técnicos que afetam o escopo. Item 10 (p. 44) do Manual Rio.",
+      "filename_patterns": [
+        "*due*diligence*regulatorio*",
+        "*DD*regulatorio*",
+        "*due*diligence*legal*",
+        "*analise*regulatoria*"
+      ],
+      "heading_patterns": [
+        "Due Diligence Regulatória",
+        "Análise Regulatória",
+        "Due Diligence Legal",
+        "Verificação de Riscos Regulatórios"
+      ],
+      "combined_file_section_hints": [
+        "due diligence regulatória",
+        "risco regulatório",
+        "propriedade",
+        "terrenos",
+        "análise legal"
+      ],
+      "typically_combined": false,
+      "notes": "Pode estar integrado ao Data Room ou ser documento autônomo. Verifique sobreposição com rio-DataRoom-001."
+    },
+
+    {
+      "document_id": "rio-DataRoom-001",
+      "document_name_pt": "Data Room de Licitação",
+      "jurisdiction_layer": "rio_manual",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.6-rio-001",
+      "filing_context": "Disponibilização de dados sobre contratos anteriores, passivos e sucessões relevantes para o projeto. Item 7.1.4 (p. 27) do Manual Rio.",
+      "filename_patterns": [
+        "*data*room*",
+        "*dataroom*",
+        "*indice*documentos*",
+        "*repositorio*licitacao*"
+      ],
+      "heading_patterns": [
+        "Data Room",
+        "Repositório de Documentos",
+        "Índice de Documentos",
+        "Pacote de Informações"
+      ],
+      "combined_file_section_hints": [
+        "data room",
+        "repositório",
+        "contratos anteriores",
+        "passivos",
+        "histórico contratual"
+      ],
+      "typically_combined": false,
+      "notes": "O Data Room é frequentemente um índice ou conjunto de documentos disponibilizados ao mercado durante a licitação. Em avaliações de processos em curso, pode estar parcialmente disponível."
+    },
+
+    {
+      "document_id": "tcdf-QuestionarioAnexoI-001",
+      "document_name_pt": "Questionário / Formulário TCDF — Anexo I (IN 01/2024)",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifacts: 1.1-tcdf-002 (item 2), 1.2-tcdf-001 (item 26), 1.3-tcdf-002 (item 9), 1.4-tcdf-001 (item 17), 1.4-tcdf-002 (item 11), 1.5-tcdf-001 (item 18), 1.6-tcdf-001 (item 4), 1.6-tcdf-002 (item 14)",
+      "filing_context": "Formulário estruturado submetido ao TCDF conforme Anexo I da IN 01/2024. Contém múltiplos itens que cobrem diferentes sub-tasks do M5D. Documento combinado por natureza.",
+      "filename_patterns": [
+        "*questionario*TCDF*",
+        "*formulario*TCDF*",
+        "*Anexo*I*IN*01*2024*",
+        "*checklist*TCDF*"
+      ],
+      "heading_patterns": [
+        "Questionário TCDF",
+        "Formulário TCDF",
+        "Anexo I",
+        "IN 01/2024"
+      ],
+      "combined_file_section_hints": [
+        "Resumo Executivo",
+        "item 2",
+        "Compatibilidade com o PPA",
+        "item 26",
+        "Planilha de Melhorias Esperadas",
+        "item 9",
+        "Relatório de Impacto Social",
+        "item 11",
+        "Matriz de Organizações Afetadas",
+        "item 4",
+        "Relatório de Interdependências",
+        "item 14",
+        "Checklist de ODS",
+        "item 17",
+        "Avaliação de Impacto Ambiental e Social",
+        "AIAS",
+        "item 18"
+      ],
+      "typically_combined": true,
+      "known_sections": [
+        {"item_ref": "item 2",  "title_pt": "Resumo Executivo",                          "acao1_artifacts": ["1.1-tcdf-002"]},
+        {"item_ref": "item 4",  "title_pt": "Matriz de Organizações Afetadas",            "acao1_artifacts": ["1.6-tcdf-001"]},
+        {"item_ref": "item 9",  "title_pt": "Planilha de Melhorias Esperadas",            "acao1_artifacts": ["1.3-tcdf-002"]},
+        {"item_ref": "item 11", "title_pt": "Relatório de Impacto Social (Gênero)",       "acao1_artifacts": ["1.4-tcdf-002"]},
+        {"item_ref": "item 14", "title_pt": "Relatório de Interdependências",             "acao1_artifacts": ["1.6-tcdf-002"]},
+        {"item_ref": "item 17", "title_pt": "Checklist de ODS e Padrões IFC",             "acao1_artifacts": ["1.4-tcdf-001"]},
+        {"item_ref": "item 18", "title_pt": "Avaliação de Impacto Ambiental e Social (AIAS)", "acao1_artifacts": ["1.5-tcdf-001"]},
+        {"item_ref": "item 26", "title_pt": "Demonstrativo de Compatibilidade com o PPA", "acao1_artifacts": ["1.2-tcdf-001"]},
+        {"item_ref": "item 82", "title_pt": "Minuta de Edital/Contrato (referência)",     "acao1_artifacts": ["1.4-tcdf-003"], "note": "Item 82 referencia a Minuta como documento anexo — o documento físico é tcdf-MinutaEdital-001"}
+      ],
+      "notes": "Principal documento combinado do sistema TCDF. A maioria dos artefatos TCDF de Ação 1 são seções deste formulário. Use known_sections para localizar a seção específica dentro do arquivo."
+    },
+
+    {
+      "document_id": "tcdf-RelDiagnostico-001",
+      "document_name_pt": "Relatório Diagnóstico da Situação Atual",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.1-tcdf-001",
+      "filing_context": "Documento que descreve as necessidades a satisfazer e as condições técnicas atuais. Art. 4º, I, 'a' da IN 01/2024 TCDF.",
+      "filename_patterns": [
+        "*diagnostico*situacao*atual*",
+        "*relatorio*diagnostico*",
+        "*diagnostico*necessidade*"
+      ],
+      "heading_patterns": [
+        "Relatório Diagnóstico",
+        "Diagnóstico da Situação Atual",
+        "Análise da Situação Atual",
+        "Levantamento de Demanda"
+      ],
+      "combined_file_section_hints": [
+        "diagnóstico",
+        "situação atual",
+        "necessidades",
+        "demanda",
+        "condições técnicas atuais"
+      ],
+      "typically_combined": false,
+      "notes": null
+    },
+
+    {
+      "document_id": "tcdf-RelFundamentado-001",
+      "document_name_pt": "Relatório Fundamentado de Justificativa",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.1-tcdf-003",
+      "filing_context": "Justificativa da escolha do projeto considerando a política pública setorial. Art. 4º, I, 'd' da IN 01/2024 TCDF.",
+      "filename_patterns": [
+        "*relatorio*fundamentado*",
+        "*justificativa*fundamentada*",
+        "*relatorio*justificativa*"
+      ],
+      "heading_patterns": [
+        "Relatório Fundamentado",
+        "Justificativa Fundamentada",
+        "Análise de Conveniência e Oportunidade",
+        "Fundamentação do Projeto"
+      ],
+      "combined_file_section_hints": [
+        "fundamentação",
+        "conveniência e oportunidade",
+        "política pública setorial",
+        "justificativa"
+      ],
+      "typically_combined": false,
+      "notes": null
+    },
+
+    {
+      "document_id": "tcdf-RelAdmissibilidade-001",
+      "document_name_pt": "Relatório de Admissibilidade",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.2-tcdf-002",
+      "filing_context": "Parecer jurídico e técnico inicial sobre a forma de desestatização e seu enquadramento legal. Art. 4º, I, 'g' da IN 01/2024 TCDF.",
+      "filename_patterns": [
+        "*admissibilidade*",
+        "*relatorio*admissibilidade*",
+        "*parecer*admissibilidade*"
+      ],
+      "heading_patterns": [
+        "Relatório de Admissibilidade",
+        "Parecer de Admissibilidade",
+        "Análise de Admissibilidade",
+        "Enquadramento Legal"
+      ],
+      "combined_file_section_hints": [
+        "admissibilidade",
+        "desestatização",
+        "enquadramento legal",
+        "forma de contratação"
+      ],
+      "typically_combined": false,
+      "notes": null
+    },
+
+    {
+      "document_id": "tcdf-RelObjetivos-001",
+      "document_name_pt": "Relatório de Objetivos e Resultados",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.3-tcdf-001",
+      "filing_context": "Indicação preliminar dos resultados esperados, ganhos globais e vantagens da contratação. Art. 4º, I, 'c' da IN 01/2024 TCDF.",
+      "filename_patterns": [
+        "*objetivos*resultados*",
+        "*relatorio*objetivos*",
+        "*metas*indicadores*"
+      ],
+      "heading_patterns": [
+        "Relatório de Objetivos e Resultados",
+        "Objetivos e Resultados Esperados",
+        "Ganhos e Vantagens",
+        "Resultados Esperados"
+      ],
+      "combined_file_section_hints": [
+        "objetivos",
+        "resultados esperados",
+        "ganhos globais",
+        "vantagens da contratação",
+        "indicadores"
+      ],
+      "typically_combined": false,
+      "notes": null
+    },
+
+    {
+      "document_id": "tcdf-MinutaEdital-001",
+      "document_name_pt": "Minuta de Edital / Contrato",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.4-tcdf-003",
+      "filing_context": "Previsão de obrigações contratuais ligadas à igualdade de gênero e inclusão. Referenciada em Anexo I, item 82 do Questionário TCDF. O documento físico é separado do Questionário.",
+      "filename_patterns": [
+        "*minuta*edital*",
+        "*minuta*contrato*",
+        "*draft*contrato*",
+        "*edital*licitacao*"
+      ],
+      "heading_patterns": [
+        "Minuta de Edital",
+        "Minuta de Contrato",
+        "Edital de Licitação",
+        "Contrato de Concessão"
+      ],
+      "combined_file_section_hints": [
+        "minuta",
+        "edital",
+        "contrato de concessão",
+        "cláusulas contratuais",
+        "obrigações contratuais"
+      ],
+      "typically_combined": false,
+      "notes": "O Questionário TCDF (item 82) pede confirmação de que a minuta foi elaborada. O documento físico da minuta em si é este registro — separado do formulário."
+    },
+
+    {
+      "document_id": "tcdf-AnaliseInfluencia-001",
+      "document_name_pt": "Análise de Influência Cruzada",
+      "jurisdiction_layer": "tcdf_in_01_2024",
+      "prd_reference": "FR-008 step 1/2 candidate — artifact 1.6-tcdf-003",
+      "filing_context": "Avaliação de impacto em outros projetos em desenvolvimento pelo Poder Concedente. Art. 16, IV da IN 01/2024 TCDF.",
+      "filename_patterns": [
+        "*influencia*cruzada*",
+        "*analise*influencia*",
+        "*interdependencia*projetos*",
+        "*conflito*projetos*"
+      ],
+      "heading_patterns": [
+        "Análise de Influência Cruzada",
+        "Influência Cruzada",
+        "Análise de Interdependências de Projetos",
+        "Conflito entre Projetos"
+      ],
+      "combined_file_section_hints": [
+        "influência cruzada",
+        "conflito de projetos",
+        "interdependência",
+        "projetos em desenvolvimento",
+        "impacto em outros projetos"
+      ],
+      "typically_combined": false,
+      "notes": "Documento de grau Baixo / tipo Contextual (ver VERIFICATION_FR008_action1.md). Evidência de apoio — menor peso no ranking de recuperação."
+    }
+
+  ]
+}

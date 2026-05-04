@@ -48,7 +48,7 @@ Use this as the "we are here" line before EPIC drafting.
 | Retrieval / NFR-008 / OQ-005 | `Plan/07_RETRIEVAL/` — boundary + satisficing + vector options + `OQ-005_resolution.md` |
 | Ação 1 crosswalk | `Plan/06_Models/crosswalk/` — templates + verification |
 | Reference ingest spike | `src/maturity_check/` + `maturity-check` CLI; trace in `pre_epic_implementation_trace.md` |
-| Dev setup inventory | `Plan/02_SETUP/installation_inventory.md` |
+| Dev setup inventory | `Plan/09_SETUP/installation_inventory.md` |
 | Ollama | You confirmed install **worked** — ready for later FR-009/010/021 wiring per EPIC |
 
 **Confirmed next step (engineering):** run the **EPIC drafting prompt** with **PRD + readiness + constraint bundle** as inputs, *after* Section 1 boundaries are explicit.  
@@ -136,7 +136,7 @@ Do **not** chain automatically; one deliberate run, then human review.
 | 1 | Complete **Section 1** boundaries (above) | You |
 | 2 | Assemble **Section 2** files in the tool you use (Cursor chat, Copilot, etc.) | You |
 | 3 | Run EPIC drafting prompt with instructions: *"Generate EPIC(s) traceable to PRD; respect readiness + boundary docs; first implementation vertical Ação 1; defer full 46-action build to backlog; no numeric SLO invention; **structure EPICs so implementation can ship in small strategic chunks with explicit gates + evidence**."* | You + model |
-| 4 | Save EPIC output to repo (e.g. `Plan/03_EPIC/` or name agreed in repo) | You |
+| 4 | Save EPIC output to repo (e.g. `Plan/02_EPIC/` or name agreed in repo) | You |
 | 5 | Run **scope/traceability** pass using gates **2A-B** in `UNIVERSAL_PHASE_GATES.md` | You |
 | 6 | Fix gaps or regenerate targeted sections only | You + model |
 | 7 | Only then: **MDAP** / architecture prompts (separate runs) | Per gates doc |

@@ -418,11 +418,7 @@ Acceptance criteria: For an evaluated sub-task with an overlay, the report or AP
 Source: Crosswalk operational visibility — complements FR-014.
 
 FR-015 [MUST]: The system shall flag evaluation results that
-meet one of four defined conditions: MISSING DOCUMENT (expected
-document not uploaded), MISSING INFORMATION (document present
-but required content absent), CONFLICTING INFORMATION
-(contradictory evidence found across documents), or UNCERTAINTY
-(confidence score below 0.70 on the evaluation record per OQ-006).
+meet one of four defined conditions: MISSING DOCUMENT (expected document not uploaded), MISSING INFORMATION (document present but required content absent), CONFLICTING INFORMATION (contradictory evidence found across documents), or UNCERTAINTY (confidence score below 0.70 on the evaluation record per OQ-006).
 
 Acceptance criteria: When any flag condition is met, the system
 attaches the flag to the relevant evaluation record with a

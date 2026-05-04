@@ -79,7 +79,15 @@ FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-008A, FR-008B
    - **Acceptance criteria (slice)**:
      - [ ] For Ação 1, the system can surface sub-task identifiers and texts needed by downstream retrieval/evaluation without manual transcription
    - **Evidence**: Example output artifact mapping Ação 1 sub-tasks to framework store entries
-3. **Slice 3 — Version tagging (behavior-only)**
+3. **Slice 3 — Crosswalk artifact data loaded into queryable store**
+   - **Scope**: Crosswalk JSON for in-scope actions is loaded into a queryable store providing `tipo`, `grau`, `artifact_id`, `intencao` (by source), `complement_text_pt`, and `expected_output_text_pt` per sub-task
+   - **Traceability**: FR-001, FR-008A, FR-009
+   - **Acceptance criteria (slice)**:
+     - [ ] Given a sub-task identifier, the system returns all crosswalk artifact rows for that sub-task (artifact_id, jurisdiction_layer, tipo, grau)
+     - [ ] Given a sub-task identifier, the system returns the `intencao` text per source in `compose_order` (used as retrieval hook query text by EPIC-004)
+     - [ ] Given a sub-task identifier, the system returns `complement_text_pt` (null or populated) for use in evaluation context (OQ-002)
+   - **Evidence**: CLI/demo output showing crosswalk query for Ação 1 sub-task 1.2 (has complement) and sub-task 1.1 (null complement)
+4. **Slice 4 — Version tagging (behavior-only)**
    - **Scope**: Records include a framework version label; do not implement a full versioning mechanism beyond what is required to not break old records
    - **Traceability**: NFR-007 [ASSUMPTION]
    - **Acceptance criteria (slice)**:
@@ -269,7 +277,7 @@ So that the system evaluates the correct requirements set.
      - [ ] Classification records the method used (filename/title/semantic) per artifact mapping decision
    - **Evidence**: Example artifact mapping record showing method
 2. **Slice 2 — Crosswalk pooled hooks for Ação 1**
-   - **Scope**: Use crosswalk overlay to produce pooled hook list per sub-task (Rio primary; TCDF secondary breadth)
+   - **Scope**: Use crosswalk overlay to produce a pooled hook list per sub-task, with Rio as the authority anchor and TCDF as vocabulary/semantic breadth — not a sequential queue
    - **Traceability**: FR-008A
    - **Acceptance criteria (slice)**:
      - [ ] Retrieval inputs include pooled hooks aligned to crosswalk for the sub-task
@@ -281,11 +289,11 @@ So that the system evaluates the correct requirements set.
      - [ ] For a query, system returns ranked candidate segments with both sparse and dense inputs and a fused ordering
    - **Evidence**: Retrieval run artifact with ranked list + fused scores
 4. **Slice 4 — Expansion + satisficing**
-   - **Scope**: Implement early exit rules and tier expansion protocol without inventing thresholds
+   - **Scope**: Implement early exit rules and tier expansion protocol; satisficing threshold is a resolved PRD constant
    - **Traceability**: FR-008B (MUST), FR-008C (SHOULD)
    - **Acceptance criteria (slice)**:
-     - [ ] When satisficing conditions are met, expansion ceases and is logged
-     - [ ] When not met, tier expansion proceeds in documented order and budget
+     - [ ] Satisficing fires when tipo = Direta AND grau = Alto AND confidence ≥ 0.90 (FR-008B + OQ-006, resolved constant); expansion ceases and the trigger is logged
+     - [ ] When not met, tier expansion proceeds in documented order (Direta → Indireta → Contextual; Alto → Médio → Baixo within each tipo) and within defined budget
    - **Evidence**: Retrieval decision log showing stop/continue reasons
 5. **Slice 5 — Retrieval audit log + dispositions**
    - **Scope**: Persist replayable retrieval decision logs and per-artifact dispositions (hit/weak/none) where overlay exists
@@ -315,7 +323,8 @@ I want the system to retrieve candidate evidence segments for each sub-task usin
 So that evaluation is based on the best available evidence without manual searching.
 
 **Acceptance Criteria**
-- [ ] For each sub-task, retrieval uses pooled hooks derived from the applicable jurisdiction overlay (crosswalk).  
+- [ ] For each sub-task, retrieval uses pooled hooks derived from the applicable jurisdiction overlay (crosswalk); hook query text is assembled from the `intencao` field per source, in `compose_order`.  
+- [ ] All hooks (Rio + TCDF) are used as a pooled set — not a sequential queue; no hook set is exhausted before the other is consulted (FR-008A).  
 - [ ] Retrieval uses hybrid sparse + dense methods and produces a deterministic fused ranking of candidate segments.  
 - [ ] The fusion method and constants are documented and do not change implicitly between runs.
 
@@ -329,7 +338,8 @@ So that evaluation is efficient while still thorough when needed.
 **Acceptance Criteria**
 - [ ] If early-exit conditions are met for a sub-task, retrieval expansion stops and the reason is recorded.  
 - [ ] If early-exit conditions are not met, retrieval expands in the defined tier order and within defined budgets.  
-- [ ] Any thresholds marked pilot-calibrated are treated as measurement tasks until calibrated (no invented values).
+- [ ] Satisficing fires at confidence ≥ 0.90 (PRD FR-008B + OQ-006, resolved constant — not pilot-calibrated).  
+- [ ] The pilot-calibrated values are `retrieval_floor_stage2` (initial band 0.35–0.50) and hit/weak/none disposition cutoffs only; these are deferred measurement tasks until first runnable pipeline.
 
 **References:** FR-008B, FR-008C, NFR-006
 
@@ -337,7 +347,7 @@ So that evaluation is efficient while still thorough when needed.
 
 ## EPIC-005: Evaluation engine (presence + quality) with output assurance and uncertainty flags
 
-**Derived from:** FR-009, FR-010, FR-011, FR-012, FR-015, FR-021, NFR-002, NFR-005, NFR-006, NFR-008  
+**Derived from:** FR-009, FR-010, FR-011, FR-012, FR-015, FR-021, NFR-001, NFR-002, NFR-005, NFR-006, NFR-008  
 
 **Strategic Goal:** Produce structured sub-task and expected-output evaluations grounded in an approved evidence packet, then validate outputs deterministically before persistence.
 
@@ -347,11 +357,13 @@ So that evaluation is efficient while still thorough when needed.
 
 ## Delivery Slices / Chunks (Mandatory)
 1. **Slice 1 — Evidence packet contract**
-   - **Scope**: Define what constitutes an “approved evidence packet” for evaluation inputs (segments + traceability links)
-   - **Traceability**: FR-008D, FR-014, FR-021
+   - **Scope**: Define what constitutes an “approved evidence packet” for evaluation inputs (segments + traceability links + complement text when applicable)
+   - **Traceability**: FR-008D, FR-009, FR-014, FR-021
    - **Acceptance criteria (slice)**:
      - [ ] Evaluation inputs reference segment identifiers and (when applicable) crosswalk artifact ids
-   - **Evidence**: Example evidence packet artifact
+     - [ ] When the crosswalk record for a sub-task carries a non-null `complement_text_pt`, the complement text is included in the evaluation context (OQ-002)
+     - [ ] When `complement_text_pt` is null, only sub-task text + expected output are used as context (OQ-002 Option A)
+   - **Evidence**: Example evidence packet artifact showing both null and non-null complement cases (e.g., sub-task 1.1 = null; sub-task 1.2 = Quadro 11)
 2. **Slice 2 — Sub-task presence evaluation**
    - **Scope**: Evaluate whether each sub-task is satisfied based on evidence packet
    - **Traceability**: FR-009
@@ -370,12 +382,16 @@ So that evaluation is efficient while still thorough when needed.
    - **Acceptance criteria (slice)**:
      - [ ] Expected output items are evaluated using the retrieval path used for sub-tasks
    - **Evidence**: Example expected-output evaluation record
-5. **Slice 5 — Assurance pass (judge)**
-   - **Scope**: Deterministic validation step after evaluator output and before persistence; apply UNCERTAINTY on failures
+5. **Slice 5 — Assurance pass (judge) + FR-015 flag conditions**
+   - **Scope**: Deterministic validation step after evaluator output and before persistence; raises all four FR-015 flag conditions where applicable
    - **Traceability**: FR-021, FR-015
    - **Acceptance criteria (slice)**:
      - [ ] Persistence occurs only after assurance completes or an explicit, auditor-triggered override is recorded
-   - **Evidence**: Assurance result artifact + example of flagged UNCERTAINTY
+     - [ ] **MISSING DOCUMENT**: raised when FR-008 three-step classification (exact name → approximate name → semantic) finds no acceptable document for a required artifact after exhausting all methods; the sought artifact_id and last attempted method are recorded
+     - [ ] **MISSING INFORMATION**: raised when document(s) are found and classified but the sub-task substance is absent or below threshold; artifact_id is recorded
+     - [ ] **CONFLICTING INFORMATION**: raised by the LLM reasoning/assurance pass when contradictory evidence is detected across retrieved segments; no pre-enumeration of file names required — contradiction is identified at the reasoning step
+     - [ ] **UNCERTAINTY**: raised when assurance pass confidence < 0.70 (OQ-006, resolved constant)
+   - **Evidence**: Assurance result artifact with at least one example of each flag type
 
 ## User Stories
 
@@ -386,10 +402,13 @@ So that I can complete the action evaluation without manual reading of all docum
 
 **Acceptance Criteria**
 - [ ] For each sub-task, the system produces a structured presence/satisfaction output grounded in the approved evidence packet.  
+- [ ] When the crosswalk record carries a non-null `complement_text_pt`, evaluation context includes sub-task text + expected output + complement text (OQ-002).  
+- [ ] When `complement_text_pt` is null, evaluation context uses sub-task text + expected output only (OQ-002 Option A).  
 - [ ] The output includes a confidence value on a 0.0–1.0 scale aligned with NFR-002.  
-- [ ] The output includes evidence references traceable to segment identifiers.
+- [ ] The output includes evidence references traceable to segment identifiers.  
+- [ ] All output text fields (reasoning, evidence excerpts, flag messages) are in Portuguese (NFR-001).
 
-**References:** FR-009, NFR-002
+**References:** FR-009, NFR-001, NFR-002
 
 ### US-012: Evaluate the quality of satisfied sub-tasks and expected outputs
 As a **PERSONA-001**,  
@@ -410,7 +429,10 @@ So that persisted records are consistent, structured, and safe to review.
 
 **Acceptance Criteria**
 - [ ] After FR-009/FR-010 outputs are produced from an approved evidence packet, the system performs a deterministic validation step before persistence.  
-- [ ] If the assurance pass cannot validate the output, the evaluation record carries **UNCERTAINTY** consistent with FR-015 and OQ-006.  
+- [ ] The assurance pass raises **MISSING DOCUMENT** when FR-008 exhausts all three classification methods (exact name → approximate name → semantic) and finds no acceptable document for a required artifact; artifact_id and last method attempted are recorded.  
+- [ ] The assurance pass raises **MISSING INFORMATION** when document(s) are found and classified but the required sub-task substance is absent or below threshold.  
+- [ ] The assurance pass raises **CONFLICTING INFORMATION** when the LLM reasoning step identifies contradictory evidence across retrieved segments.  
+- [ ] The assurance pass raises **UNCERTAINTY** when confidence < 0.70 (OQ-006, resolved constant).  
 - [ ] Persistence occurs only after assurance completes, or after an explicit auditor override is recorded.
 
 **References:** FR-021, FR-015
@@ -419,7 +441,7 @@ So that persisted records are consistent, structured, and safe to review.
 
 ## EPIC-006: Persisted evaluation record, scoring, reporting, review, and lifecycle controls
 
-**Derived from:** FR-002, FR-013, FR-014, FR-016, FR-017, FR-018, FR-019, NFR-003, NFR-004, NFR-005  
+**Derived from:** FR-002, FR-013, FR-014, FR-016, FR-017, FR-018, FR-019, NFR-001, NFR-003, NFR-004, NFR-005  
 
 **Strategic Goal:** Persist structured records with traceability, compute action scores, produce reviewable reports, support annotation and reruns, and allow pausing/resuming.
 
@@ -434,11 +456,13 @@ So that persisted records are consistent, structured, and safe to review.
      - [ ] Persisted evidence items reference segment identifiers and crosswalk artifact ids (or explicit no-overlay)
    - **Evidence**: Example persisted record view
 2. **Slice 2 — Scoring**
-   - **Scope**: Compute action score from persisted, assurance-reviewed fields and weights
+   - **Scope**: Compute action score from persisted, assurance-reviewed fields and weights using the PRD FR-013 four-part formula
    - **Traceability**: FR-002, FR-013
    - **Acceptance criteria (slice)**:
      - [ ] Default weights are 1/N when custom weights absent; sum equals 1
-   - **Evidence**: Score breakdown artifact for Ação 1
+     - [ ] Score applies the FR-013 formula verbatim: sub-task presence (40 pts, distributed by weight) + sub-task quality (20 pts) + expected output presence (20 pts) + expected output quality (20 pts) = 100 pts total
+     - [ ] **[MDAP INHERITANCE NOTE]** MDAP must carry this formula verbatim from PRD FR-013 into module design; do not approximate, reorder, or restructure the four components
+   - **Evidence**: Score breakdown artifact for Ação 1 showing all four components
 3. **Slice 3 — Report generation with explainability separation**
    - **Scope**: Produce action-level report separating facts from narrative
    - **Traceability**: FR-018, NFR-004, PRD constraint C3
@@ -481,6 +505,7 @@ So that the score is consistent across cases and auditors.
 **Acceptance Criteria**
 - [ ] Given an action with N sub-tasks and no custom weights, each sub-task weight is (1/N) and the sum equals 1. **[ASSUMPTION]**  
 - [ ] Given custom weights are provided for all sub-tasks of an action, the system uses those weights instead of defaults. **[ASSUMPTION]**  
+- [ ] The action score uses the FR-013 formula: sub-task presence (40 pts, by weight) + sub-task quality (20 pts) + expected output presence (20 pts) + expected output quality (20 pts) = 100 pts.  
 - [ ] The action score calculation uses the persisted, assurance-reviewed evaluation fields as inputs (no hidden adjustments).
 
 **References:** FR-002, FR-013
@@ -493,9 +518,10 @@ So that I can review and correct conclusions efficiently.
 **Acceptance Criteria**
 - [ ] The report includes scores, flags, and citations as a factual section separate from narrative explanation.  
 - [ ] The report includes auditor annotations in the appropriate context.  
-- [ ] The report content is derived from persisted records and their evidence links (no uncited claims).
+- [ ] The report content is derived from persisted records and their evidence links (no uncited claims).  
+- [ ] The report is produced in Portuguese (NFR-001).
 
-**References:** FR-018, NFR-004, FR-016
+**References:** FR-018, NFR-001, NFR-004, FR-016
 
 ### US-017: Re-run an evaluation and manage evaluation lifecycle state
 As a **PERSONA-001**,  
@@ -615,14 +641,14 @@ Status legend: ✓ Covered, ⚠ Partial (requires follow-up / pilot threshold / 
 | FR-013 | Calculate action score | EPIC-006 | ✓ |
 | FR-014 | Structured evaluation record + links | EPIC-006 | ✓ |
 | FR-014A | Per-artifact disposition hit/weak/none | EPIC-004 | ⚠ |
-| FR-015 | Flag uncertainty / missing info | EPIC-005 | ✓ |
+| FR-015 | Flag conditions: MISSING DOCUMENT / MISSING INFORMATION / CONFLICTING INFORMATION / UNCERTAINTY | EPIC-005 | ✓ |
 | FR-016 | Auditor annotations | EPIC-006 | ⚠ |
 | FR-017 | Auditor triggers re-run | EPIC-006 | ⚠ |
 | FR-018 | Action-level report | EPIC-006 | ✓ |
 | FR-019 | Pause/resume evaluation | EPIC-006 | ⚠ |
 | FR-020 | Superior review access | EPIC-007 | ⚠ |
 | FR-021 | Output assurance pass | EPIC-005 | ✓ |
-| NFR-001 | Portuguese input constraints | EPIC-002 | ✓ |
+| NFR-001 | Portuguese language — inputs + all system outputs | EPIC-002, EPIC-005, EPIC-006 | ✓ |
 | NFR-002 | Confidence scale + records | EPIC-005 | ✓ |
 | NFR-003 | Persistence requirements | EPIC-006 | ✓ |
 | NFR-004 | Separate facts vs narrative | EPIC-006 | ✓ |
@@ -708,14 +734,14 @@ EPIC-007: Superior review access (optional scope)
 | FR-013 | Action score | EPIC-006 | ✓ |
 | FR-014 | Structured record + links | EPIC-006 | ✓ |
 | FR-014A | hit/weak/none disposition | EPIC-004 | ⚠ |
-| FR-015 | Flag uncertainty | EPIC-005 | ✓ |
+| FR-015 | Flag conditions: MISSING DOCUMENT / MISSING INFORMATION / CONFLICTING INFORMATION / UNCERTAINTY | EPIC-005 | ✓ |
 | FR-016 | Auditor annotations | EPIC-006 | ⚠ |
 | FR-017 | Re-run | EPIC-006 | ⚠ |
 | FR-018 | Action report | EPIC-006 | ✓ |
 | FR-019 | Pause/resume | EPIC-006 | ⚠ |
 | FR-020 | Superior access | EPIC-007 | ⚠ |
 | FR-021 | Assurance pass | EPIC-005 | ✓ |
-| NFR-001 | Portuguese input | EPIC-002 | ✓ |
+| NFR-001 | Portuguese language — inputs + all system outputs | EPIC-002, EPIC-005, EPIC-006 | ✓ |
 | NFR-002 | Confidence scale | EPIC-005 | ✓ |
 | NFR-003 | Persistence | EPIC-006 | ✓ |
 | NFR-004 | Facts vs narrative separation | EPIC-006 | ✓ |
@@ -762,7 +788,7 @@ Logical Conflicts:
 
 Missing Information:
 - [THRESHOLD NEEDED] NFR-006 numeric latency SLO (OQ-004) for full pipeline (impacts: EPIC-004, EPIC-005)
-- Pilot calibration values (retrieval floor stage 2; hit/weak/none cutoffs) (impacts: EPIC-004)
+- Pilot calibration values (retrieval_floor_stage2 band 0.35–0.50; hit/weak/none disposition cutoffs) — note: satisficing 0.90 and UNCERTAINTY 0.70 are resolved PRD constants, NOT pilot values (impacts: EPIC-004)
 
 Out-of-Scope Dependencies:
 - (None; PRD out-of-scope list is explicit.)
