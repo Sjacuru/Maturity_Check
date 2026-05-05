@@ -7,7 +7,7 @@ Update it whenever significant decisions are made or status changes.
 
 ## Project Overview
 
-**Name:** M5D Evaluation System
+**Name:** Project Evaluation System
 **Developer:** Solo (Salim / sjacuru@gmail.com)
 **Working directory:** `c:\Users\sanseri\Documents\Projetos\Maturity_Check`
 **GitHub:** https://github.com/Sjacuru/Maturity_Check
@@ -21,7 +21,6 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 
 - **2 Internal Bosses** — non-technical; receive weekly email status + non-tech deliverable docs
 - **Master's Degree Adviser (Professor)** — technical; bi-weekly meetings, receives technical reports
-- Salim is the sole developer
 
 ---
 
@@ -86,6 +85,27 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 | `Plan/07_RETRIEVAL/OQ-005_resolution.md` | LLM architecture decision (local vs Groq) |
 | `Plan/08_TASK_REGISTRY/00_START_HERE.md` | Deliverables summary from 2026-04-28 session |
 | `Plan/06_Models/M5D.md` | M5D framework model |
+
+---
+
+## Ingestion — Current State & Next Steps
+
+### Storage split (confirmed)
+- **SQLite** (`data/framework.sqlite`): source of truth — full chunk text, heading paths, character offsets, hashes. Tables: `reference_documents`, `reference_chunks`.
+- **LanceDB** (`data/lancedb/reference/`): search index — same text + `float32` vectors (dim 384, `paraphrase-multilingual-MiniLM-L12-v2`). Table: `reference_m5d_chunks`. No offsets here.
+
+### M5D ingestion: done
+- `doc_id = "m5d_md_v1"`, `max_chars=3500`, `overlap_chars=350`
+- `start_char`/`end_char` are offsets in the **normalized** text (post `normalize_pdf_headings`) — validation must apply the same normalization step.
+
+### Next: ingest Rio Manual and TCDF IN
+Before ingesting, check these three things per new document:
+1. **Heading patterns** — `normalize_pdf_headings` was written for M5D's PDF-conversion style. Verify whether Rio Manual / TCDF IN produce the same running-header patterns, or add new regex rules.
+2. **Unique `doc_id`** — use stable IDs like `"rio_manual_v1"` and `"tcdf_in_v1"`. The `doc_id` is hardcoded in `m5d_ingest.py`; each new doc needs its own ingest function or a parameterized version.
+3. **Validate after ingestion** — use `start_char`/`end_char` against the normalized source to confirm chunks round-trip correctly before embedding.
+
+### Pending: validate M5D LanceDB chunks
+Before starting new document ingestion, run a visual spot-check of LanceDB chunks to confirm embedding quality and heading_path coverage.
 
 ---
 

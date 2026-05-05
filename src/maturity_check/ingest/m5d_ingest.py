@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+import lancedb
 import numpy as np
+import pyarrow as pa
+from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
 from maturity_check.db import connect_sqlite, init_framework_schema
@@ -103,9 +106,6 @@ def ingest_m5d(
 
     # Optional embeddings into LanceDB (reference index)
     if embed:
-        import lancedb
-        from sentence_transformers import SentenceTransformer
-
         lancedb_dir.mkdir(parents=True, exist_ok=True)
         db = lancedb.connect(str(lancedb_dir))
 
@@ -145,8 +145,6 @@ def ingest_m5d(
 
         if not rows_for_table:
             raise RuntimeError("No chunks to embed; rows_for_table is empty.")
-
-        import pyarrow as pa
 
         schema = pa.schema([
             pa.field("chunk_id", pa.string()),
