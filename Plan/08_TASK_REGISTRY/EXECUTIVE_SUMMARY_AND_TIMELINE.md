@@ -47,7 +47,7 @@
 - ✅ Tarefa 1.3: Ollama + Modelo Mistral
 - ✅ Tarefa 1.4: Dependências Python
 - ✅ Tarefa 1.5: SQLite + LanceDB setup
-- ✅ Tarefa 1.6: Teste E2E básico
+- ✅ Tarefa 1.6: Ollama in background
 - 📊 **Total Horas:** 16–20h
 - 📦 **Deliverables:** 6 screenshots + 6 documentos
 
