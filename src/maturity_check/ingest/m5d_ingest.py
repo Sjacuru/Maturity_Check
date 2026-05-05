@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm
 
 from maturity_check.db import connect_sqlite, init_framework_schema
-from maturity_check.ingest.chunking import chunk_text, iter_markdown_blocks
+from maturity_check.ingest.chunking import chunk_text, iter_markdown_blocks, normalize_pdf_headings
 
 
 def _sha256_text(s: str) -> str:
@@ -43,7 +43,7 @@ def ingest_m5d(
     title = "M5D (markdown reference)"
 
     content_hash = _sha256_file_bytes(m5d_path)
-    md = m5d_path.read_text(encoding="utf-8")
+    md = normalize_pdf_headings(m5d_path.read_text(encoding="utf-8"))
 
     conn = connect_sqlite(sqlite_path)
     init_framework_schema(conn)
@@ -146,10 +146,18 @@ def ingest_m5d(
         if not rows_for_table:
             raise RuntimeError("No chunks to embed; rows_for_table is empty.")
 
-        # Create table from first batch (provides schema including vector dim)
-        tbl = db.create_table(tbl_name, data=rows_for_table[:1], mode="overwrite")
-        if len(rows_for_table) > 1:
-            tbl.add(rows_for_table[1:])
+        import pyarrow as pa
+
+        schema = pa.schema([
+            pa.field("chunk_id", pa.string()),
+            pa.field("doc_id", pa.string()),
+            pa.field("ordinal", pa.int64()),
+            pa.field("heading_path", pa.string()),
+            pa.field("text", pa.string()),
+            pa.field("text_hash", pa.string()),
+            pa.field("vector", pa.list_(pa.float32(), vectors_dim)),
+        ])
+        tbl = db.create_table(tbl_name, data=rows_for_table, schema=schema, mode="overwrite")
 
         # Write a small manifest for reproducibility/audit
         manifest = {

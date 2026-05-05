@@ -7,6 +7,67 @@ from typing import Iterable
 
 _heading_re = re.compile(r"^(#{1,6})\s+(.*)\s*$")
 
+# -- PDF heading normaliser ---------------------------------------------------
+# Matches the M5D (and similarly converted) running book-title header line:
+# "Estruturação de Propostas de Investimento em Infraestrutura - Modelo de 5 Dimensões 4"
+_PDF_BOOK_TITLE_RE = re.compile(
+    r"^Estruturação de Propostas de Investimento em Infraestrutura"
+    r" - Modelo de 5 Dimensões\s+[ivxlcdmIVXLCDM\d]+\s*$"
+)
+# Matches chapter / section running-header lines:
+# "Capítulo 3: Proposta Inicial de Investimento – Dimensão Estratégica"
+_PDF_CHAPTER_RE = re.compile(r"^Capítulo\s+\d+:")
+# Matches action body-heading lines (body = no ToC underscore padding):
+# "Ação 1: Descreva o projeto, seu contexto estratégico e objetivos estratégicos"
+_PDF_ACTION_RE = re.compile(r"^Ação\s+\d+:")
+# ToC action lines always end with underscores and/or a bare page number.
+# e.g. "Ação 4: ... __ 46"  "Ação 17: ... 107"  "Ação 15: ...risco75"
+_PDF_TOC_TRAILING_RE = re.compile(r"_*\s*\d+\s*$")
+
+
+def normalize_pdf_headings(text: str) -> str:
+    """
+    Pre-process PDF-converted markdown to insert # heading markers.
+
+    Designed for M5D-style documents where the PDF conversion produces:
+    - Repeated book-title running headers  → stripped entirely
+    - Chapter/section running headers      → de-duplicated; first occurrence
+                                             becomes a ## heading, the rest
+                                             are dropped (they are page headers)
+    - Action headings (Ação N:) in body   → ### heading (ToC entries are
+                                             identified by trailing underscores
+                                             and left unchanged)
+
+    Reusable for Rio Manual and TCDF IN when converted from PDF with a similar
+    layout. Pass the result directly to iter_markdown_blocks.
+    """
+    lines = text.split("\n")
+    result: list[str] = []
+    seen_chapter_headings: set[str] = set()
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Strip book-title running headers
+        if _PDF_BOOK_TITLE_RE.match(stripped):
+            continue
+
+        # Chapter/section running headers: first occurrence → ## heading; rest dropped
+        if _PDF_CHAPTER_RE.match(stripped):
+            if stripped not in seen_chapter_headings:
+                seen_chapter_headings.add(stripped)
+                result.append(f"## {stripped}")
+            continue
+
+        # Action body headings — ToC entries end with underscores and/or a page number
+        if _PDF_ACTION_RE.match(stripped) and not _PDF_TOC_TRAILING_RE.search(stripped):
+            result.append(f"### {stripped}")
+            continue
+
+        result.append(line)
+
+    return "\n".join(result)
+
 
 @dataclass(frozen=True)
 class Heading:
