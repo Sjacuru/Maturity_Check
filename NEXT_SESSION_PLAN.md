@@ -134,3 +134,9 @@ three sources to build a rich normative context before evaluating the case docum
 | Case-type manifest | ✅ `Plan/06_Models/case_type_manifest/rio_ppp_v1.json` |
 | Crosswalk templates Ação 1 | ✅ `Plan/06_Models/crosswalk/` |
 | EPIC document | ✅ validated and corrected |
+| **OQ-005 architectural decision** | ✅ **Revised 2026-05-06** — external LLM now allowed for reference docs (public); case docs remain local-first |
+
+**LLM backend (revised):**
+- Reference reasoning (M5D / Rio Manual / TCDF IN) → External API (Claude / Groq) — Phase 1
+- Case evaluation (FR-009 / FR-010) → Ollama local — NFR-008
+- Assurance pass (FR-021) → Ollama local, temp=0 — always local

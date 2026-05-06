@@ -9,7 +9,9 @@ This EPIC document decomposes `Plan/01_PRD/prd.md` into deliverable EPICs, with 
 - **PERSONA-002**: Audit Superior / Reviewer (read + annotation only)
 
 **Global constraints (must hold across ALL epics/slices):**
-- **Local-first for case document text** (NFR-008 + OQ-005): no external transmission by default; any external path is explicit opt-in and production-gated.
+- **LLM policy by document publication status** (OQ-005 rev. 2026-05-06):
+  - *Published documents* (reference docs + Phase 1 case docs already in the public record) → external LLM allowed; no residency obligation.
+  - *Unpublished / in-progress project documents* (NFR-008): local-first by default; external transmission requires explicit opt-in, audit log entry, and production-gated legal sign-off.
 - **No invented thresholds** (OQ-004 / NFR-006): record measurements; do not set seconds targets until pilot.
 - **Evidence traceability + auditability**: every persisted evidence item must map to segment/chunk identifiers and crosswalk artifact ids (or explicit “no overlay”).
 - **No autonomous adjudication**: system produces recommendations; auditor is final authority.
@@ -352,7 +354,7 @@ So that evaluation is efficient while still thorough when needed.
 **Strategic Goal:** Produce structured sub-task and expected-output evaluations grounded in an approved evidence packet, then validate outputs deterministically before persistence.
 
 ## Risk / Assumption Field
-- **OQ-005 / NFR-008**: evaluation that consumes case text is local-first; external paths are opt-in and production-gated.
+- **OQ-005 / NFR-008 (publication-status split)**: Phase 1 works with published documents only — external LLM is unrestricted. NFR-008 applies when evaluating **unpublished / in-progress** project documents; those paths are local-first and production-gated.
 - **OQ-004 / NFR-006 [THRESHOLD NEEDED]**: do not invent latency targets; record measured baselines.
 
 ## Delivery Slices / Chunks (Mandatory)
@@ -611,7 +613,7 @@ So that I can validate conclusions before they are recorded.
 
 ## Open Questions / Conflicts / Out-of-Scope Dependencies
 - **Pilot calibration:** `retrieval_floor_stage2`, hit/weak/none cutoffs, and embedding model adjustments are metrics-driven (do not invent). (impacts: EPIC-004)  
-- **OQ-005 production gate:** external inference that consumes case text requires explicit opt-in + audit + legal/security sign-off before production; local-first remains baseline. (impacts: EPIC-002, EPIC-005)  
+- **OQ-005 (rev. 2026-05-06):** Phase 1 uses published documents only — external LLM unrestricted. External inference on **unpublished / in-progress** project documents requires explicit opt-in + audit + legal/security sign-off; local-first baseline applies to those cases. (impacts: EPIC-002, EPIC-005)  
 - **Out of scope reminder:** multi-user workflow management remains out of scope even if it would “improve” review flows. (impacts: EPIC-007)  
 
 ---

@@ -45,9 +45,12 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 
 ## Key Architecture Decisions
 
-- **Local-first** (NFR-008 + OQ-005): no external transmission of case document text by default
-- **LLM Phase 1:** Ollama local (Mistral) — no API calls
-- **LLM Phase 2+:** Groq API optional opt-in fallback
+- **LLM policy by document publication status** (OQ-005 rev. 2026-05-06):
+  - **Phase 1 — published documents** (reference docs + already-shared procurement cases) → external LLM allowed everywhere; no residency restriction
+  - **Future phases — unpublished / in-progress project documents** → local-first per NFR-008; external opt-in requires explicit config + audit log
+- **LLM Phase 1:** External API (Claude / Groq) for all reasoning; embeddings always local
+- **LLM future (unpublished cases):** Ollama local for case evaluation and assurance pass
+- **Embeddings:** Always local (sentence-transformers — case text must never reach embedding API)
 - **Retrieval:** Hybrid BM25 sparse + dense semantic (LanceDB) with deterministic fusion (FR-008D)
 - **Crosswalk:** policy/retrieval layer — not a UI feature (FR-008A)
 - **Output assurance:** single structured judge pass before persistence (FR-021)
@@ -65,8 +68,9 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 | Vector DB | LanceDB |
 | Sparse index | BM25 (whoosh) |
 | Embeddings | sentence-transformers (local) |
-| LLM Phase 1 | Ollama (Mistral, localhost:11434) |
-| LLM Phase 2+ | Groq API (optional) |
+| LLM — Phase 1 (published docs) | External API (Claude / Groq) — all reasoning |
+| LLM — unpublished case docs | Ollama (Mistral, localhost:11434) — local per NFR-008 |
+| LLM — assurance pass (unpublished) | Ollama (Mistral, temp=0) — local per NFR-008 |
 | Web framework | FastAPI |
 | Frontend | Vue.js 3 |
 | CLI | Python argparse |

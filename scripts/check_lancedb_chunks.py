@@ -18,7 +18,7 @@ def main() -> None:
     parser.add_argument("--lancedb-dir", default="data/lancedb/reference", help="LanceDB directory")
     parser.add_argument("--heading", default="Ação 1", help="Substring to filter heading_path (default: 'Ação 1')")
     parser.add_argument("--show-text", action="store_true", help="Print full chunk text (default: first 120 chars)")
-    parser.add_argument("--limit", type=int, default=10, help="Max rows to display in heading filter (default: 10)")
+    parser.add_argument("--limit", type=int, default=0, help="Max rows to display in heading filter (default: 0 = all)")
     args = parser.parse_args()
 
     lancedb_dir = Path(args.lancedb_dir)
@@ -49,23 +49,61 @@ def main() -> None:
 
     df: pd.DataFrame = tbl.to_pandas()
 
-    # Summary: chunks per heading (top level only)
+    # Summary: all heading_paths in document order, indented by depth
     if "heading_path" in df.columns:
-        top_headings = (
-            df["heading_path"]
-            .fillna("(no heading)")
-            .str.split(" > ")
-            .str[0]
-            .value_counts()
-            .head(20)
-        )
-        print("\nChunks by top-level heading (top 20):")
-        for heading, count in top_headings.items():
-            print(f"  {count:4d}  {heading}")
+        df_sorted = df.sort_values("ordinal")
 
-    # Heading filter spot-check
-    mask = df["heading_path"].fillna("").str.contains(args.heading, regex=False)
-    filtered = df[mask].head(args.limit)
+        seen_order: list[str] = []
+        seen_set: set[str] = set()
+        for hp in df_sorted["heading_path"].fillna("(no heading)"):
+            if hp not in seen_set:
+                seen_order.append(hp)
+                seen_set.add(hp)
+
+        import re as _re_sort
+
+        def _heading_sort_key(hp: str) -> tuple:
+            if hp == "(no heading)":
+                return (-1,)
+            segments = hp.split(" > ")
+            key = []
+            for seg in segments:
+                m = _re_sort.search(r"\d+", seg)
+                key.append(int(m.group()) if m else 0)
+            return tuple(key)
+
+        counts = df["heading_path"].fillna("(no heading)").value_counts()
+
+        # depth-0 Ação entries are TOC artifacts (no chapter prefix); separate them
+        content_paths = [hp for hp in seen_order if hp == "(no heading)" or " > " in hp]
+        toc_paths     = [hp for hp in seen_order if hp != "(no heading)" and " > " not in hp]
+
+        content_paths.sort(key=_heading_sort_key)
+        toc_paths.sort(key=_heading_sort_key)
+
+        print("\nContent chunks (logical order):")
+        for hp in content_paths:
+            depth = 0 if hp == "(no heading)" else hp.count(" > ")
+            indent = "  " * depth
+            label = hp.split(" > ")[-1] if " > " in hp else hp
+            print(f"  {counts.get(hp, 0):4d}  {indent}{label}")
+
+        if toc_paths:
+            print("\nTOC artifact chunks (no chapter context — likely table-of-contents lines):")
+            for hp in toc_paths:
+                print(f"  {counts.get(hp, 0):4d}  {hp}")
+
+    # Heading filter — match any segment that starts with term followed by ":", space, or end-of-segment
+    import re as _re
+    _term_pat = _re.compile(r"^" + _re.escape(args.heading) + r"(?:[:\s]|$)")
+
+    def _matches_segment(heading_path: str) -> bool:
+        return any(_term_pat.match(seg) for seg in heading_path.split(" > "))
+
+    mask = df["heading_path"].fillna("").apply(_matches_segment)
+    filtered = df[mask].sort_values("ordinal")
+    if args.limit > 0:
+        filtered = filtered.head(args.limit)
 
     print(f"\n{'='*60}")
     print(f"Filter: heading_path contains '{args.heading}'  ({mask.sum()} matches, showing {len(filtered)})")
