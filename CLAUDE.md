@@ -24,13 +24,14 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 
 ---
 
-## Current Status (as of 2026-05-04)
+## Current Status (as of 2026-05-06)
 
 - PRD: complete, awaiting formal human sign-off
 - EPIC document: drafted (`Plan/02_EPIC/EPIC_DOCUMENT.md`)
 - Phase 1 plan: complete (`Plan/08_TASK_REGISTRY/PHASE_1_DETAILED_PLAN.md`)
 - **We are in Week 1 of Phase 1** (started 2026-04-28)
 - Week 1 goal: environment setup (VS Code, Python 3.11, Ollama, SQLite, LanceDB)
+- `scripts/check_lancedb_chunks.py` — improved and functional; used for M5D chunk validation (see below)
 
 ---
 
@@ -108,8 +109,15 @@ Before ingesting, check these three things per new document:
 2. **Unique `doc_id`** — use stable IDs like `"rio_manual_v1"` and `"tcdf_in_v1"`. The `doc_id` is hardcoded in `m5d_ingest.py`; each new doc needs its own ingest function or a parameterized version.
 3. **Validate after ingestion** — use `start_char`/`end_char` against the normalized source to confirm chunks round-trip correctly before embedding.
 
-### Pending: validate M5D LanceDB chunks
-Before starting new document ingestion, run a visual spot-check of LanceDB chunks to confirm embedding quality and heading_path coverage.
+### M5D LanceDB chunk validation — in progress (2026-05-06)
+`scripts/check_lancedb_chunks.py` is the spot-check tool. Key findings so far:
+
+1. **TOC artifact chunks exist** — ~12 depth-0 heading_paths like `"Ação 7: Defina o escopo..."` (no chapter prefix, text is page numbers). These are table-of-contents lines ingested as real chunks. They will pollute retrieval results and must be filtered out at ingestion time for future documents.
+2. **Ação 15 appears missing** — not present in either content or TOC sections of the summary. Needs verification against `Plan/06_Models/M5D.md`.
+3. **Heading filter rule** — use segment-startswith match (`"Ação 1"` must match `"Ação 1: ..."` but not `"Ação 10: ..."`). Implemented in the script via regex `^{term}(?:[:\s]|$)` per segment after splitting on `" > "`.
+4. **Ordinal ≠ logical order** — TOC entries get low ordinals (appear first in PDF), so sorting by ordinal puts TOC before chapter content. Summary now sorts by numbers extracted from heading segments.
+
+**Next action:** compare `check_lancedb_chunks.py` output against `Plan/06_Models/M5D.md` to identify all missing or malformed Ações before ingesting new documents.
 
 ---
 
