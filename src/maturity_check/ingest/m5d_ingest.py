@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -13,6 +14,78 @@ from tqdm import tqdm
 
 from maturity_check.db import connect_sqlite, init_framework_schema
 from maturity_check.ingest.chunking import chunk_text, iter_markdown_blocks, normalize_pdf_headings
+
+# ---------------------------------------------------------------------------
+# M5D action metadata — stable mapping derived from M5D ToC (46 actions)
+# ---------------------------------------------------------------------------
+
+_PII1 = "Proposta Inicial de Investimento"
+_PII2 = "Proposta Intermediária de Investimento"
+_PCI  = "Proposta Completa de Investimento"
+
+M5D_ACTION_METADATA: dict[int, dict[str, str]] = {
+    # Stage 1 — Proposta Inicial de Investimento
+    1:  {"stage": _PII1, "dimension": "Estratégica"},
+    2:  {"stage": _PII1, "dimension": "Estratégica"},
+    3:  {"stage": _PII1, "dimension": "Estratégica"},
+    4:  {"stage": _PII1, "dimension": "Estratégica"},
+    5:  {"stage": _PII1, "dimension": "Econômica"},
+    6:  {"stage": _PII1, "dimension": "Econômica"},
+    7:  {"stage": _PII1, "dimension": "Econômica"},
+    8:  {"stage": _PII1, "dimension": "Comercial"},
+    9:  {"stage": _PII1, "dimension": "Comercial"},
+    10: {"stage": _PII1, "dimension": "Financeira"},
+    11: {"stage": _PII1, "dimension": "Gerencial"},
+    12: {"stage": _PII1, "dimension": "Gerencial"},
+    13: {"stage": _PII1, "dimension": "Gerencial"},
+    14: {"stage": _PII1, "dimension": "Gerencial"},
+    15: {"stage": _PII1, "dimension": "Gerencial"},
+    16: {"stage": _PII1, "dimension": "Ponto de Transição"},
+    # Stage 2 — Proposta Intermediária de Investimento
+    17: {"stage": _PII2, "dimension": "Estratégica"},
+    18: {"stage": _PII2, "dimension": "Econômica"},
+    19: {"stage": _PII2, "dimension": "Econômica"},
+    20: {"stage": _PII2, "dimension": "Econômica"},
+    21: {"stage": _PII2, "dimension": "Econômica"},
+    22: {"stage": _PII2, "dimension": "Comercial"},
+    23: {"stage": _PII2, "dimension": "Comercial"},
+    24: {"stage": _PII2, "dimension": "Comercial"},
+    25: {"stage": _PII2, "dimension": "Comercial"},
+    26: {"stage": _PII2, "dimension": "Financeira"},
+    27: {"stage": _PII2, "dimension": "Financeira"},
+    28: {"stage": _PII2, "dimension": "Financeira"},
+    29: {"stage": _PII2, "dimension": "Gerencial"},
+    30: {"stage": _PII2, "dimension": "Gerencial"},
+    31: {"stage": _PII2, "dimension": "Gerencial"},
+    32: {"stage": _PII2, "dimension": "Gerencial"},
+    33: {"stage": _PII2, "dimension": "Gerencial"},
+    34: {"stage": _PII2, "dimension": "Gerencial"},
+    35: {"stage": _PII2, "dimension": "Gerencial"},
+    36: {"stage": _PII2, "dimension": "Gerencial"},
+    37: {"stage": _PII2, "dimension": "Ponto de Transição"},
+    38: {"stage": _PII2, "dimension": "Ponto de Transição"},
+    # Stage 3 — Proposta Completa de Investimento
+    39: {"stage": _PCI,  "dimension": "Estratégica"},
+    40: {"stage": _PCI,  "dimension": "Econômica"},
+    41: {"stage": _PCI,  "dimension": "Econômica"},
+    42: {"stage": _PCI,  "dimension": "Comercial"},
+    43: {"stage": _PCI,  "dimension": "Financeira"},
+    44: {"stage": _PCI,  "dimension": "Gerencial"},
+    45: {"stage": _PCI,  "dimension": "Ponto de Transição"},
+    46: {"stage": _PCI,  "dimension": "Ponto de Transição"},
+}
+
+_ACAO_NUM_RE = re.compile(r"(?:^|>)\s*Ação\s+(\d+)(?:[:\s]|$)")
+
+
+def get_action_metadata(heading_path: str | None) -> dict[str, str] | None:
+    """Return {stage, dimension} for the action number found in heading_path, or None."""
+    if not heading_path:
+        return None
+    m = _ACAO_NUM_RE.search(heading_path)
+    if not m:
+        return None
+    return M5D_ACTION_METADATA.get(int(m.group(1)))
 
 
 def _sha256_text(s: str) -> str:
@@ -74,6 +147,7 @@ def ingest_m5d(
 
     for block_start, heading_path, block in iter_markdown_blocks(md):
         windows = chunk_text(block, max_chars=max_chars, overlap_chars=overlap_chars)
+        meta = get_action_metadata(heading_path)
         for start_rel, end_rel, ctext in windows:
             start_char = block_start + start_rel
             end_char = block_start + end_rel
@@ -83,6 +157,8 @@ def ingest_m5d(
                 "doc_id": doc_id,
                 "ordinal": ordinal,
                 "heading_path": heading_path,
+                "stage": meta["stage"] if meta else None,
+                "dimension": meta["dimension"] if meta else None,
                 "start_char": start_char,
                 "end_char": end_char,
                 "text": ctext,
@@ -95,9 +171,11 @@ def ingest_m5d(
     conn.executemany(
         """
         INSERT INTO reference_chunks
-          (chunk_id, doc_id, ordinal, heading_path, start_char, end_char, text, text_hash)
+          (chunk_id, doc_id, ordinal, heading_path, stage, dimension,
+           start_char, end_char, text, text_hash)
         VALUES
-          (:chunk_id, :doc_id, :ordinal, :heading_path, :start_char, :end_char, :text, :text_hash)
+          (:chunk_id, :doc_id, :ordinal, :heading_path, :stage, :dimension,
+           :start_char, :end_char, :text, :text_hash)
         """,
         chunk_rows,
     )
@@ -137,6 +215,8 @@ def ingest_m5d(
                         "doc_id": r["doc_id"],
                         "ordinal": r["ordinal"],
                         "heading_path": r["heading_path"],
+                        "stage": r["stage"],
+                        "dimension": r["dimension"],
                         "text": r["text"],
                         "text_hash": r["text_hash"],
                         "vector": v,
@@ -151,6 +231,8 @@ def ingest_m5d(
             pa.field("doc_id", pa.string()),
             pa.field("ordinal", pa.int64()),
             pa.field("heading_path", pa.string()),
+            pa.field("stage", pa.string()),
+            pa.field("dimension", pa.string()),
             pa.field("text", pa.string()),
             pa.field("text_hash", pa.string()),
             pa.field("vector", pa.list_(pa.float32(), vectors_dim)),

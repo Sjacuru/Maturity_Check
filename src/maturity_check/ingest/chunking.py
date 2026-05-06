@@ -60,8 +60,9 @@ def normalize_pdf_headings(text: str) -> str:
             continue
 
         # Action body headings — ToC entries end with underscores and/or a page number
-        if _PDF_ACTION_RE.match(stripped) and not _PDF_TOC_TRAILING_RE.search(stripped):
-            result.append(f"### {stripped}")
+        if _PDF_ACTION_RE.match(stripped):
+            if not _PDF_TOC_TRAILING_RE.search(stripped):
+                result.append(f"### {stripped}")
             continue
 
         result.append(line)

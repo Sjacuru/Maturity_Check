@@ -253,7 +253,7 @@ Maturity_Check/
 
 #### Entrega / Deliverable:
 📸 **Screenshot:** VS Code File Explorer mostrando estrutura de diretórios completa  
-📄 **Documento:** `PROJECT_STRUCTURE.md` (PT + EN) explicando cada diretório
+📄 **Documento:** `.md` (PT + EN) explicando cada diretório
 
 ---
 

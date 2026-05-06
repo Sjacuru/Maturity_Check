@@ -29,6 +29,8 @@ def init_framework_schema(conn: sqlite3.Connection) -> None:
           doc_id TEXT NOT NULL REFERENCES reference_documents(doc_id) ON DELETE CASCADE,
           ordinal INTEGER NOT NULL,
           heading_path TEXT,
+          stage TEXT,
+          dimension TEXT,
           start_char INTEGER NOT NULL,
           end_char INTEGER NOT NULL,
           text TEXT NOT NULL,
@@ -40,5 +42,15 @@ def init_framework_schema(conn: sqlite3.Connection) -> None:
           ON reference_chunks(doc_id, ordinal);
         """
     )
+
+    # TODO(migration): remove this block after all databases are recreated via
+    # clean re-ingest. Needed only for pre-existing SQLite files that were
+    # created before stage/dimension columns were added to the DDL above.
+    for col in ("stage", "dimension"):
+        try:
+            conn.execute(f"ALTER TABLE reference_chunks ADD COLUMN {col} TEXT")
+        except sqlite3.OperationalError:
+            pass
+
     conn.commit()
 

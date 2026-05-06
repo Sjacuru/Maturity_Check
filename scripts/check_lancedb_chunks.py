@@ -5,10 +5,12 @@ Run from project root:
     python scripts/check_lancedb_chunks.py
     python scripts/check_lancedb_chunks.py --heading "Ação 3"
     python scripts/check_lancedb_chunks.py --show-text
+    python scripts/check_lancedb_chunks.py --coverage
 """
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -19,6 +21,7 @@ def main() -> None:
     parser.add_argument("--heading", default="Ação 1", help="Substring to filter heading_path (default: 'Ação 1')")
     parser.add_argument("--show-text", action="store_true", help="Print full chunk text (default: first 120 chars)")
     parser.add_argument("--limit", type=int, default=0, help="Max rows to display in heading filter (default: 0 = all)")
+    parser.add_argument("--coverage", action="store_true", help="Report which of the 46 M5D actions are present/missing in content chunks")
     args = parser.parse_args()
 
     lancedb_dir = Path(args.lancedb_dir)
@@ -60,15 +63,13 @@ def main() -> None:
                 seen_order.append(hp)
                 seen_set.add(hp)
 
-        import re as _re_sort
-
         def _heading_sort_key(hp: str) -> tuple:
             if hp == "(no heading)":
                 return (-1,)
             segments = hp.split(" > ")
             key = []
             for seg in segments:
-                m = _re_sort.search(r"\d+", seg)
+                m = re.search(r"\d+", seg)
                 key.append(int(m.group()) if m else 0)
             return tuple(key)
 
@@ -93,12 +94,43 @@ def main() -> None:
             for hp in toc_paths:
                 print(f"  {counts.get(hp, 0):4d}  {hp}")
 
+    # Coverage report — which of the 46 M5D actions are present in content chunks
+    if args.coverage:
+        _acao_re = re.compile(r"(?:^|>)\s*Ação\s+(\d+)(?:[:\s]|$)")
+        expected: set[int] = set(range(1, 47))
+        found_content: set[int] = set()
+        found_toc_only: set[int] = set()
+
+        for hp in df["heading_path"].fillna(""):
+            m = _acao_re.search(hp)
+            if not m:
+                continue
+            num = int(m.group(1))
+            if " > " in hp:
+                found_content.add(num)
+            else:
+                found_toc_only.add(num)
+
+        missing = sorted(expected - found_content)
+        toc_only = sorted(found_toc_only - found_content)
+        extra = sorted(found_content - expected)
+
+        print(f"\n{'='*60}")
+        print(f"Coverage: M5D actions in content chunks (expected 1–46)")
+        print(f"{'='*60}")
+        print(f"  Found   : {len(found_content)}/46  — {sorted(found_content)}")
+        print(f"  Missing : {missing if missing else 'none'}")
+        if toc_only:
+            print(f"  TOC only: {toc_only}  (heading exists only as TOC artifact, not in body)")
+        if extra:
+            print(f"  Extra   : {extra}  (action numbers outside 1–46)")
+        sys.exit(0)
+
     # Heading filter — match any segment that starts with term followed by ":", space, or end-of-segment
-    import re as _re
-    _term_pat = _re.compile(r"^" + _re.escape(args.heading) + r"(?:[:\s]|$)")
+    _term_pat = re.compile(r"^" + re.escape(args.heading) + r"(?:[:\s]|$)")
 
     def _matches_segment(heading_path: str) -> bool:
-        return any(_term_pat.match(seg) for seg in heading_path.split(" > "))
+        return any(_term_pat.match(seg.strip()) for seg in heading_path.split(" > "))
 
     mask = df["heading_path"].fillna("").apply(_matches_segment)
     filtered = df[mask].sort_values("ordinal")
