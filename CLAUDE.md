@@ -31,16 +31,17 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 - Phase 1 plan: complete (`Plan/08_TASK_REGISTRY/PHASE_1_DETAILED_PLAN.md`)
 - **We are in Week 1 of Phase 1** (started 2026-04-28)
 - Week 1 goal: environment setup (VS Code, Python 3.11, Ollama, SQLite, LanceDB)
-- **M5D ingestion: subtask-level chunking implemented — 321 chunks, 45/46 coverage**
-- **⚠️ Work machine needs re-ingest** — pull git, delete `data/framework.sqlite`, run `python -m maturity_check.cli ingest-m5d`; expected 321 chunks
+- **Ingestion pipeline enhanced (2026-05-06/07)** — TOC fix, stage/dimension metadata, subtask-level chunking (home machine); work machine needs re-ingest (see below)
+- **PDF-to-MD tooling extracted (2026-05-07)** — removed from this project; lives in a separate standalone system (see Architecture Decisions)
 - To run scripts on Windows (avoids encoding errors): `set PYTHONIOENCODING=utf-8` then call Python directly
 
 ### ⏭️ Where to resume next session
 
-1. **Intra-corpus retrieval test** — validate that subtask-level chunks from M5D return correct results when queried with subtask descriptions. This was agreed but not yet executed. Run dense vector search against `reference_m5d_chunks` using Ação 1 subtask queries and confirm ranking quality before moving to case document ingestion.
-2. **PDF-to-MD converter** — PRD written at `Plan/09_TOOLS/PRD_PDF_TO_MD_CONVERTER.md`. User will use another AI to build the tool and return with a clean `m5d_clean.md`. When the clean file arrives: re-ingest using it as the source, validate against 46 Ações + subtask hierarchy, then retire the `normalize_pdf_headings` heuristics for M5D.
+1. **Work machine re-ingest** — `Plan/09_TOOLS/` removed; pull git, delete `data/framework.sqlite`, run `python -m maturity_check.cli ingest-m5d`; expected 321 chunks, 45/46 coverage.
+2. **Intra-corpus retrieval test** — validate that subtask-level chunks return correct results when queried with subtask descriptions. Run dense vector search on `reference_m5d_chunks` using Ação 1 subtask queries and confirm ranking quality before moving to case document ingestion.
 3. **Continue chunk-by-chunk validation** — stopped at Ação 1. Ação 2 structure understood (subtasks i–ix) but not validated. Resume from `python scripts/dump_chunks.py --heading "Ação 2"`.
 4. **Retrieval pipeline** (`reference_search.py`) — not yet started; implement after ingestion is confirmed clean on both machines.
+5. **Await clean M5D source** — when the Deterministic Semantic Document Reconstruction System delivers `m5d_clean.md`, re-ingest from it, validate 46 Ações + subtask hierarchy, then retire `normalize_pdf_headings` heuristics for M5D.
 
 ---
 
@@ -66,6 +67,7 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 - **Output assurance:** single structured judge pass before persistence (FR-021)
 - **No autonomous agent loops in v1** — system produces recommendations, auditor is final authority
 - **No invented latency thresholds** — measure first (OQ-004 / NFR-006)
+- **PDF-to-MD tooling is a separate system (2026-05-07):** The Deterministic Semantic Document Reconstruction System lives in its own repository. This project consumes its output (`m5d_clean.md`, `rio_manual_clean.md`, etc.) but does not own or build the converter. GitHub issue #[see repo] tracks the dependency.
 
 ---
 
@@ -97,11 +99,10 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 | `Plan/08_TASK_REGISTRY/PHASE_2_DETAILED_PLAN.md` | Block-by-block Phase 2 tasks |
 | `Plan/08_TASK_REGISTRY/EXECUTIVE_SUMMARY_AND_TIMELINE.md` | Summary for stakeholders |
 | `Plan/07_RETRIEVAL/OQ-005_resolution.md` | LLM architecture decision (local vs Groq) |
-| `Plan/08_TASK_REGISTRY/00_START_HERE.md` | Deliverables summary from 2026-04-28 session |
-| `Plan/06_Models/M5D.md` | M5D framework model (raw PDF conversion — will be replaced by clean version) |
-| `Plan/06_Models/M5D_reference.md` | Ground truth: all 46 Ações with stage/dimension mapping |
 | `Plan/07_RETRIEVAL/OQ-007_hybrid_retrieval_strategy.md` | BM25 vs dense vs hybrid decision — read before building `reference_search.py` |
-| `Plan/09_TOOLS/PRD_PDF_TO_MD_CONVERTER.md` | PRD for clean PDF→MD tool — use with another AI to build the converter |
+| `Plan/08_TASK_REGISTRY/00_START_HERE.md` | Deliverables summary from 2026-04-28 session |
+| `Plan/06_Models/M5D.md` | M5D framework model (raw PDF conversion — will be replaced by clean version from separate system) |
+| `Plan/06_Models/M5D_reference.md` | Ground truth: all 46 Ações with stage/dimension mapping |
 | `scripts/check_lancedb_chunks.py` | LanceDB spot-check + coverage tool |
 | `scripts/dump_chunks.py` | Full-text chunk dump for side-by-side comparison with source |
 
@@ -119,7 +120,6 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 - `stage`/`dimension` columns populated for all 45 covered Ações
 - Annexes (Anexo 1–10) each have correct heading paths; no longer absorbed into Ação 46
 - Subtask items (`i.`, `ii.`, `iii.`...) promoted to `####` level — each has its own chunk
-- `start_char`/`end_char` are offsets in the **normalized** text (post `normalize_pdf_headings`)
 - 6 `(no heading)` chunks: cover pages, legal/ISBN, preface, TOC — kept in DB, filtered at query time
 
 ### ⚠️ Work machine re-ingest required (as of 2026-05-07)
@@ -135,7 +135,7 @@ python scripts/check_lancedb_chunks.py --coverage
 Expected result: **321 chunks, 45/46 coverage**.
 
 **Environment notes (work machine):**
-- Conda env: `rel_voto` (Python 3.11)
+- Conda env: `rel_voto` (Python 3.11 — upgraded from 3.9)
 - `pip-system-certs` required for HuggingFace model download through corporate proxy
 - Run scripts via `python` directly (not `conda run`) to avoid Windows UTF-8 encoding errors
 - HuggingFace model cached at `C:\Users\sanseri\.cache\huggingface\hub\`
@@ -149,86 +149,49 @@ Expected result: **321 chunks, 45/46 coverage**.
 | Chapter running headers (`Capítulo N:`) | `_PDF_CHAPTER_RE` | First occurrence → `##`; rest deduplicated |
 | Action body headings (`Ação N:`) | `_PDF_ACTION_RE` | Non-TOC → `###`; TOC (trailing digits/underscores) → dropped |
 | Annex headings (`Anexo N`) | `_PDF_ANNEX_RE` | Non-TOC → `##`; deduplicated; wrapped running-headers detected by prefix match |
-| Subtask items (`i.`, `ii.`, `iii.`...) | `_PDF_SUBTASK_RE` | Promoted to `####`; description line kept as both heading and first body line |
-
-Key fixes applied (2026-05-07):
-- `_PDF_ANNEX_RE`: requires `(?:\s|–|$)` after number — avoids matching inline refs like `"Anexo 9."` in body text
-- `_PDF_TOC_ANNEX_RE`: stricter TOC check for annexes (requires `_{2,}`) — avoids false-positive on `"Princípios do G20"` (G20 ends in digits)
-- `seen_annex_headings`: deduplicates annex running-headers the same way chapters are deduplicated
-- Prefix check: wrapped running-headers (2–3 line wraps, with or without trailing space) are detected as prefixes of known full titles and skipped
-- Trailing-space join: handles the case where first body occurrence is itself wrapped (e.g., Anexo 3)
-- Switched from `for` loop to `while i` (index-based) to enable look-ahead and multi-line joins
-
-### `check_lancedb_chunks.py` — validation tool (as of 2026-05-07)
-- `--coverage`: reports 45/46 Ações present; shows missing list
-- Default run: shows all heading paths in **logical (numeric) order**, indented by depth
-- Content chunks and TOC artifact chunks shown in separate sections
-- `--heading "Ação N"`: exact segment match — `"Ação 1"` does NOT match `"Ação 10"`
-- `--limit 0` (default): no cap on results; `--show-text`: full chunk text
+| Subtask items (`i.`, `ii.`, `iii.`...) | `_PDF_SUBTASK_RE` | Promoted to `####`; description kept as both heading and first body line |
 
 ### Next: ingest Rio Manual and TCDF IN
 Before ingesting each new document:
 1. **Test `normalize_pdf_headings`** against the new file — M5D patterns may not apply; add new regexes if needed
-2. **Check heading wrap patterns** — different PDFs wrap differently; the prefix-dedup logic handles M5D style but verify
-3. **Assign a stable `doc_id`** (e.g., `"rio_manual_v1"`) and create a dedicated ingest function
-4. **Validate after ingestion** — use `check_lancedb_chunks.py` and `validate_sqlite_chunks.py` before proceeding
+2. **Assign a stable `doc_id`** (e.g., `"rio_manual_v1"`) and create a dedicated ingest function
+3. **Validate after ingestion** — use `check_lancedb_chunks.py` and `validate_sqlite_chunks.py` before proceeding
+
+---
+
+## Deterministic Semantic Document Reconstruction System (separate project)
+
+**Decision made: 2026-05-07** — The PDF-to-Markdown converter was extracted out of this project into a standalone system. Rationale: it is a general-purpose tool applicable beyond M5D, and keeping it here bloated the scope of this repo.
+
+**What it does:** Converts PDF-origin documents into clean, structured Markdown with deterministic heading hierarchy — no heuristic normalisation needed downstream.
+
+**Interface to this project:**
+- Input: raw PDF (M5D, Rio Manual, TCDF IN, etc.)
+- Output: clean `.md` file delivered to `Plan/06_Models/` (e.g., `m5d_clean.md`)
+- This project then ingests the clean file directly — `normalize_pdf_headings` heuristics become redundant for M5D once the clean file arrives
+
+**Tracked via:** GitHub issue on this repo (see issue created 2026-05-07) linking to the separate system's repository.
 
 ---
 
 ## Evaluation Pipeline Design — Decisions Made (2026-05-07)
 
-### Chunking strategy: subtask-level (decided and implemented)
-Each Ação is chunked at subtask granularity. The heading hierarchy is:
+### Chunking strategy: subtask-level (implemented)
 ```
 ## Capítulo N                     (chapter)
 ### Ação N: ...                   (action)
-#### [structural section]         (Quem deve trabalhar / O que fazer / Qual resultado)
-##### i. [subtask description]    (individual evaluation criterion)
+#### i. [subtask description]     (individual evaluation criterion)
 ```
-This allows retrieval and scoring at the subtask level, then aggregation up to Ação → Dimensão → Stage → Final report.
+Retrieval and scoring at subtask level → aggregation up to Ação → Dimensão → Stage → Final report.
 
-### Evaluation flow (agreed design, not yet implemented)
-```
-For each Ação:
-  For each subtask (i, ii, iii...):
-    1. Form query = subtask verbatim text + rephrased question
-    2. Retrieve top-K chunks from case document (hybrid BM25 + dense)
-    3. LLM scores subtask: present / partial / absent + confidence
-  Aggregate subtask scores → Ação score
-Aggregate Ação scores → Dimensão → Stage → Final report
-```
+### Evaluation flow (agreed, not yet implemented)
+For each Ação → for each subtask: retrieve top-K from case doc (hybrid BM25 + dense) → LLM scores (present/partial/absent + confidence) → aggregate.
 
 ### Query formulation (decided)
-- Use **both**: subtask verbatim text AND a rephrased question form
-- Example for Ação 1 subtask i: query with `"Escrever uma descrição breve e concisa do motivo pelo qual o projeto é necessário"` + `"O documento descreve o motivo pelo qual o projeto é necessário?"`
+Use both subtask verbatim text AND a rephrased question form.
 
 ### Retrieval strategy (OQ-007, decided)
-- **Always run both BM25 + dense, always fuse** — no routing logic
-- See `Plan/07_RETRIEVAL/OQ-007_hybrid_retrieval_strategy.md` — read this file before building `reference_search.py`
-- BM25 not yet built; build after ingestion is confirmed clean on both machines
-
-### Intra-corpus retrieval test (agreed, not yet executed)
-Before ingesting any case document, validate that:
-1. Dense vector search on M5D chunks returns the correct subtask chunk when queried with that subtask's description
-2. Subtask `i.` of Ação 1 ranks above subtasks `ii.`–`vi.` when queried with subtask i's text
-This confirms the embedding model can distinguish subtasks within the same Ação.
-
-### No-heading chunks (decided)
-The 6 `(no heading)` chunks (cover pages, preface, TOC) are kept in the DB but filtered at query time with `WHERE heading_path IS NOT NULL` — no code change needed now.
-
----
-
-## PDF-to-MD Converter (planned, 2026-05-07)
-
-The current `M5D.md` is a raw PDF conversion carrying artifacts (running headers, sidebars, embedded footnotes, wrapped lines). A clean source file would eliminate all `normalize_pdf_headings` heuristics for M5D.
-
-**Decision:** Build a dedicated PDF-to-Markdown converter tool.
-- PRD written at `Plan/09_TOOLS/PRD_PDF_TO_MD_CONVERTER.md` — complete with examples, edge cases, acceptance tests, and CLI spec
-- User will execute this PRD with another AI and return with `m5d_clean.md`
-- When clean file arrives: re-ingest, validate (321 chunks → likely more with cleaner boundaries), retire `normalize_pdf_headings` for M5D
-- Tool is config-driven (YAML) so it also works for Rio Manual and TCDF IN with different configs
-
-**Scope:** M5D first, then Rio Manual, then TCDF IN — each gets its own config file.
+Always run BM25 + dense, always fuse — no routing. See `Plan/07_RETRIEVAL/OQ-007_hybrid_retrieval_strategy.md`.
 
 ---
 
