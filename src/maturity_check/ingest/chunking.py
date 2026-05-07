@@ -31,6 +31,13 @@ _PDF_TOC_TRAILING_RE = re.compile(r"_*\s*\d+\s*$")
 # Using a stricter pattern to avoid false-positives like "Princípios do G20".
 # e.g. "Anexo 1 – Glossário ____ 199"
 _PDF_TOC_ANNEX_RE = re.compile(r"_{2,}\s*\d+\s*$")
+# Matches subtask items within "O que você deve fazer?" sections.
+# Roman numeral format: "i. ", "ii. ", "iii. ", ... up to "xv. "
+# Covers i–iii, iv, v–viii, ix, x–xiii, xiv, xv (sufficient for M5D, max ~12 subtasks per Ação).
+_PDF_SUBTASK_RE = re.compile(
+    r"^(i{1,3}|iv|vi{0,3}|ix|xi{0,3}|xiv|xv)\.[ \t]",
+    re.IGNORECASE,
+)
 
 
 def normalize_pdf_headings(text: str) -> str:
@@ -120,6 +127,15 @@ def normalize_pdf_headings(text: str) -> str:
 
             seen_annex_headings.add(full_title)
             result.append(f"## {full_title}")
+            i += 1
+            continue
+
+        # Subtask items (i., ii., iii., ...) — promote to #### heading.
+        # Also keep the description as the first body line so single-line subtasks
+        # (where the next line is already another heading) still produce a chunk.
+        if _PDF_SUBTASK_RE.match(stripped):
+            result.append(f"#### {stripped}")
+            result.append(stripped)
             i += 1
             continue
 
