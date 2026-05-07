@@ -24,7 +24,7 @@ Engineering **spikes** may land before the formal EPIC. That is normal: they red
 
 ## Jurisdiction — evaluated cases (v1)
 
-**Rio de Janeiro only** for case documents under evaluation. The **Rio Manual** is the **primary** normative overlay. **IN 01/2024 TCDF** is a **secondary** source in the crosswalk for **synonyms, semantic breadth, and retrieval ranking** — not a second “live” jurisdiction profile for case law in v1.
+**Rio de Janeiro only** for case documents under evaluation. The **Rio Manual** is the **primary** normative overlay. **IN 01/2024 TCDF** is a **secondary** source in the crosswalk for **synonyms, semantic breadth, and retrieval ranking** — not a second “live” jurisdiction profile for case law in v1. Also, the **secondary** source doens't mean it will be used only if the first can't find it, but it will be used to augment the possibility of retrieve more relevant information. This is the semantic expansion from the topic below "Intenção (semantic bridge) — hierarchical storage"
 
 ---
 
