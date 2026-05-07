@@ -24,21 +24,16 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 
 ---
 
-## Current Status (as of 2026-05-06)
+## Current Status (as of 2026-05-07)
 
 - PRD: complete, awaiting formal human sign-off
 - EPIC document: drafted (`Plan/02_EPIC/EPIC_DOCUMENT.md`)
 - Phase 1 plan: complete (`Plan/08_TASK_REGISTRY/PHASE_1_DETAILED_PLAN.md`)
 - **We are in Week 1 of Phase 1** (started 2026-04-28)
 - Week 1 goal: environment setup (VS Code, Python 3.11, Ollama, SQLite, LanceDB)
-- **Ingestion pipeline enhanced (2026-05-06) — session ended, continuing from home computer**
-  - TOC artifact fix applied (`chunking.py`)
-  - `stage`/`dimension` metadata added to SQLite + LanceDB schema
-  - `--coverage` flag added to `check_lancedb_chunks.py`
-  - `Plan/06_Models/M5D_reference.md` created (all 46 Ações structured reference)
-  - Re-ingest completed on work machine: 271 chunks, 45/46 coverage (Ação 15 missing from source)
-  - **Home machine: pull git, follow re-ingest reminder below before continuing**
-- To run scripts on Windows (avoids encoding errors): `set PYTHONIOENCODING=utf-8` then call Python directly, e.g. `python scripts/check_lancedb_chunks.py --heading "Ação 2"`
+- **M5D ingestion validated and clean on home machine (2026-05-07):** 270 chunks, 45/46 coverage
+- **⚠️ Work machine needs re-ingest** — pull git, delete `data/framework.sqlite`, run `python -m maturity_check.cli ingest-m5d`
+- To run scripts on Windows (avoids encoding errors): `set PYTHONIOENCODING=utf-8` then call Python directly, e.g. `python scripts/check_lancedb_chunks.py --coverage`
 
 ---
 
@@ -106,58 +101,67 @@ A document analysis tool that helps Brazilian public auditors evaluate procureme
 - **SQLite** (`data/framework.sqlite`): source of truth — full chunk text, heading paths, character offsets, hashes. Tables: `reference_documents`, `reference_chunks`.
 - **LanceDB** (`data/lancedb/reference/`): search index — same text + `float32` vectors (dim 384, `paraphrase-multilingual-MiniLM-L12-v2`). Table: `reference_m5d_chunks`. No offsets here.
 
-### M5D ingestion: done (re-ingest required — see reminder below)
+### M5D ingestion: clean and validated (home machine, 2026-05-07)
 - `doc_id = "m5d_md_v1"`, `max_chars=3500`, `overlap_chars=350`
-- `start_char`/`end_char` are offsets in the **normalized** text (post `normalize_pdf_headings`) — validation must apply the same normalization step.
-- Schema now includes `stage` and `dimension` columns (added 2026-05-06).
+- **270 chunks**, 45/46 coverage — Ação 15 missing from source (graphics-heavy section, not a code issue)
+- `stage`/`dimension` columns populated for all 45 covered Ações
+- Annexes (Anexo 1–10) each have correct heading paths; no longer absorbed into Ação 46
+- `start_char`/`end_char` are offsets in the **normalized** text (post `normalize_pdf_headings`)
 
-### ⚠️ REMINDER: Re-ingest M5D on home computer (pending as of 2026-05-06)
-Pipeline changes were made on the **work computer** and committed to git. After pulling on the **home computer**, run:
+### ⚠️ Work machine re-ingest required (as of 2026-05-07)
+`chunking.py` was updated on home machine. On work machine, after `git pull`:
 
 ```bash
-# 1. Install package + system certs (corporate proxy fix — do once)
-pip install -e .
-pip install pip-system-certs
+# Delete old database (schema + data incompatible with migration block removed)
+del data\framework.sqlite
 
-# 2. Re-ingest
-maturity-check ingest-m5d
-
-# 3. Validate (run Python directly to avoid conda UTF-8 issues on Windows)
+# Re-ingest
 set PYTHONIOENCODING=utf-8
+python -m maturity_check.cli ingest-m5d
+
+# Validate
 python scripts/check_lancedb_chunks.py --coverage
-python scripts/validate_sqlite_chunks.py
 ```
 
-**Environment notes (work machine, confirmed 2026-05-06):**
-- Conda env: `rel_voto` (upgraded to Python 3.11 — was 3.9, incompatible with `>=3.11` requirement)
-- `pip-system-certs` required to trust corporate proxy CA for HuggingFace model download
-- Run scripts directly via `python` (not `conda run`) to avoid Windows cp1252/UTF-8 encoding errors on Portuguese text
-- HuggingFace model now cached at `C:\Users\sanseri\.cache\huggingface\hub\`
+Expected result: **270 chunks, 45/46 coverage**.
 
-Why re-ingest is required:
-1. **TOC `continue` fix** (`chunking.py`) — TOC `Ação N:` lines now skipped; previous data has ~12 polluted artifact chunks.
-2. **`stage`/`dimension` columns** — new in SQLite + LanceDB schema; existing rows have `NULL` until re-ingest.
-3. **`db.py` migration block** — `ALTER TABLE` in `init_framework_schema` handles pre-existing SQLite. Delete those lines (tagged `TODO(migration)`) once re-ingest is confirmed on **both** machines.
+**Environment notes (work machine):**
+- Conda env: `rel_voto` (Python 3.11)
+- `pip-system-certs` required for HuggingFace model download through corporate proxy
+- Run scripts via `python` directly (not `conda run`) to avoid Windows UTF-8 encoding errors
+- HuggingFace model cached at `C:\Users\sanseri\.cache\huggingface\hub\`
+
+### `chunking.py` — normaliser logic (as of 2026-05-07)
+`normalize_pdf_headings` handles M5D-style PDF-converted markdown:
+
+| Pattern | Detection | Action |
+|---------|-----------|--------|
+| Book-title running headers | `_PDF_BOOK_TITLE_RE` | Stripped entirely |
+| Chapter running headers (`Capítulo N:`) | `_PDF_CHAPTER_RE` | First occurrence → `##`; rest deduplicated |
+| Action body headings (`Ação N:`) | `_PDF_ACTION_RE` | Non-TOC → `###`; TOC (trailing digits/underscores) → dropped |
+| Annex headings (`Anexo N`) | `_PDF_ANNEX_RE` | Non-TOC → `##`; deduplicated; wrapped running-headers detected by prefix match |
+
+Key fixes applied (2026-05-07):
+- `_PDF_ANNEX_RE`: requires `(?:\s|–|$)` after number — avoids matching inline refs like `"Anexo 9."` in body text
+- `_PDF_TOC_ANNEX_RE`: stricter TOC check for annexes (requires `_{2,}`) — avoids false-positive on `"Princípios do G20"` (G20 ends in digits)
+- `seen_annex_headings`: deduplicates annex running-headers the same way chapters are deduplicated
+- Prefix check: wrapped running-headers (2–3 line wraps, with or without trailing space) are detected as prefixes of known full titles and skipped
+- Trailing-space join: handles the case where first body occurrence is itself wrapped (e.g., Anexo 3)
+- Switched from `for` loop to `while i` (index-based) to enable look-ahead and multi-line joins
+
+### `check_lancedb_chunks.py` — validation tool (as of 2026-05-07)
+- `--coverage`: reports 45/46 Ações present; shows missing list
+- Default run: shows all heading paths in **logical (numeric) order**, indented by depth
+- Content chunks and TOC artifact chunks shown in separate sections
+- `--heading "Ação N"`: exact segment match — `"Ação 1"` does NOT match `"Ação 10"`
+- `--limit 0` (default): no cap on results; `--show-text`: full chunk text
 
 ### Next: ingest Rio Manual and TCDF IN
-Before ingesting, check these three things per new document:
-1. **Heading patterns** — `normalize_pdf_headings` was written for M5D's PDF-conversion style. Verify whether Rio Manual / TCDF IN produce the same running-header patterns, or add new regex rules.
-2. **Unique `doc_id`** — use stable IDs like `"rio_manual_v1"` and `"tcdf_in_v1"`. The `doc_id` is hardcoded in `m5d_ingest.py`; each new doc needs its own ingest function or a parameterized version.
-3. **Validate after ingestion** — use `start_char`/`end_char` against the normalized source to confirm chunks round-trip correctly before embedding.
-
-### M5D LanceDB chunk validation — tooling complete (2026-05-06)
-`scripts/check_lancedb_chunks.py` is the spot-check + coverage tool.
-
-- `--coverage` flag: reports which of 46 Ações are present/missing/TOC-only in content chunks.
-- `Plan/06_Models/M5D_reference.md`: structured bilingual reference of all 46 Ações with stage and dimension — ground truth for validation and the mapping dict.
-- Root causes identified and fixed: TOC artifact leak (`chunking.py`), missing `stage`/`dimension` metadata (`m5d_ingest.py` + `db.py`).
-
-**Re-ingest run on work machine (2026-05-06). Results:**
-- 271 chunks ingested, `stage`/`dimension` populated
-- Coverage: **45/46** — Ação 15 confirmed missing from source PDF (short section, mostly diagrams)
-- TOC artifacts: partially resolved — wrapped multi-line ToC titles still slip through (1-char per artifact, correctly labeled, not retrieval-breaking)
-- Ação 46: 80 chunks — Annexes (Anexo 1–10) absorbed into it; not a Phase 1 concern
-- SQLite validator: 11 off-by-one offset mismatches (pre-existing, 1-char diff, identical content — investigate separately)
+Before ingesting each new document:
+1. **Test `normalize_pdf_headings`** against the new file — M5D patterns may not apply; add new regexes if needed
+2. **Check heading wrap patterns** — different PDFs wrap differently; the prefix-dedup logic handles M5D style but verify
+3. **Assign a stable `doc_id`** (e.g., `"rio_manual_v1"`) and create a dedicated ingest function
+4. **Validate after ingestion** — use `check_lancedb_chunks.py` and `validate_sqlite_chunks.py` before proceeding
 
 ---
 

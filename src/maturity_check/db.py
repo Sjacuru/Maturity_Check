@@ -43,14 +43,5 @@ def init_framework_schema(conn: sqlite3.Connection) -> None:
         """
     )
 
-    # TODO(migration): remove this block after all databases are recreated via
-    # clean re-ingest. Needed only for pre-existing SQLite files that were
-    # created before stage/dimension columns were added to the DDL above.
-    for col in ("stage", "dimension"):
-        try:
-            conn.execute(f"ALTER TABLE reference_chunks ADD COLUMN {col} TEXT")
-        except sqlite3.OperationalError:
-            pass
-
     conn.commit()
 

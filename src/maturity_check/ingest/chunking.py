@@ -20,9 +20,17 @@ _PDF_CHAPTER_RE = re.compile(r"^Capítulo\s+\d+:")
 # Matches action body-heading lines (body = no ToC underscore padding):
 # "Ação 1: Descreva o projeto, seu contexto estratégico e objetivos estratégicos"
 _PDF_ACTION_RE = re.compile(r"^Ação\s+\d+:")
-# ToC action lines always end with underscores and/or a bare page number.
+# Matches annex heading lines — requires space/dash/end after the number to avoid
+# matching inline references like "Anexo 9." in body text.
+# "Anexo 1 – Glossário"  "Anexo 10 – Finanças Sustentáveis e o Modelo de Cinco Dimensões"
+_PDF_ANNEX_RE = re.compile(r"^Anexo\s+\d+(?:\s|–|$)")
+# ToC lines for actions end with underscores and/or a bare page number.
 # e.g. "Ação 4: ... __ 46"  "Ação 17: ... 107"  "Ação 15: ...risco75"
 _PDF_TOC_TRAILING_RE = re.compile(r"_*\s*\d+\s*$")
+# ToC lines for annexes always have double underscores before the page number.
+# Using a stricter pattern to avoid false-positives like "Princípios do G20".
+# e.g. "Anexo 1 – Glossário ____ 199"
+_PDF_TOC_ANNEX_RE = re.compile(r"_{2,}\s*\d+\s*$")
 
 
 def normalize_pdf_headings(text: str) -> str:
@@ -37,6 +45,9 @@ def normalize_pdf_headings(text: str) -> str:
     - Action headings (Ação N:) in body   → ### heading (ToC entries are
                                              identified by trailing underscores
                                              and left unchanged)
+    - Annex headings (Anexo N) in body    → ## heading, de-duplicated like
+                                             chapters; wrapped titles (trailing
+                                             space) are joined with next line
 
     Reusable for Rio Manual and TCDF IN when converted from PDF with a similar
     layout. Pass the result directly to iter_markdown_blocks.
@@ -44,12 +55,16 @@ def normalize_pdf_headings(text: str) -> str:
     lines = text.split("\n")
     result: list[str] = []
     seen_chapter_headings: set[str] = set()
+    seen_annex_headings: set[str] = set()
 
-    for line in lines:
+    i = 0
+    while i < len(lines):
+        line = lines[i]
         stripped = line.strip()
 
         # Strip book-title running headers
         if _PDF_BOOK_TITLE_RE.match(stripped):
+            i += 1
             continue
 
         # Chapter/section running headers: first occurrence → ## heading; rest dropped
@@ -57,15 +72,59 @@ def normalize_pdf_headings(text: str) -> str:
             if stripped not in seen_chapter_headings:
                 seen_chapter_headings.add(stripped)
                 result.append(f"## {stripped}")
+            i += 1
             continue
 
         # Action body headings — ToC entries end with underscores and/or a page number
         if _PDF_ACTION_RE.match(stripped):
             if not _PDF_TOC_TRAILING_RE.search(stripped):
                 result.append(f"### {stripped}")
+            i += 1
+            continue
+
+        # Annex headings — deduplicated like chapters.
+        # Strategy: the full title always appears first (body section start).
+        # Running-header occurrences may be wrapped over 2-3 lines without trailing
+        # spaces; detect them by checking if stripped is a prefix of a known title.
+        if _PDF_ANNEX_RE.match(stripped):
+            # Annex ToC entries always have double underscores before page number
+            if _PDF_TOC_ANNEX_RE.search(stripped):
+                i += 1
+                continue
+
+            # Wrapped running header: this line is a strict prefix of a known title
+            if any(known.startswith(stripped) and known != stripped
+                   for known in seen_annex_headings):
+                i += 1
+                continue
+
+            # Exact match: deduplicate
+            if stripped in seen_annex_headings:
+                i += 1
+                continue
+
+            # New heading — join wrapped continuation lines (trailing space heuristic)
+            full_title = stripped
+            while line.rstrip("\n").endswith(" ") and i + 1 < len(lines):
+                next_line = lines[i + 1]
+                next_stripped = next_line.strip()
+                if (not next_stripped
+                        or _PDF_BOOK_TITLE_RE.match(next_stripped)
+                        or _PDF_CHAPTER_RE.match(next_stripped)
+                        or _PDF_ACTION_RE.match(next_stripped)
+                        or _PDF_ANNEX_RE.match(next_stripped)):
+                    break
+                full_title = full_title + " " + next_stripped
+                i += 1
+                line = next_line  # advance so next iteration checks new line's trailing space
+
+            seen_annex_headings.add(full_title)
+            result.append(f"## {full_title}")
+            i += 1
             continue
 
         result.append(line)
+        i += 1
 
     return "\n".join(result)
 
