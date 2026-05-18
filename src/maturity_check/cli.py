@@ -19,12 +19,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(prog="maturity-check")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    ing = sub.add_parser("ingest-m5d", help="Ingest Plan/06_Models/M5D.md into SQLite + optional LanceDB.")
+    ing = sub.add_parser("ingest-m5d", help="Ingest Plan/06_Models/output.md into SQLite + optional LanceDB.")
     ing.add_argument(
         "--m5d-path",
         type=Path,
-        default=Path("Plan/06_Models/M5D.md"),
-        help="Path to M5D.md",
+        default=Path("Plan/06_Models/output.md"),
+        help="Path to reconstructed M5D markdown",
     )
     ing.add_argument(
         "--sqlite-path",

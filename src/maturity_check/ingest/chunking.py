@@ -7,138 +7,204 @@ from typing import Iterable
 
 _heading_re = re.compile(r"^(#{1,6})\s+(.*)\s*$")
 
-# -- PDF heading normaliser ---------------------------------------------------
-# Matches the M5D (and similarly converted) running book-title header line:
-# "Estruturação de Propostas de Investimento em Infraestrutura - Modelo de 5 Dimensões 4"
-_PDF_BOOK_TITLE_RE = re.compile(
-    r"^Estruturação de Propostas de Investimento em Infraestrutura"
-    r" - Modelo de 5 Dimensões\s+[ivxlcdmIVXLCDM\d]+\s*$"
+# -- Heading normaliser for reconstructed-markdown M5D format -----------------
+
+# Separates front matter from main M5D content.
+_CONTENT_ANCHOR_RE = re.compile(r"^#\s+Orientações\s+Detalhadas\s*$", re.IGNORECASE)
+
+# Known M5D stage names (exact match against extracted heading title).
+_M5D_STAGES = frozenset({
+    "Proposta Inicial de Investimento",
+    "Proposta Intermediária de Investimento",
+    "Proposta Completa de Investimento",
+})
+
+# Known M5D dimension names mapped to their canonical form.
+# The document uses "Pontos de Transição" (plural) while metadata uses the singular.
+_M5D_DIMENSIONS: dict[str, str] = {
+    "Dimensão Estratégica":    "Dimensão Estratégica",
+    "Dimensão Econômica":      "Dimensão Econômica",
+    "Dimensão Comercial":      "Dimensão Comercial",
+    "Dimensão Financeira":     "Dimensão Financeira",
+    "Dimensão Gerencial":      "Dimensão Gerencial",
+    "Ponto de Transição":      "Ponto de Transição",
+    "Pontos de Transição":     "Ponto de Transição",   # plural form used in PDF
+}
+
+# Ação heading body: "Ação N: title text..."
+_ACTION_HEADING_RE = re.compile(r"^Ação\s+(\d+)\s*:(.*)")
+
+# Annex headings — break the Ação stack so Annex content is not attributed to Ação 46.
+_ANNEX_HEADING_RE = re.compile(r"^Anexo\s+\d+", re.IGNORECASE)
+
+# Trailing noise fused onto Ação titles by the PDF converter.
+_ACTION_TITLE_NOISE_RE = re.compile(
+    r"(\s+Quem deve trabalhar nisto\??|\s+O que você deve fazer\??|\s+\d{1,3})\s*$",
+    re.IGNORECASE,
 )
-# Matches chapter / section running-header lines:
-# "Capítulo 3: Proposta Inicial de Investimento – Dimensão Estratégica"
-_PDF_CHAPTER_RE = re.compile(r"^Capítulo\s+\d+:")
-# Matches action body-heading lines (body = no ToC underscore padding):
-# "Ação 1: Descreva o projeto, seu contexto estratégico e objetivos estratégicos"
-_PDF_ACTION_RE = re.compile(r"^Ação\s+\d+:")
-# Matches annex heading lines — requires space/dash/end after the number to avoid
-# matching inline references like "Anexo 9." in body text.
-# "Anexo 1 – Glossário"  "Anexo 10 – Finanças Sustentáveis e o Modelo de Cinco Dimensões"
-_PDF_ANNEX_RE = re.compile(r"^Anexo\s+\d+(?:\s|–|$)")
-# ToC lines for actions end with underscores and/or a bare page number.
-# e.g. "Ação 4: ... __ 46"  "Ação 17: ... 107"  "Ação 15: ...risco75"
-_PDF_TOC_TRAILING_RE = re.compile(r"_*\s*\d+\s*$")
-# ToC lines for annexes always have double underscores before the page number.
-# Using a stricter pattern to avoid false-positives like "Princípios do G20".
-# e.g. "Anexo 1 – Glossário ____ 199"
-_PDF_TOC_ANNEX_RE = re.compile(r"_{2,}\s*\d+\s*$")
-# Matches subtask items within "O que você deve fazer?" sections.
-# Roman numeral format: "i. ", "ii. ", "iii. ", ... up to "xv. "
-# Covers i–iii, iv, v–viii, ix, x–xiii, xiv, xv (sufficient for M5D, max ~12 subtasks per Ação).
+
+# Internal section labels appearing as headings within each Ação.
+_INTERNAL_LABEL_RE = re.compile(
+    r"^(Quem deve trabalhar nisto\??|O que você deve fazer\??)$",
+    re.IGNORECASE,
+)
+
+# Subtask items within Ação body — roman numeral list markers.
+# Covers i–iii, iv, v–viii, ix, x–xiii, xiv, xv (sufficient for M5D).
+# Matches both "iii. text" and standalone "iii." (PDF converters often split them).
 _PDF_SUBTASK_RE = re.compile(
-    r"^(i{1,3}|iv|vi{0,3}|ix|xi{0,3}|xiv|xv)\.[ \t]",
+    r"^(i{1,3}|iv|vi{0,3}|ix|xi{0,3}|xiv|xv)\.(?:[ \t]|$)",
     re.IGNORECASE,
 )
 
 
 def normalize_pdf_headings(text: str) -> str:
     """
-    Pre-process PDF-converted markdown to insert # heading markers.
+    Normalise reconstructed-markdown M5D output for ingestion.
 
-    Designed for M5D-style documents where the PDF conversion produces:
-    - Repeated book-title running headers  → stripped entirely
-    - Chapter/section running headers      → de-duplicated; first occurrence
-                                             becomes a ## heading, the rest
-                                             are dropped (they are page headers)
-    - Action headings (Ação N:) in body   → ### heading (ToC entries are
-                                             identified by trailing underscores
-                                             and left unchanged)
-    - Annex headings (Anexo N) in body    → ## heading, de-duplicated like
-                                             chapters; wrapped titles (trailing
-                                             space) are joined with next line
+    Expects input from a PDF-to-markdown converter that marks all headings
+    as level-5 (#####). Produces a clean four-level hierarchy:
 
-    Reusable for Rio Manual and TCDF IN when converted from PDF with a similar
-    layout. Pass the result directly to iter_markdown_blocks.
+      ## Stage name                 (Proposta Inicial / Intermediária / Completa)
+      ### Dimension name            (Estratégica, Econômica, Comercial, etc.)
+      #### Ação N: clean title      (46 actions — trailing noise stripped from title)
+      ##### i. subtask item         (roman-numeral subtask items)
+
+    Front matter (before "# Orientações Detalhadas") is kept with its ##
+    headings intact for general retrieval but excluded from the stage/action
+    hierarchy. Consecutive duplicate headings and plain-text echoes of
+    promoted headings are suppressed.
     """
     lines = text.split("\n")
     result: list[str] = []
-    seen_chapter_headings: set[str] = set()
-    seen_annex_headings: set[str] = set()
+    in_content = False
+
+    seen_stages: set[str] = set()
+    current_stage: str | None = None
+    seen_stage_dim_pairs: set[tuple[str, str]] = set()
+
+    # Tracks the title of the last heading processed so that (a) consecutive
+    # duplicate headings and (b) plain-text echoes of promoted headings are skipped.
+    last_heading_title: str | None = None
 
     i = 0
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
 
-        # Strip book-title running headers
-        if _PDF_BOOK_TITLE_RE.match(stripped):
+        # ── Content section anchor ─────────────────────────────────────
+        if _CONTENT_ANCHOR_RE.match(stripped):
+            in_content = True
             i += 1
             continue
 
-        # Chapter/section running headers: first occurrence → ## heading; rest dropped
-        if _PDF_CHAPTER_RE.match(stripped):
-            if stripped not in seen_chapter_headings:
-                seen_chapter_headings.add(stripped)
-                result.append(f"## {stripped}")
+        # ── Front matter (before anchor) ──────────────────────────────
+        if not in_content:
+            m = _heading_re.match(stripped)
+            if m:
+                level = len(m.group(1))
+                title = m.group(2).strip()
+                if title == last_heading_title:
+                    i += 1
+                    continue
+                last_heading_title = title
+                result.append(f"## {title}" if level <= 2 else title)
+            else:
+                if stripped and stripped == last_heading_title:
+                    last_heading_title = None
+                    i += 1
+                    continue
+                if stripped:
+                    last_heading_title = None
+                result.append(line)
             i += 1
             continue
 
-        # Action body headings — ToC entries end with underscores and/or a page number
-        if _PDF_ACTION_RE.match(stripped):
-            if not _PDF_TOC_TRAILING_RE.search(stripped):
-                result.append(f"### {stripped}")
-            i += 1
-            continue
-
-        # Annex headings — deduplicated like chapters.
-        # Strategy: the full title always appears first (body section start).
-        # Running-header occurrences may be wrapped over 2-3 lines without trailing
-        # spaces; detect them by checking if stripped is a prefix of a known title.
-        if _PDF_ANNEX_RE.match(stripped):
-            # Annex ToC entries always have double underscores before page number
-            if _PDF_TOC_ANNEX_RE.search(stripped):
+        # ── Content section (after anchor) ────────────────────────────
+        m = _heading_re.match(stripped)
+        if m:
+            title = m.group(2).strip()
+            if not title:
                 i += 1
                 continue
 
-            # Wrapped running header: this line is a strict prefix of a known title
-            if any(known.startswith(stripped) and known != stripped
-                   for known in seen_annex_headings):
+            # Suppress consecutive duplicate headings
+            if title == last_heading_title:
+                i += 1
+                continue
+            last_heading_title = title
+
+            # Internal section labels → plain text inside their Ação
+            if _INTERNAL_LABEL_RE.match(title):
+                result.append(title)
                 i += 1
                 continue
 
-            # Exact match: deduplicate
-            if stripped in seen_annex_headings:
+            # Ação heading → #### Ação N: clean title
+            action_m = _ACTION_HEADING_RE.match(title)
+            if action_m:
+                num = action_m.group(1)
+                rest = _ACTION_TITLE_NOISE_RE.sub("", action_m.group(2)).strip()
+                result.append(f"#### Ação {num}: {rest}")
                 i += 1
                 continue
 
-            # New heading — join wrapped continuation lines (trailing space heuristic)
-            full_title = stripped
-            while line.rstrip("\n").endswith(" ") and i + 1 < len(lines):
-                next_line = lines[i + 1]
-                next_stripped = next_line.strip()
-                if (not next_stripped
-                        or _PDF_BOOK_TITLE_RE.match(next_stripped)
-                        or _PDF_CHAPTER_RE.match(next_stripped)
-                        or _PDF_ACTION_RE.match(next_stripped)
-                        or _PDF_ANNEX_RE.match(next_stripped)):
-                    break
-                full_title = full_title + " " + next_stripped
+            # Stage heading → ## (first occurrence per stage only)
+            if title in _M5D_STAGES:
+                if title not in seen_stages:
+                    seen_stages.add(title)
+                    current_stage = title
+                    result.append(f"## {title}")
                 i += 1
-                line = next_line  # advance so next iteration checks new line's trailing space
+                continue
 
-            seen_annex_headings.add(full_title)
-            result.append(f"## {full_title}")
+            # Dimension → ### heading, once per (stage, canonical dimension) pair
+            canonical_dim = _M5D_DIMENSIONS.get(title)
+            if canonical_dim is not None:
+                key = (current_stage or "", canonical_dim)
+                if key not in seen_stage_dim_pairs:
+                    seen_stage_dim_pairs.add(key)
+                    result.append(f"### {canonical_dim}")
+                i += 1
+                continue
+
+            # Annex headings → ## so they break the Ação stack cleanly
+            if _ANNEX_HEADING_RE.match(title):
+                result.append(f"## {title}")
+                i += 1
+                continue
+
+            # Subtask items arriving as headings (converter already marked them)
+            # → keep as ##### and emit body repeat for single-line subtasks.
+            if _PDF_SUBTASK_RE.match(title):
+                result.append(f"##### {title}")
+                result.append(title)
+                i += 1
+                continue
+
+            # All other headings (captions, section scaffolding, etc.) → plain text
+            result.append(title)
             i += 1
             continue
 
-        # Subtask items (i., ii., iii., ...) — promote to #### heading.
-        # Also keep the description as the first body line so single-line subtasks
-        # (where the next line is already another heading) still produce a chunk.
+        # ── Non-heading line ───────────────────────────────────────────
+        # Subtask items in plain text → ##### heading + body repeat so
+        # single-line subtasks still produce a non-empty chunk.
         if _PDF_SUBTASK_RE.match(stripped):
-            result.append(f"#### {stripped}")
+            result.append(f"##### {stripped}")
             result.append(stripped)
+            last_heading_title = None
             i += 1
             continue
 
+        # Skip plain-text echo of last promoted heading
+        if stripped and stripped == last_heading_title:
+            last_heading_title = None
+            i += 1
+            continue
+
+        if stripped:
+            last_heading_title = None
         result.append(line)
         i += 1
 
