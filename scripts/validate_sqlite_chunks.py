@@ -19,7 +19,7 @@ from pathlib import Path
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Validate SQLite reference_chunks against M5D source.")
-    parser.add_argument("--m5d-path", default="Plan/06_Models/M5D.md", help="Path to M5D markdown file")
+    parser.add_argument("--m5d-path", default="Plan/06_Models/output.md", help="Path to M5D markdown file")
     parser.add_argument("--sqlite-path", default="data/framework.sqlite", help="Path to SQLite database")
     parser.add_argument("--doc-id", default="m5d_md_v1", help="doc_id to validate (default: m5d_md_v1)")
     parser.add_argument("--heading", default=None, help="Filter by heading_path substring (optional)")
