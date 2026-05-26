@@ -102,12 +102,14 @@ Full field enumeration deferred to implementation session.
 
 ---
 
-## Open Gaps (tracked in `data/rio_manual/acao_01.json` `_meta.known_gaps`)
+## Open Gaps
 
-1. **Lei Municipal de PPP number** — `regex_variants` is `[]` until confirmed
-2. **PPA management strategy** — cyclic document (4–5 year cycle), not a static law; strategy for referencing specific PPA editions undefined
-3. **`AcaoRioManual` full Pydantic field enumeration** — deferred to implementation session
-4. **Testing strategy for ingestion module** — deferred to implementation session
+| # | Gap | Status |
+|---|---|---|
+| 1 | Lei Municipal de PPP number | ✅ Resolved — Lei Complementar nº 105/2009; `regex_variants` populated, `law_number` set (2026-05-26) |
+| 2 | PPA management strategy — cyclic document, editions undefined | ✅ Resolved — two editions tracked: Lei nº 9.275/2026 (2026–2029) and Lei nº 7.234/2022 (2022–2025); LOA and LDO also added (2026-05-26) |
+| 3 | `AcaoRioManual` full Pydantic field enumeration | ✅ Resolved — enumerated via HITL review, implemented in `rio_manual.py` (2026-05-26) |
+| 4 | Testing strategy for ingestion module | ⏳ Deferred to a future session |
 
 ---
 
