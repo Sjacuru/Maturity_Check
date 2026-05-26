@@ -1,0 +1,3 @@
+# Use BM25 (SQLite FTS5) as the primary retrieval method
+
+Retrieval must be deterministic to satisfy the academic reproducibility requirement — dense vector search is semantic but non-deterministic across model updates and adds external infrastructure. BM25 via SQLite FTS5 with `unicode61 remove_diacritics 2` tokenisation handles partial and misspelled Brazilian Portuguese document names through term frequency, runs entirely in-process, and produces the same results given the same input. We use BM25 as the primary retrieval step; dense vector search is a fallback for when BM25 finds insufficient chunks.

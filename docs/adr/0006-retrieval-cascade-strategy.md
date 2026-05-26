@@ -1,0 +1,3 @@
+# Retrieve in a three-step cascade: exact name → BM25 augmented → dense vector
+
+Case documents use inconsistent naming — some follow Rio Manual conventions exactly, others don't. A single retrieval strategy fails both extremes: exact-match misses garbled names, pure semantic search is non-deterministic. We retrieve in cascade: (1) exact Rio Manual document name match, (2) BM25 augmented search using IPMP expected product sub-items plus Rio Manual names, (3) dense vector fallback. Each step runs only if the previous step returns insufficient results; the cascade stops as soon as enough chunks are found. This makes exact-match the fast path while preserving fallback coverage.

@@ -1,0 +1,3 @@
+# Use IPMP as the primary evaluation reference, not M5D directly
+
+M5D defines 5 dimensions and 46 actions for PPP project maturity, but its criteria are abstract — evaluating against them directly requires LLM interpretation of vague concepts, which introduces hallucination risk. IPMP operationalises each M5D action into concrete expected products (with sub-items a/b/c/d), scored examples (Atendido / Parcialmente / Não Atendido), and rubrics (0/1/3); the LLM has real anchors rather than abstract guidance. We use IPMP as the single source of evaluation logic; M5D is retained only as conceptual background.

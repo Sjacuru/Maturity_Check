@@ -1,0 +1,3 @@
+# Every LLM-proposed score must be validated by a human auditor
+
+LLMs can produce plausible-sounding justifications even when scoring incorrectly; in an academic and public-audit context, every score must be defensible by a person. Full automation was the alternative, but it removes the expert judgment layer required for research validity and removes accountability. The system surfaces evidence — retrieval query, retrieved chunks with source and page, exact prompt, LLM reasoning, uncertainty flag, proposed score — and the auditor confirms or overrides each score. The LLM is an evidence assistant, not the final authority.

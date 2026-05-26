@@ -1,204 +1,230 @@
-# CLAUDE.md — M5D Evaluation System
+# CLAUDE.md — PPP Maturity Check System
 
-This file provides persistent context for Claude Code sessions across machines.
+This file provides persistent context for Claude Code sessions.
 Update it whenever significant decisions are made or status changes.
 
 ---
 
 ## Project Overview
 
-**Name:** Project Evaluation System
+**Name:** PPP Maturity Check System
 **Developer:** Solo (Salim / sjacuru@gmail.com)
 **Working directory:** `c:\Users\sanseri\Documents\Projetos\Maturity_Check`
 **GitHub:** https://github.com/Sjacuru/Maturity_Check
-**Language of docs:** Bilingual PT + EN throughout
+**Language:** Bilingual PT + EN
 
-A document analysis tool that helps Brazilian public auditors evaluate procurement processes against the **Modelo de Cinco Dimensões (M5D)** framework — 46 actions across 3 stages and 5 dimensions. The system retrieves evidence from case documents and produces scored, evidence-backed audit reports for human review.
-
----
-
-## Stakeholders
-
-- **2 Internal Bosses** — non-technical; receive weekly email status + non-tech deliverable docs
-- **Master's Degree Adviser (Professor)** — technical; bi-weekly meetings, receives technical reports
+A system that evaluates Brazilian public procurement (PPP) documents against the
+IPMP framework (Indicador de Percepção de Maturidade de Projetos), producing a
+maturity score for each of 46 actions across 5 IPMP dimensions. The evaluation is
+human-validated — the system surfaces evidence, the auditor confirms scores.
 
 ---
 
-## Current Status (as of 2026-05-07)
+## Strategic Decisions (as of 2026-05-20)
 
-- PRD: complete, awaiting formal human sign-off
-- EPIC document: drafted (`Plan/02_EPIC/EPIC_DOCUMENT.md`)
-- Phase 1 plan: complete (`Plan/08_TASK_REGISTRY/PHASE_1_DETAILED_PLAN.md`)
-- **We are in Week 1 of Phase 1** (started 2026-04-28)
-- Week 1 goal: environment setup (VS Code, Python 3.11, Ollama, SQLite, LanceDB)
-- **Ingestion pipeline enhanced (2026-05-06/07)** — TOC fix, stage/dimension metadata, subtask-level chunking (home machine); work machine needs re-ingest (see below)
-- **PDF-to-MD tooling extracted (2026-05-07)** — removed from this project; lives in a separate standalone system (see Architecture Decisions)
-- To run scripts on Windows (avoids encoding errors): `set PYTHONIOENCODING=utf-8` then call Python directly
-
-### ⏭️ Where to resume next session
-
-1. **Work machine re-ingest** — `Plan/09_TOOLS/` removed; pull git, delete `data/framework.sqlite`, run `python -m maturity_check.cli ingest-m5d`; expected 321 chunks, 45/46 coverage.
-2. **Intra-corpus retrieval test** — validate that subtask-level chunks return correct results when queried with subtask descriptions. Run dense vector search on `reference_m5d_chunks` using Ação 1 subtask queries and confirm ranking quality before moving to case document ingestion.
-3. **Continue chunk-by-chunk validation** — stopped at Ação 1. Ação 2 structure understood (subtasks i–ix) but not validated. Resume from `python scripts/dump_chunks.py --heading "Ação 2"`.
-4. **Retrieval pipeline** (`reference_search.py`) — not yet started; implement after ingestion is confirmed clean on both machines.
-5. **Await clean M5D source** — when the Deterministic Semantic Document Reconstruction System delivers `m5d_clean.md`, re-ingest from it, validate 46 Ações + subtask hierarchy, then retire `normalize_pdf_headings` heuristics for M5D.
-
----
-
-## Timeline
-
-| Phase | Duration | End Date | Goal |
-|-------|----------|----------|------|
-| Phase 1 | 5 weeks (~200h) | 2026-05-29 | MVP: CLI + hybrid retrieval + LLM eval (Ação 1) |
-| Phase 2 | 26 weeks (~1000h) | 2026-11-20 | All 46 M5D actions + Web UI + production deploy |
+1. **Primary reference: IPMP** — operationalises each action into concrete expected
+   products, scoring rubrics (0/1/3), and scored examples
+   (Atendido / Parcialmente / Não Atendido).
+2. **Secondary reference: Rio Manual** — provides document names and procedures
+   used as retrieval hints when searching case documents.
+3. **TCDF IN: dropped.**
+4. **Scoring: 0 / 1 / 3 per action** (46 actions, max = 138 total).
+5. **Retrieval: BM25 primary (SQLite FTS5), deterministic.**
+   Cascade per Ação: (1) exact Rio Manual document name match →
+   (2) BM25 augmented search (IPMP sub-items + Rio Manual names) →
+   (3) dense vector fallback. All three steps in scope for Ação 1.
+6. **LLM: temperature=0, fixed prompt per action.** IPMP criteria + scored
+   examples embedded in prompt. Human auditor validates every score.
+7. **Reproducibility** is the core academic constraint (professor's requirement).
+   BM25 (deterministic retrieval) + temperature=0 = same input → same score.
+8. **Phase 1 scope: Ação 1 only.**
+9. **IPMP ingestion: manual.** PDF structure is mixed text/image; data is static.
+   Expected products sub-items (a/b/c/d) per action become BM25 search queries.
+10. **Development methodology:** CONTEXT.md → ADR → to-PRD → grill-me per module.
+    **Deep modules:** one module fully designed and built before the next begins.
+    No stubs, no parallel tracks, no "fill in later."
 
 ---
 
-## Key Architecture Decisions
+## Auditor Review Interface (7 elements)
 
-- **LLM policy by document publication status** (OQ-005 rev. 2026-05-06):
-  - **Phase 1 — published documents** (reference docs + already-shared procurement cases) → external LLM allowed everywhere; no residency restriction
-  - **Future phases — unpublished / in-progress project documents** → local-first per NFR-008; external opt-in requires explicit config + audit log
-- **LLM Phase 1:** External API (Claude / Groq) for all reasoning; embeddings always local
-- **LLM future (unpublished cases):** Ollama local for case evaluation and assurance pass
-- **Embeddings:** Always local (sentence-transformers — case text must never reach embedding API)
-- **Retrieval:** Hybrid BM25 sparse + dense semantic (LanceDB) with deterministic fusion (FR-008D)
-- **Crosswalk:** policy/retrieval layer — not a UI feature (FR-008A)
-- **Output assurance:** single structured judge pass before persistence (FR-021)
-- **No autonomous agent loops in v1** — system produces recommendations, auditor is final authority
-- **No invented latency thresholds** — measure first (OQ-004 / NFR-006)
-- **PDF-to-MD tooling is a separate system (2026-05-07):** The Deterministic Semantic Document Reconstruction System lives in its own repository. This project consumes its output (`m5d_clean.md`, `rio_manual_clean.md`, etc.) but does not own or build the converter. GitHub issue #[see repo] tracks the dependency.
+For each scored action, the system presents to the human auditor:
+1. IPMP criteria for the action
+2. Retrieval query used
+3. Retrieved chunks (with source document + page number)
+4. Exact LLM prompt sent
+5. LLM reasoning
+6. Uncertainty flag
+7. Proposed score (0 / 1 / 3)
 
 ---
 
-## Tech Stack
+## Project Structure
 
-| Layer | Tool |
-|-------|------|
-| Language | Python 3.11+ / Anaconda |
-| Structured DB | SQLite |
-| Vector DB | LanceDB |
-| Sparse index | BM25 (whoosh) |
-| Embeddings | sentence-transformers (local) |
-| LLM — Phase 1 (published docs) | External API (Claude / Groq) — all reasoning |
-| LLM — unpublished case docs | Ollama (Mistral, localhost:11434) — local per NFR-008 |
-| LLM — assurance pass (unpublished) | Ollama (Mistral, temp=0) — local per NFR-008 |
-| Web framework | FastAPI |
-| Frontend | Vue.js 3 |
-| CLI | Python argparse |
-
----
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| `Plan/01_PRD/prd.md` | Full product requirements |
-| `Plan/02_EPIC/EPIC_DOCUMENT.md` | EPIC breakdown and user stories |
-| `Plan/08_TASK_REGISTRY/PHASE_1_DETAILED_PLAN.md` | Week-by-week Phase 1 tasks |
-| `Plan/08_TASK_REGISTRY/PHASE_2_DETAILED_PLAN.md` | Block-by-block Phase 2 tasks |
-| `Plan/08_TASK_REGISTRY/EXECUTIVE_SUMMARY_AND_TIMELINE.md` | Summary for stakeholders |
-| `Plan/07_RETRIEVAL/OQ-005_resolution.md` | LLM architecture decision (local vs Groq) |
-| `Plan/07_RETRIEVAL/OQ-007_hybrid_retrieval_strategy.md` | BM25 vs dense vs hybrid decision — read before building `reference_search.py` |
-| `Plan/08_TASK_REGISTRY/00_START_HERE.md` | Deliverables summary from 2026-04-28 session |
-| `Plan/06_Models/M5D.md` | M5D framework model (raw PDF conversion — will be replaced by clean version from separate system) |
-| `Plan/06_Models/M5D_reference.md` | Ground truth: all 46 Ações with stage/dimension mapping |
-| `scripts/check_lancedb_chunks.py` | LanceDB spot-check + coverage tool |
-| `scripts/dump_chunks.py` | Full-text chunk dump for side-by-side comparison with source |
-
----
-
-## Ingestion — Current State & Next Steps
-
-### Storage split (confirmed)
-- **SQLite** (`data/framework.sqlite`): source of truth — full chunk text, heading paths, character offsets, hashes. Tables: `reference_documents`, `reference_chunks`.
-- **LanceDB** (`data/lancedb/reference/`): search index — same text + `float32` vectors (dim 384, `paraphrase-multilingual-MiniLM-L12-v2`). Table: `reference_m5d_chunks`. No offsets here.
-
-### M5D ingestion: subtask-level chunking active (home machine, 2026-05-07)
-- `doc_id = "m5d_md_v1"`, `max_chars=3500`, `overlap_chars=350`
-- **321 chunks**, 45/46 coverage — Ação 15 missing from source (graphics-heavy section, not a code issue)
-- `stage`/`dimension` columns populated for all 45 covered Ações
-- Annexes (Anexo 1–10) each have correct heading paths; no longer absorbed into Ação 46
-- Subtask items (`i.`, `ii.`, `iii.`...) promoted to `####` level — each has its own chunk
-- 6 `(no heading)` chunks: cover pages, legal/ISBN, preface, TOC — kept in DB, filtered at query time
-
-### ⚠️ Work machine re-ingest required (as of 2026-05-07)
-`chunking.py` was updated on home machine (subtask + annex fixes). On work machine, after `git pull`:
-
-```bash
-del data\framework.sqlite
-set PYTHONIOENCODING=utf-8
-python -m maturity_check.cli ingest-m5d
-python scripts/check_lancedb_chunks.py --coverage
+```
+Maturity_Check/
+├── CLAUDE.md                    ← this file
+├── CONTEXT.md                   ← domain glossary (filled 2026-05-25)
+├── pyproject.toml               ← Python project packaging
+├── .gitignore
+├── docs/
+│   ├── adr/                     ← Architecture Decision Records (10 filled, next: 0011)
+│   │   ├── 0001-ipmp-as-primary-reference.md
+│   │   ├── 0002-drop-tcdf-in.md
+│   │   ├── 0003-bm25-primary-retrieval.md
+│   │   ├── 0004-llm-temperature-zero-evaluation.md
+│   │   ├── 0005-human-in-the-loop-scoring.md
+│   │   ├── 0006-retrieval-cascade-strategy.md
+│   │   ├── 0007-deterministic-identifiers-exact-match.md
+│   │   ├── 0008-action-level-scoring.md
+│   │   ├── 0009-single-llm-call-per-action.md
+│   │   └── 0010-tolerant-ingestion-loading-strategy.md
+│   ├── MODULE_01_STATE.md       ← ingestion layer full architectural state
+│   └── prompts/
+│       ├── grill-me.md
+│       └── To-PRD.md
+├── _archive/                    ← old design docs — DO NOT USE
+├── src/
+│   └── ingestion/               ← Module 1 (designed, not yet implemented)
+│       ├── __init__.py
+│       ├── ipmp.py
+│       ├── rio_manual.py
+│       └── acronyms.py
+└── data/
+    ├── ipmp/
+    │   └── acao_01.json         ← complete (Phase 1 scope)
+    ├── rio_manual/
+    │   └── acao_01.json         ← complete (schema v1.0, known gaps documented)
+    └── acronyms/
+        └── acronyms.json        ← complete
 ```
 
-Expected result: **321 chunks, 45/46 coverage**.
+---
 
-**Environment notes (work machine):**
-- Conda env: `rel_voto` (Python 3.11 — upgraded from 3.9)
-- `pip-system-certs` required for HuggingFace model download through corporate proxy
-- Run scripts via `python` directly (not `conda run`) to avoid Windows UTF-8 encoding errors
+## ⏭️ Where to Resume
+
+**Current state (2026-05-25):** Module 1 (ingestion layer) design is complete.
+CONTEXT.md is filled. 10 ADRs written. Full architectural state in `docs/MODULE_01_STATE.md`.
+
+**Immediate next steps (in order):**
+1. **Run to-PRD** — invoke skill at `docs/prompts/To-PRD.md` using CONTEXT.md + ADRs 0001–0010.
+2. **Implement Module 1** — build `src/ingestion/` per `docs/MODULE_01_STATE.md`.
+   Start with `ipmp.py` (models + singleton), then `rio_manual.py`, then `acronyms.py`, then `__init__.py`.
+3. **Resolve open gaps before Module 2:**
+   - Lei Municipal de PPP law number (needed for `regex_variants` in `data/rio_manual/acao_01.json`)
+   - PPA management strategy (cyclic document, strategy undefined)
+
+**Module sequence (deep modules — one complete before the next):**
+1. Ingestion (`src/ingestion/`) ← design complete
+2. PDF extraction + chunking
+3. BM25 retrieval (SQLite FTS5)
+4. LLM evaluation (Ollama/Groq, temperature=0)
+5. Auditor review interface (FastAPI)
+6. Vector fallback (LanceDB)
+7. Frontend (Vue.js 3, Phase 2)
+
+**Key reference files:**
+- `docs/MODULE_01_STATE.md` — full ingestion design (decisions, models, boundaries, gaps)
+- `CONTEXT.md` — canonical domain glossary (filled)
+- `docs/adr/` — 10 ADRs, next is `0011-`
+- `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
+- `data/rio_manual/acao_01.json` — Rio Manual retrieval context for Ação 1
+
+---
+
+## Environment
+
+- Conda env: `rel_voto` (Python 3.11)
+- `pip-system-certs` required for HuggingFace downloads through corporate proxy
+- Run scripts via `python` directly (not `conda run`) — avoids Windows UTF-8 errors
+- Set `PYTHONIOENCODING=utf-8` before running scripts
 - HuggingFace model cached at `C:\Users\sanseri\.cache\huggingface\hub\`
 
-### `chunking.py` — normaliser logic (as of 2026-05-07)
-`normalize_pdf_headings` handles M5D-style PDF-converted markdown:
+---
 
-| Pattern | Detection | Action |
-|---------|-----------|--------|
-| Book-title running headers | `_PDF_BOOK_TITLE_RE` | Stripped entirely |
-| Chapter running headers (`Capítulo N:`) | `_PDF_CHAPTER_RE` | First occurrence → `##`; rest deduplicated |
-| Action body headings (`Ação N:`) | `_PDF_ACTION_RE` | Non-TOC → `###`; TOC (trailing digits/underscores) → dropped |
-| Annex headings (`Anexo N`) | `_PDF_ANNEX_RE` | Non-TOC → `##`; deduplicated; wrapped running-headers detected by prefix match |
-| Subtask items (`i.`, `ii.`, `iii.`...) | `_PDF_SUBTASK_RE` | Promoted to `####`; description kept as both heading and first body line |
+## Tools in Use
 
-### Next: ingest Rio Manual and TCDF IN
-Before ingesting each new document:
-1. **Test `normalize_pdf_headings`** against the new file — M5D patterns may not apply; add new regexes if needed
-2. **Assign a stable `doc_id`** (e.g., `"rio_manual_v1"`) and create a dedicated ingest function
-3. **Validate after ingestion** — use `check_lancedb_chunks.py` and `validate_sqlite_chunks.py` before proceeding
+| Layer | Tool |
+|---|---|
+| Language | Python 3.11 / Anaconda |
+| Web framework | FastAPI + uvicorn |
+| Structured DB | SQLite (WAL + FTS5 for BM25) |
+| Vector DB | LanceDB (fallback retrieval only) |
+| PDF extraction | `unstructured[pdf]` (layout-aware, OCR) |
+| Embeddings | sentence-transformers (local, fallback only) |
+| LLM evaluation | Ollama/Mistral (default, local) or Groq (cloud option) |
+| Frontend | Vue.js 3 (Phase 2) |
 
 ---
 
-## Deterministic Semantic Document Reconstruction System (separate project)
+## Methodology
 
-**Decision made: 2026-05-07** — The PDF-to-Markdown converter was extracted out of this project into a standalone system. Rationale: it is a general-purpose tool applicable beyond M5D, and keeping it here bloated the scope of this repo.
+### ADR (`docs/adr/`)
 
-**What it does:** Converts PDF-origin documents into clean, structured Markdown with deterministic heading hierarchy — no heuristic normalisation needed downstream.
+Sequential numbering: `0001-slug.md`. Create directory lazily — only when the first ADR is needed.
 
-**Interface to this project:**
-- Input: raw PDF (M5D, Rio Manual, TCDF IN, etc.)
-- Output: clean `.md` file delivered to `Plan/06_Models/` (e.g., `m5d_clean.md`)
-- This project then ingests the clean file directly — `normalize_pdf_headings` heuristics become redundant for M5D once the clean file arrives
-
-**Tracked via:** GitHub issue on this repo (see issue created 2026-05-07) linking to the separate system's repository.
-
----
-
-## Evaluation Pipeline Design — Decisions Made (2026-05-07)
-
-### Chunking strategy: subtask-level (implemented)
+**Template:**
 ```
-## Capítulo N                     (chapter)
-### Ação N: ...                   (action)
-#### i. [subtask description]     (individual evaluation criterion)
+# {Short title}
+{1-3 sentences: context, decision, why.}
 ```
-Retrieval and scoring at subtask level → aggregation up to Ação → Dimensão → Stage → Final report.
 
-### Evaluation flow (agreed, not yet implemented)
-For each Ação → for each subtask: retrieve top-K from case doc (hybrid BM25 + dense) → LLM scores (present/partial/absent + confidence) → aggregate.
+**Optional sections** (only when they add genuine value):
+- `Status` frontmatter: `proposed | accepted | deprecated | superseded by ADR-NNNN`
+- `Considered Options` — when rejected alternatives are worth remembering
+- `Consequences` — when non-obvious downstream effects need calling out
 
-### Query formulation (decided)
-Use both subtask verbatim text AND a rephrased question form.
+**Numbering:** scan `docs/adr/` for the highest number, increment by one.
 
-### Retrieval strategy (OQ-007, decided)
-Always run BM25 + dense, always fuse — no routing. See `Plan/07_RETRIEVAL/OQ-007_hybrid_retrieval_strategy.md`.
+**When to create — all three must be true:**
+1. Hard to reverse
+2. Surprising without context — a future reader would wonder "why on earth did they do it this way?"
+3. Result of a real trade-off — genuine alternatives existed
+
+**What qualifies:** architectural shape, technology choices with lock-in, boundary/scope decisions (including explicit exclusions), deliberate deviations from the obvious path, constraints not visible in code, rejected alternatives where the rejection is non-obvious.
 
 ---
 
-## Preferences & Working Style
+### CONTEXT.md (root)
 
-- Responses in **English** (docs bilingual PT+EN)
-- Keep responses short and direct
-- No unnecessary comments in code
-- All plan documents are bilingual (PT + EN)
-- Weekly deliverables include: code + screenshots + documentation (for both tech and non-tech audiences)
+Single-context repo — one `CONTEXT.md` at root.
+
+**Template:**
+```
+# {Context Name}
+{One or two sentence description.}
+
+## Language
+**Term**: One-sentence definition of what it IS.
+_Avoid_: rejected synonyms
+
+## Relationships
+- **Term A** produces one or more **Term B**s
+
+## Example dialogue
+> Dev/domain-expert conversation showing terms interacting naturally.
+
+## Flagged ambiguities
+- Term used ambiguously — resolved: clear resolution.
+```
+
+**Rules:**
+- Be opinionated: pick one canonical name, list rejected synonyms under _Avoid_.
+- One sentence per definition. Define what it IS, not what it does.
+- Only project-specific concepts — not general programming terms.
+- Show relationships with cardinality where obvious.
+- Always write an example dialogue.
+- Flag and resolve any term used ambiguously.
+- **CONTEXT.md is a glossary only.** No implementation details, specs, or scratch-pad notes.
+
+---
+
+### grill-me
+
+Prompt file: `docs/prompts/grill-me.md`.
+to-PRD skill: `docs/prompts/To-PRD.md`.
+IPMP reference PDF: `docs/IPMP TCU2026 - Indicador_percepcao_maturidade.pdf`.
+
+Use before designing each new module to stress-test the plan against the domain model and documented decisions. Updates CONTEXT.md and ADRs inline as decisions crystallise — do not batch.
+
+During a grill-me session: challenge terminology against CONTEXT.md, sharpen fuzzy language, stress-test with concrete scenarios, cross-reference with code when relevant.

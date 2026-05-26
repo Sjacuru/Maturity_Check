@@ -1,0 +1,3 @@
+# Scoring is at the action level (0/1/3 per Ação), not the sub-item level
+
+IPMP expected products have sub-items (a/b/c/d) that could suggest per-sub-item scoring, but the IPMP itself scores the entire action as one unit — its rubric (Atendido/Parcialmente/Não Atendido) and scored examples are action-level judgements. Sub-items serve as BM25 query sources and LLM evaluation boundaries (what evidence to look for), not as individual scoring units. The LLM retrieves evidence per sub-item query, then produces one score for the whole action using the IPMP examples as the anchor. The sub-item id is a tracing key for the auditor interface only.
