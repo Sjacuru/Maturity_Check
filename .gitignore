@@ -76,5 +76,12 @@ tmp/
 temp/
 .cache/
 
-# Project data artifacts
-data/
+# Project data artifacts — ignore everything in data/ by default,
+# but track source-of-truth JSON artifacts in known subdirectories.
+# New directories (e.g. case_documents/, pdfs/) remain ignored automatically.
+data/*
+!data/ipmp/
+!data/rio_manual/
+!data/acronyms/
+# Ignore PDFs anywhere under data/ in case they land in a tracked subdirectory
+data/**/*.pdf

@@ -1,0 +1,52 @@
+{
+  "acao_id": 1,
+  "titulo": "Descreva o projeto, seu contexto e os objetivos estratégicos",
+  "dimensao": "Estratégica",
+  "por_que_importante": "Esta é a ação que estrutura toda a lógica inicial do planejamento. Se o problema estiver mal formulado ou os objetivos forem indefinidos, os estudos técnicos tendem a ser conduzidos em função de uma solução previamente escolhida, e não da necessidade real. Esse tipo de inversão é recorrente em estudos de viabilidade que já iniciam com a definição de traçados, métodos construtivos ou tecnologias, sem antes justificar a intervenção, caracterizando a problemática conhecida como deturpação estratégica. Isso ocorre quando os números são propositalmente distorcidos para favorecer uma decisão preconcebida. Como resultado, tem-se uma maior propensão a projetos com baixa efetividade, soluções tecnicamente inadequadas e recursos públicos alocados em empreendimentos de pouca aderência ao interesse coletivo. Quando bem elaborada, esta ação permite estabelecer um fio condutor que orienta os estudos subsequentes, facilita o engajamento das partes interessadas e sustenta tecnicamente as decisões que virão. É a partir dela que se define se o projeto é, de fato, necessário — e com qual propósito.",
+  "descricao_acao": "Descrever o motivo pelo qual o projeto é necessário, de forma a compreender a situação atual, onde se quer chegar e como alcançar os objetivos propostos. Contextualizar o panorama econômico, social e ambiental em que o projeto se enquadra. Definir os objetivos estratégicos do projeto. Validar se o projeto está alinhado com as políticas públicas (indicadores e metas) e estratégicas do setor em médio e longo prazos.",
+  "o_que_esperar": "Descrição clara e interconectada do que é o projeto, o cenário em que ele se desenvolve, compatibilidade com planos setoriais específicos, definição das metas estratégicas que ele pretende atingir e como ele se encaixa dentro do planejamento governamental existente.",
+  "produtos_esperados": [
+    {
+      "id": "1",
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:"
+    },
+    {
+      "id": "1a",
+      "texto": "Descrição concisa dos motivos pelo qual o projeto é necessário, de forma que se possa compreender o que é, qual é a sua natureza e finalidade."
+    },
+    {
+      "id": "1b",
+      "texto": "Descrição do panorama mais amplo em que o projeto se insere, considerando os cenários econômico, social e ambiental relevantes."
+    },
+    {
+      "id": "1c",
+      "texto": "Definição de um conjunto de objetivos estratégicos que o projeto busca alcançar, em questões sociais, ambientais, culturais, geográficas, éticas e/ou políticas."
+    },
+    {
+      "id": "1d",
+      "texto": "Demonstração de como o projeto se conecta e está em consonância com as políticas públicas e estratégias do setor em médio e longo prazos em níveis internacional, nacional, regional, local e setorial, especialmente quanto à aderência do projeto em relação aos instrumentos oficiais de planejamento federal, tais como: PNL (Plano Nacional de Logística), PDE (Plano Decenal de Expansão de Energia), Plansab (Plano Nacional de Saneamento Básico), PNLP (Plano Nacional de Logística Portuária), Plano Aeroviário Nacional, PNH (Plano Nacional de Hidrovias), entre outros, quando for aplicável."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "O EVTEA deve estar tempestivo, refletindo as condições de contorno mais atuais e assegurando que as necessidades públicas e os objetivos estratégicos estejam corretamente fundamentados. A utilização de estudos defasados compromete a coerência do planejamento, reduz a capacidade de demonstrar o alinhamento com políticas públicas vigentes e enfraquece a análise das alternativas disponíveis. A validade do EVTEA deve ser respaldada por justificativa técnica consistente, capaz de demonstrar que suas premissas e resultados permanecem aplicáveis, mesmo diante do transcurso do tempo.",
+    "Caso o projeto tenha sido priorizado, mesmo não constando no PPA vigente, em detrimento de outros formalmente previstos, deve-se incluir justificativa expressa e tecnicamente fundamentada. A ausência no PPA exige documentação clara da decisão, com base em critérios como maior impacto socioeconômico ou atendimento a novas diretrizes normativas. Essa justificativa deve estar formalizada por meio de nota técnica, parecer ou outro documento oficial aprovado pela instância superior de governança."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Um projeto de construção de um contorno rodoviário para desviar o tráfego de carga pesada da área central de um município teve seu EVTEA aprovado. Nesse estudo, além de capítulo específico para demonstrar compatibilidade com plano setorial, houve uma seção dedicada à formulação do problema, à contextualização da intervenção e à definição dos objetivos estratégicos. O estudo demonstrou, com base em dados confiáveis de tráfego, mapeamento urbano e registros de acidentes, que o tráfego intenso de veículos de carga comprometeu a segurança viária e a qualidade de vida no centro urbano. A proposta de construção do contorno esteve alinhada ao Plano Diretor e ao Plano Nacional de Logística, e foi justificada por metas claras, como a redução de conflitos viários, a melhoria do fluxo urbano e a preservação da infraestrutura viária interna."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto de contorno rodoviário em cidade de porte médio, o EVTEA apresentou diagnóstico técnico consistente sobre a necessidade de separação dos tráfegos urbano e de longa distância e sobre os ganhos esperados em mobilidade, com base em dados de origem-destino e simulações de tráfego. A justificativa da intervenção esteve alinhada a diretrizes de mobilidade regional, ainda que não tenha explicitado formalmente o vínculo com planos setoriais. Observou-se uma estruturação clara dos objetivos do empreendimento, com fundamentação técnica adequada, mas houve falha na formalização da vinculação com planos estratégicos."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um estudo referente à implantação de contorno rodoviário em município cortado por rodovia federal apresentou diretamente a proposta de obra, sem qualquer seção dedicada à formulação do problema, à descrição do contexto urbano ou à definição dos objetivos estratégicos. O EVTEA foi elaborado há mais de dez anos, esteve vinculado ao PPA anterior e limitou-se a descrever o traçado pretendido e a estimar os custos da intervenção, sem esclarecer as razões que justificariam a escolha da solução ou sua aderência a planos públicos."
+    }
+  ]
+}

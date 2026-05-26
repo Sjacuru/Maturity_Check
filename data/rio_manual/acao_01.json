@@ -1,0 +1,437 @@
+{
+  "_meta": {
+    "schema_version": "1.1",
+    "last_updated": "2026-05-26",
+    "sources": [
+      "Manual para Pré-Análise, Avaliação, Estruturação e Implementação de PPPs — Vol1 Pré-Análise (Prefeitura do Rio de Janeiro)",
+      "Manual para Pré-Análise, Avaliação, Estruturação e Implementação de PPPs — Vol2 Avaliação (Prefeitura do Rio de Janeiro)"
+    ],
+    "scope": "Additive retrieval context for IPMP Ação 1. Does not duplicate IPMP criteria, scoring rubrics, or scored examples. Provides Rio-specific document names, legal vocabulary, and planning instrument references that appear in Rio PPP case documents.",
+    "known_gaps": []
+  },
+  "acao_id": 1,
+  "document_names": [
+    {
+      "role": "pre_analysis_report",
+      "canonical": "Relatório de Pré-Análise",
+      "variants": [
+        "Relatório de Pré-Análise de Projetos",
+        "Pré-Análise de Projetos",
+        "Relatório de Pré-Avaliação"
+      ],
+      "maps_to_ipmp": ["1a", "1c", "1d"],
+      "minimum_required": true,
+      "source_volume": "Vol1",
+      "notes": "Primary output of the Pré-Análise phase. Must be produced before Avaliação begins. Contains project description, need justification, and policy alignment section. Sections directly relevant to Ação 1: Descrição do Projeto, Necessidades Específicas do Projeto, and the strategic alignment question."
+    },
+    {
+      "role": "general_evaluation_report",
+      "canonical": "Relatório Geral de Avaliação",
+      "variants": [
+        "Relatório de Avaliação",
+        "Relatório de Viabilidade",
+        "Relatório de Avaliação do Projeto"
+      ],
+      "maps_to_ipmp": ["1b", "1c", "1d"],
+      "minimum_required": false,
+      "source_volume": "Vol2",
+      "notes": "Primary output of the Avaliação phase. Proves conveniência e oportunidade and efetivo interesse público (LC 105/2009 art.10,I). Demonstrates observância das diretrizes governamentais through alignment with Plano Estratégico and Lei Orgânica Municipal."
+    },
+    {
+      "role": "socioeconomic_annex",
+      "canonical": "Relatório Geral de Avaliação — Anexo de Análise Socioeconômica",
+      "variants": [
+        "Análise de Viabilidade Socioeconômica",
+        "Estudo de Viabilidade Socioeconômica",
+        "Análise Socioeconômica",
+        "Estudo Socioeconômico",
+        "Anexo Socioeconômico"
+      ],
+      "maps_to_ipmp": ["1b"],
+      "minimum_required": false,
+      "source_volume": "Vol2 §2.3",
+      "notes": "Annex to the Relatório Geral de Avaliação. Justifies efetivo interesse público and describes the economic, social, and environmental panorama. May use ACB (Análise de Custo-Benefício) methodology when quantifiable benefits exist. Referenced in Vol2 §4 (Quadro 9) as the document proving LC 105/2009 art.10,I and art.10,II."
+    },
+    {
+      "role": "data_checklist",
+      "canonical": "Requisição de Informações e Check List de Dados",
+      "variants": [
+        "Check List de Dados",
+        "Checklist de Pré-Análise",
+        "Lista de Dados e Informações",
+        "Requisição de Informações"
+      ],
+      "maps_to_ipmp": ["1a", "1c"],
+      "minimum_required": false,
+      "source_volume": "Vol1 Annexo 1",
+      "notes": "Intake form submitted by órgão promotor to the Unidade de PPP. Items marked (*) are minimum required. Items directly relevant to Ação 1: project description, need justification, policy alignment justification."
+    }
+  ],
+  "law_references": [
+    {
+      "name": "Lei Federal 11.079/2004 (PPP federal)",
+      "regex_variants": [
+        "11\\.079",
+        "11079",
+        "11\\.079[/\\s]?2004",
+        "Lei\\s+n[oº]?\\s*11\\.?079"
+      ],
+      "relevant_articles": [
+        "art.10, I 'a' — demonstração de efetivo interesse público",
+        "art.10, I 'b' e 'c' — previsão no PPA vigente",
+        "art.10, II 'a' a V — vantagem econômica e operacional",
+        "art.10, VII — licença ambiental prévia ou diretrizes para obtenção"
+      ],
+      "maps_to_ipmp": ["1c", "1d"],
+      "source_volume": "Vol2 §4 (Quadro 9)"
+    },
+    {
+      "name": "Lei Federal 8.987/1995 (Concessões Comuns)",
+      "regex_variants": [
+        "8\\.987",
+        "8987",
+        "8\\.987[/\\s]?1995",
+        "Lei\\s+n[oº]?\\s*8\\.?987"
+      ],
+      "relevant_articles": [
+        "general reference for concessões comuns de serviços públicos"
+      ],
+      "maps_to_ipmp": ["1d"],
+      "source_volume": "Vol2 §4, Vol3 p.7"
+    },
+    {
+      "name": "Lei Federal 8.666/1993 (Licitações)",
+      "regex_variants": [
+        "8\\.666",
+        "8666",
+        "8\\.666[/\\s]?1993",
+        "Lei\\s+n[oº]?\\s*8\\.?666"
+      ],
+      "relevant_articles": [
+        "art.38 parágrafo único — revisão jurídica pela PGM antes da publicação do edital",
+        "art.39 — audiência e consulta pública"
+      ],
+      "maps_to_ipmp": [],
+      "source_volume": "Vol1 (MI process), Vol2 §4, Vol3 p.7-8",
+      "notes": "Governs consultant contracting and procurement. Not a direct Ação 1 evidence signal but may appear in case documents describing the MI/PMI process."
+    },
+    {
+      "name": "Lei Complementar Municipal nº 105/2009 (Lei de PPP do Rio de Janeiro)",
+      "law_number": "Lei Complementar nº 105, de 22 de dezembro de 2009",
+      "regex_variants": [
+        "LC\\s*n[oº]?\\.?\\s*105",
+        "L\\.C\\.\\s*n[oº]?\\.?\\s*105",
+        "105[/\\s]?2009",
+        "Lei\\s+Complementar\\s+n[oº]?\\.?\\s*105"
+      ],
+      "relevant_articles": [
+        "art.7, II — CGP approval requirement",
+        "art.10, I — efetivo interesse público e observância das diretrizes governamentais",
+        "art.10, II — vantagem econômica e operacional da proposta",
+        "art.10, III — metas e resultados a serem atingidos",
+        "art.10, IV — efetividade dos indicadores de resultado",
+        "art.10, V — viabilidade de obtenção de ganhos econômicos pelo ente privado",
+        "art.10, VI — amortização do capital investido",
+        "art.10, VII — cumprimento dos requisitos fiscais e orçamentários; previsão no plano plurianual",
+        "art.24 — limite de 3% da receita corrente líquida para contraprestações"
+      ],
+      "maps_to_ipmp": ["1c", "1d"],
+      "source_volume": "Vol2 §3.1, §4 (Quadro 9); Vol3 p.8",
+      "notes": "CRITICAL for Ação 1d: art.10,I requires alignment with políticas municipais (Plano Estratégico) and Lei Orgânica Municipal. Art.10,VII requires PPA inclusion and fiscal compliance (LOA/LDO)."
+    },
+    {
+      "name": "Decreto Municipal 33.733/2011",
+      "regex_variants": [
+        "33\\.733",
+        "33733",
+        "33\\.733[/\\s]?2011",
+        "Decreto\\s+(?:Municipal\\s+)?n[oº]?\\s*33\\.?733"
+      ],
+      "relevant_articles": [
+        "art.3, item 11 — defines Unidade de PPP as secretaria executiva do CGP"
+      ],
+      "maps_to_ipmp": [],
+      "source_volume": "Vol3 p.8",
+      "notes": "Governs Unidade de PPP institutional role. Not a direct Ação 1 evidence signal."
+    },
+    {
+      "name": "Decreto Municipal 32.422/2010",
+      "regex_variants": [
+        "32\\.422",
+        "32422",
+        "32\\.422[/\\s]?2010",
+        "Decreto\\s+(?:Municipal\\s+)?n[oº]?\\s*32\\.?422"
+      ],
+      "relevant_articles": [
+        "art.4 — CGP procedures and manifestação prévia obligations"
+      ],
+      "maps_to_ipmp": [],
+      "source_volume": "Vol3 p.8",
+      "notes": "Governs CGP approval procedures. Not a direct Ação 1 evidence signal."
+    },
+    {
+      "name": "Portaria STN 614/2006",
+      "regex_variants": [
+        "614",
+        "STN\\s*614",
+        "Portaria\\s+(?:STN\\s+)?(?:n[oº]?\\s*)?614"
+      ],
+      "relevant_articles": [
+        "fiscal and accounting treatment for PPP expenses"
+      ],
+      "maps_to_ipmp": ["1d"],
+      "source_volume": "Vol2 §3.1",
+      "notes": "Fiscal compliance requirement for PPP. May appear in case documents as evidence of fiscal alignment per Ação 1d."
+    },
+    {
+      "name": "Plano Plurianual (PPA)",
+      "law_number": "Lei Municipal nº 9.275/2026 (PPA 2026–2029); Lei Municipal nº 7.234/2022 (PPA 2022–2025)",
+      "regex_variants": [
+        "9\\.275",
+        "9\\.275[/\\s]?2026",
+        "Lei\\s+n[oº]?\\s*9\\.?275",
+        "7\\.234",
+        "7\\.234[/\\s]?2022",
+        "Lei\\s+n[oº]?\\s*7\\.?234",
+        "[Pp]lano\\s+[Pp]lurianual",
+        "PPA\\s+20(?:22|23|24|25|26|27|28|29)"
+      ],
+      "relevant_articles": [
+        "LC 105/2009 art.10,VII — previsão no plano plurianual vigente é requisito de admissibilidade",
+        "Lei Federal 11.079/2004 art.10,I 'b' e 'c' — previsão no PPA vigente"
+      ],
+      "maps_to_ipmp": ["1d"],
+      "source_volume": "Vol2 §3.1, §4 (Quadro 9)",
+      "notes": "PPA 2026–2029 instituted by Lei Municipal nº 9.275/2026. PPA 2022–2025 instituted by Lei Municipal nº 7.234/2022. Case documents must demonstrate the project is included in the PPA in force at the time of evaluation."
+    },
+    {
+      "name": "Lei Orçamentária Anual (LOA)",
+      "law_number": "Lei nº 9.276/2026 (LOA 2026); Lei nº 8.797/2025 (LOA 2025); Lei nº 7.902/2023 (LOA 2024); Lei nº 7.674/2022 (LOA 2023)",
+      "regex_variants": [
+        "9\\.276",
+        "9\\.276[/\\s]?2026",
+        "Lei\\s+n[oº]?\\s*9\\.?276",
+        "8\\.797",
+        "8\\.797[/\\s]?2025",
+        "Lei\\s+n[oº]?\\s*8\\.?797",
+        "7\\.902",
+        "7\\.902[/\\s]?202[23]",
+        "Lei\\s+n[oº]?\\s*7\\.?902",
+        "7\\.674",
+        "7\\.674[/\\s]?2022",
+        "Lei\\s+n[oº]?\\s*7\\.?674",
+        "[Ll]ei\\s+[Oo]rçamentária\\s+[Aa]nual",
+        "\\bLOA\\b"
+      ],
+      "relevant_articles": [
+        "LC 105/2009 art.10,VII — cumprimento dos requisitos fiscais e orçamentários"
+      ],
+      "maps_to_ipmp": ["1d"],
+      "source_volume": "Vol2 §4 (Quadro 9)",
+      "notes": "Fiscal compliance evidence. LOA must include budgetary allocation consistent with the PPP investment. Editions: 9.276/2026 (LOA 2026), 8.797/2025 (LOA 2025), 7.902/2023 (LOA 2024), 7.674/2022 (LOA 2023)."
+    },
+    {
+      "name": "Lei de Diretrizes Orçamentárias (LDO)",
+      "law_number": "Lei nº 8.411/2025 (LDO 2026); Lei nº 8.163/2024 (LDO 2025); Lei nº 7.915/2023 (LDO 2024); Lei nº 7.689/2022 (LDO 2023); Lei nº 7.210/2021 (LDO 2022)",
+      "regex_variants": [
+        "8\\.411",
+        "8\\.411[/\\s]?2025",
+        "Lei\\s+n[oº]?\\s*8\\.?411",
+        "8\\.163",
+        "8\\.163[/\\s]?2024",
+        "Lei\\s+n[oº]?\\s*8\\.?163",
+        "7\\.915",
+        "7\\.915[/\\s]?2023",
+        "Lei\\s+n[oº]?\\s*7\\.?915",
+        "7\\.689",
+        "7\\.689[/\\s]?2022",
+        "Lei\\s+n[oº]?\\s*7\\.?689",
+        "7\\.210",
+        "7\\.210[/\\s]?2021",
+        "Lei\\s+n[oº]?\\s*7\\.?210",
+        "[Ll]ei\\s+de\\s+[Dd]iretrizes\\s+[Oo]rçamentárias",
+        "\\bLDO\\b"
+      ],
+      "relevant_articles": [
+        "LC 105/2009 art.10,VII — cumprimento dos requisitos fiscais e orçamentários"
+      ],
+      "maps_to_ipmp": ["1d"],
+      "source_volume": "Vol2 §4 (Quadro 9)",
+      "notes": "Budget guidelines compliance evidence. Editions: 8.411/2025 (LDO 2026), 8.163/2024 (LDO 2025), 7.915/2023 (LDO 2024), 7.689/2022 (LDO 2023), 7.210/2021 (LDO 2022)."
+    }
+  ],
+  "local_planning_instruments": {
+    "description": "Rio de Janeiro municipal planning instruments referenced in the manual. Complement federal instruments in acronyms.json. These are the terms Rio case documents use when proving Ação 1c/1d alignment.",
+    "items": [
+      {
+        "name": "Plano Estratégico do Município",
+        "variants": [
+          "Plano Estratégico Municipal",
+          "Plano Estratégico da Cidade do Rio de Janeiro",
+          "plano estratégico",
+          "planejamento estratégico municipal"
+        ],
+        "maps_to_ipmp": ["1c", "1d"],
+        "notes": "Vol2 §4 explicitly states project must align with 'políticas municipais (incluindo o Plano Estratégico)'. This is the Rio equivalent of national planning instruments for strategic alignment. Vol3 p.8 also references submission 'com base no Plano Estratégico Municipal'."
+      },
+      {
+        "name": "Lei Orgânica Municipal",
+        "variants": [
+          "Lei Orgânica do Município",
+          "Lei Orgânica Municipal do Rio de Janeiro",
+          "Lei Orgânica do Município do Rio de Janeiro"
+        ],
+        "maps_to_ipmp": ["1d"],
+        "notes": "Listed alongside Plano Estratégico in Vol2 §4 as the framework the project must comply with per LC 105/2009 art.10,I. No traditional law number — promulgated as Rio's municipal constitution in 1990."
+      },
+      {
+        "name": "Plano Plurianual",
+        "variants": [
+          "PPA",
+          "plano plurianual",
+          "PPA 2026-2029",
+          "PPA 2022-2025"
+        ],
+        "maps_to_ipmp": ["1d"],
+        "notes": "Required by LC 105/2009 art.10,VII and Lei Federal 11.079/2004 art.10,I 'b' e 'c'. PPA 2026–2029: Lei Municipal nº 9.275/2026. PPA 2022–2025: Lei Municipal nº 7.234/2022. See law_references for regex patterns."
+      },
+      {
+        "name": "Lei Orçamentária Anual",
+        "variants": ["LOA", "Lei Orçamentária"],
+        "maps_to_ipmp": ["1d"],
+        "notes": "Fiscal compliance evidence per LC 105/2009 art.10,VII. See law_references for annual edition numbers and regex patterns."
+      },
+      {
+        "name": "Lei de Diretrizes Orçamentárias",
+        "variants": ["LDO"],
+        "maps_to_ipmp": ["1d"],
+        "notes": "Fiscal compliance evidence per LC 105/2009 art.10,VII. See law_references for annual edition numbers and regex patterns."
+      }
+    ]
+  },
+  "legal_phrases": {
+    "description": "High-signal exact phrases from Rio's legal framework. These appear in Rio case documents proving Ação 1 compliance but are absent from IPMP text. Use in BM25 queries.",
+    "items": [
+      {
+        "phrase": "conveniência e oportunidade",
+        "maps_to_ipmp": ["1a"],
+        "source": "LC 105/2009 art.10,I; Lei Federal PPP art.10,I 'a'",
+        "notes": "Standard legal phrase proving efetivo interesse público. Vol3 p.8 uses it in the context of edital revisions."
+      },
+      {
+        "phrase": "efetivo interesse público",
+        "maps_to_ipmp": ["1a", "1c"],
+        "source": "LC 105/2009 art.10,I; Lei Federal PPP art.10,I 'a'",
+        "notes": "Required legal demonstration. Proved by socioeconômica analysis and strategic alignment."
+      },
+      {
+        "phrase": "diretrizes governamentais",
+        "maps_to_ipmp": ["1c", "1d"],
+        "source": "LC 105/2009 art.10,I",
+        "notes": "Legal phrase for government policy alignment. Case documents use this phrase when citing Plano Estratégico and Lei Orgânica Municipal."
+      },
+      {
+        "phrase": "políticas gerais do Município",
+        "maps_to_ipmp": ["1c", "1d"],
+        "source": "Vol1 Annexo 1 — minimum checklist item (*)",
+        "notes": "Exact phrasing from the minimum required checklist: 'Explicação/justificativa a respeito da conformidade com as políticas gerais/planos estratégicos do Município'."
+      },
+      {
+        "phrase": "planos estratégicos do Município",
+        "maps_to_ipmp": ["1c", "1d"],
+        "source": "Vol1 Annexo 1 — minimum checklist item (*)",
+        "notes": "Second half of the same minimum checklist item. Use as BM25 variant."
+      },
+      {
+        "phrase": "necessidade que justifica o projeto",
+        "maps_to_ipmp": ["1a"],
+        "source": "Vol1 Annexo 1 — minimum checklist item (*)",
+        "notes": "Exact phrasing from minimum checklist: 'Descrição da necessidade que justifica o projeto. Principais fatores de impacto econômico e benefícios socioeconômicos do projeto'."
+      },
+      {
+        "phrase": "impacto econômico e benefícios socioeconômicos",
+        "maps_to_ipmp": ["1b"],
+        "source": "Vol1 Annexo 1 — minimum checklist item (*)",
+        "notes": "Continuation of the same minimum checklist item. Strong signal for Ação 1b evidence."
+      },
+      {
+        "phrase": "vantagem econômica e operacional",
+        "maps_to_ipmp": ["1c"],
+        "source": "LC 105/2009 art.10,II",
+        "notes": "Legal phrase from Vol2 §4 Quadro 9. Proved via socioeconômica analysis (qualitative or ACB)."
+      }
+    ]
+  },
+  "minimum_required_fields": {
+    "description": "Items marked (*) in Vol1 Annexo 1 are minimum information the órgão promotor must provide. Their presence is a strong signal of a well-prepared Relatório de Pré-Análise.",
+    "source": "Vol1 Annexo 1: Requisição de Informações e Check List de Dados",
+    "items": [
+      "Descrição do projeto: setor, características técnicas (superfície — para prédios; km — para transporte)",
+      "Custo estimado e a composição do investimento (CAPEX)",
+      "Área / população afetada",
+      "Cronograma: datas desejadas relacionadas ao projeto",
+      "Explicação/justificativa a respeito da conformidade com as políticas gerais/planos estratégicos do Município",
+      "Descrição da necessidade que justifica o projeto e benefícios socioeconômicos do projeto",
+      "Opções e adequações da solução proposta — alternativas técnicas consideradas",
+      "Disponibilidade de terreno/local, se relevante"
+    ]
+  },
+  "process_context": {
+    "description": "Rio's MI/PMI/MIP process may produce studies that serve as EVTEA equivalents. Case documents may reference these process labels when describing how studies were obtained.",
+    "items": [
+      {
+        "name": "Manifestação de Interesse",
+        "variants": ["MI", "Aviso Público de Manifestação de Interesse"],
+        "notes": "Public call for studies issued by Secretaria or Unidade de PPP. Studies submitted through this process are reviewed by Unidade de PPP and may contain Ação 1 content."
+      },
+      {
+        "name": "PMI — Procedimento de Manifestação de Interesse",
+        "variants": ["PMI"],
+        "notes": "Formal public MI pathway. Authorized by Prefeito. Studies reimbursed to author by winning bidder."
+      },
+      {
+        "name": "MIP — Manifestação de Interesse Privado",
+        "variants": ["MIP", "Apresentação Privada de Manifestação de Interesse"],
+        "notes": "Private-sector unsolicited proposal. Triggers full PMI process if accepted by Unidade de PPP."
+      }
+    ]
+  },
+  "bm25_search_hints": {
+    "primary_terms": [
+      "Relatório de Pré-Análise",
+      "Relatório Geral de Avaliação",
+      "análise socioeconômica",
+      "conveniência e oportunidade",
+      "efetivo interesse público",
+      "diretrizes governamentais",
+      "políticas gerais do Município",
+      "plano estratégico",
+      "planos estratégicos do Município",
+      "Lei Orgânica Municipal",
+      "necessidade que justifica o projeto",
+      "benefícios socioeconômicos",
+      "impacto econômico",
+      "plano plurianual",
+      "conformidade com as políticas"
+    ],
+    "secondary_terms": [
+      "viabilidade socioeconômica",
+      "Análise de Custo-Benefício",
+      "ACB",
+      "Manifestação de Interesse",
+      "vantagem econômica e operacional",
+      "solidez socioeconômica",
+      "população afetada",
+      "população beneficiada",
+      "interesse público",
+      "Lei Complementar 105",
+      "LC 105"
+    ],
+    "exact_match_names": [
+      "Relatório de Pré-Análise",
+      "Relatório Geral de Avaliação",
+      "Relatório Geral de Avaliação — Anexo de Análise Socioeconômica",
+      "Requisição de Informações e Check List de Dados"
+    ]
+  }
+}
