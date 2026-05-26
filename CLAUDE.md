@@ -80,16 +80,19 @@ Maturity_Check/
 │   │   ├── 0009-single-llm-call-per-action.md
 │   │   └── 0010-tolerant-ingestion-loading-strategy.md
 │   ├── MODULE_01_STATE.md       ← ingestion layer full architectural state
+│   ├── prd_module_01_ingestion.md ← Module 1 PRD (27 user stories, GitHub issues #1–5)
+│   ├── publish_issues.ps1       ← gh issue publish script (issues already created, keep for reference)
 │   └── prompts/
-│       ├── grill-me.md
-│       └── To-PRD.md
+│       ├── 01_grill-me.md
+│       ├── 02_To-PRD.md
+│       └── 03_To_issues.md
 ├── _archive/                    ← old design docs — DO NOT USE
 ├── src/
-│   └── ingestion/               ← Module 1 (designed, not yet implemented)
-│       ├── __init__.py
-│       ├── ipmp.py
-│       ├── rio_manual.py
-│       └── acronyms.py
+│   └── ingestion/               ← Module 1 (COMPLETE)
+│       ├── __init__.py          ← sole public surface
+│       ├── ipmp.py              ← IPMP models + get_ipmp_store()
+│       ├── rio_manual.py        ← Rio Manual models + get_rio_manual_store()
+│       └── acronyms.py          ← get_acronym_store()
 └── data/
     ├── ipmp/
     │   └── acao_01.json         ← complete (Phase 1 scope)
@@ -103,20 +106,19 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Current state (2026-05-25):** Module 1 (ingestion layer) design is complete.
-CONTEXT.md is filled. 10 ADRs written. Full architectural state in `docs/MODULE_01_STATE.md`.
+**Current state (2026-05-26):** Module 1 (ingestion layer) is COMPLETE.
+All three singletons implemented and verified. GitHub issues #1–5 closed.
+Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 
 **Immediate next steps (in order):**
-1. **Run to-PRD** — invoke skill at `docs/prompts/To-PRD.md` using CONTEXT.md + ADRs 0001–0010.
-2. **Implement Module 1** — build `src/ingestion/` per `docs/MODULE_01_STATE.md`.
-   Start with `ipmp.py` (models + singleton), then `rio_manual.py`, then `acronyms.py`, then `__init__.py`.
-3. **Resolve open gaps before Module 2:**
+1. **Resolve open gaps before Module 2** (dedicated sessions):
    - Lei Municipal de PPP law number (needed for `regex_variants` in `data/rio_manual/acao_01.json`)
    - PPA management strategy (cyclic document, strategy undefined)
+2. **Design Module 2** — PDF extraction + chunking (run grill-me → to-PRD → to-issues)
 
 **Module sequence (deep modules — one complete before the next):**
-1. Ingestion (`src/ingestion/`) ← design complete
-2. PDF extraction + chunking
+1. Ingestion (`src/ingestion/`) ← **COMPLETE**
+2. PDF extraction + chunking ← next
 3. BM25 retrieval (SQLite FTS5)
 4. LLM evaluation (Ollama/Groq, temperature=0)
 5. Auditor review interface (FastAPI)
@@ -124,8 +126,9 @@ CONTEXT.md is filled. 10 ADRs written. Full architectural state in `docs/MODULE_
 7. Frontend (Vue.js 3, Phase 2)
 
 **Key reference files:**
-- `docs/MODULE_01_STATE.md` — full ingestion design (decisions, models, boundaries, gaps)
-- `CONTEXT.md` — canonical domain glossary (filled)
+- `docs/MODULE_01_STATE.md` — ingestion design (decisions, models, boundaries, gaps)
+- `docs/prd_module_01_ingestion.md` — Module 1 PRD (27 user stories, GitHub issues #1–5)
+- `CONTEXT.md` — canonical domain glossary
 - `docs/adr/` — 10 ADRs, next is `0011-`
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
 - `data/rio_manual/acao_01.json` — Rio Manual retrieval context for Ação 1
