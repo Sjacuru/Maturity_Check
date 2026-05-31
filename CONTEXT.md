@@ -20,8 +20,20 @@ _Avoid_: grade, rating, result, mark
 **Auditor**: The human reviewer who validates the system's proposed Maturity Score and retrieved evidence for each Ação before the score is accepted.
 _Avoid_: user, reviewer, operator, evaluator
 
-**Case Document**: A Brazilian PPP procurement document submitted for evaluation; the search target of the retrieval module.
-_Avoid_: project document, input document, target file, source file
+**Case**: A PPP procurement business process submitted for evaluation, identified by its `process_number`. Composed of one or more Document Artifacts. May have a `contract_number` if a contract was signed.
+_Avoid_: project, submission, dossier, folder
+
+**Process Number**: The canonical business identifier of a Case, assigned during the administrative process lifecycle. Always present.
+_Avoid_: case ID, process ID, identifier
+
+**Contract Number**: An optional identifier for a signed contract within a Case. Cannot exist without a `process_number`; a Case may exist without one.
+_Avoid_: contract ID, deal number
+
+**Document Artifact**: An individual PDF file associated with a Case. Identified by filename within its Case.
+_Avoid_: Case Document (retired), input document, target file, source file, PDF
+
+**Chunk**: The atomic unit of extracted text produced by the extraction module. Page boundaries are the primary provenance boundary; a single page may produce multiple Chunks when the page is large. Carries domain-neutral extraction metadata: `filename`, `page_number`, `chunk_index` (intra-page position), `char_offset`, `text`, `text_length`, `page_total`, `ocr_used`, `source_type`. No Case or business-domain identifiers — those are added by the indexing layer.
+_Avoid_: passage, segment, excerpt, text unit
 
 **Expected Product** (Produto Esperado): One entry in the `produtos_esperados` list of an Ação, identified by a canonical id (e.g., `1`, `1a`, `1b`). Parent items (numeric-only id) provide display context; letter-suffixed items are the primary evidence boundaries.
 _Avoid_: sub-item, checklist item, requirement, sub-criterion
@@ -57,6 +69,15 @@ _Avoid_: data quality, completeness, domain validity
 **Ingestion module**: The Python package (`src/ingestion/`) responsible for loading, validating, and exposing canonical domain structures from source-of-truth artifacts. Owns no retrieval semantics.
 _Avoid_: parser, loader, ETL layer, data access layer
 
+**Extraction module**: The Python package (`src/extraction/`) responsible for reading a Document Artifact (PDF) and returning a list of Chunks. Pure transformation layer — no knowledge of Cases, SQLite, BM25, or business-domain identifiers. Public interface: `extract_document(path: Path) -> list[Chunk]`.
+_Avoid_: PDF parser, chunker, pipeline, ingestion (that term is taken)
+
+**Retrieval module**: The Python package (`src/retrieval/`) responsible for indexing Document Artifact chunks into SQLite and executing the retrieval cascade to produce evidence for a given Ação. Sub-packages: `indexing/`, `query/`, `schema/`, `interfaces/`. Public write-path entry: `index(process_number: str, chunks: list[Chunk])`. Public read-path entry: retrieval cascade execution returning `list[RetrievedChunk]`.
+_Avoid_: search module, BM25 module, query layer
+
+**RetrievedChunk**: The domain-level retrieval result returned by the retrieval cascade. Carries: full `Chunk` provenance (`process_number`, `filename`, `page_number`, `chunk_index`, `char_offset`, `page_total`, `ocr_used`, `source_type`), `text`, `cascade_step` (`"filename_match"` | `"variant_match"` | `"bm25"` | `"regex"`), `expected_product_id` (the Expected Product id that drove the query; null on document-focused and regex paths), `bm25_score` (null on document-focused and regex paths), `rank` (null on document-focused and regex paths). Does not expose SQLite row IDs, FTS5 docids, or other storage internals.
+_Avoid_: search result, hit, match, ranked chunk
+
 **Retrieval semantics**: Any logic that interprets canonical domain structures for search purposes — BM25 query construction, acronym expansion, cascade execution, chunk ranking, vector similarity.
 _Avoid_: search logic, query logic, downstream logic
 
@@ -75,9 +96,14 @@ _Avoid_: pipeline, search flow, fallback chain
 - One **IPMP** source-of-truth artifact defines one **Ação's** rubric, scored examples, and expected products
 - One **Rio Manual** source-of-truth artifact provides retrieval context for the same **Ação**
 - The **ingestion module** loads source-of-truth artifacts and exposes **canonical domain structures** via three singletons
-- The **retrieval module** consumes canonical domain structures and applies **retrieval semantics** to produce evidence chunks
+- The **retrieval module** consumes canonical domain structures and applies **retrieval semantics** to produce **RetrievedChunk** lists as evidence for an Ação
+- The **retrieval module** indexes `list[Chunk]` keyed by `process_number`; the indexing write-path attaches `process_number` internally — callers supply it, extraction never knows it
 - The **Auditor** validates the system's proposed **Maturity Score** for each **Ação** before it is accepted
-- A **Case Document** is searched by the retrieval module to find evidence for an **Ação's** Expected Products
+- A **Case** has one `process_number` (required) and zero or one `contract_number` (optional)
+- A **Case** contains one or more **Document Artifacts**
+- A **Document Artifact** is chunked into one or more **Chunks** during extraction
+- A **Chunk** carries provenance: the **Document Artifact** filename and page number it came from
+- The retrieval module searches **Chunks** to find evidence for an **Ação's** Expected Products
 
 ---
 
@@ -95,6 +121,8 @@ _Avoid_: pipeline, search flow, fallback chain
 ---
 
 ## Flagged ambiguities
+
+- **"Case Document"** was used as the term for a submitted PDF — retired: the system distinguishes between a **Case** (the business process, identified by `process_number`) and a **Document Artifact** (an individual PDF within that Case). "Case Document" was ambiguous between the two.
 
 - **"validation"** was used to mean both Pydantic schema enforcement and business-domain completeness checking — resolved: ingestion performs structural validation only; domain completeness is tracked via `_meta.known_gaps` in source-of-truth artifacts, not by Pydantic.
 - **"normalization"** was considered to include query-oriented transformations (sub-item filtering, acronym expansion) — resolved: normalization in the ingestion module means structural normalization only; all retrieval-oriented transformations are retrieval semantics and belong to the retrieval module.

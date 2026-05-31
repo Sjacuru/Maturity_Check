@@ -1,0 +1,118 @@
+from __future__ import annotations
+
+import sqlite3
+from dataclasses import dataclass
+
+from retrieval._config import get_db_path
+from retrieval.interfaces.contracts import RetrievedChunk
+
+MAX_CHUNKS_PER_ACAO = 20
+
+_PER_QUERY_LIMIT = MAX_CHUNKS_PER_ACAO * 4
+
+_SCHEMA_CHECK = "SELECT name FROM sqlite_master WHERE type='table' AND name='chunks'"
+
+_SEARCH_SQL = """
+    SELECT
+        c.id,
+        c.process_number, c.filename, c.page_number, c.chunk_index,
+        c.char_offset, c.page_total, c.ocr_used, c.source_type, c.text,
+        chunks_fts.rank
+    FROM chunks_fts
+    JOIN chunks c ON chunks_fts.rowid = c.id
+    WHERE chunks_fts MATCH ?
+      AND c.process_number = ?
+    ORDER BY chunks_fts.rank
+    LIMIT ?
+"""
+
+
+@dataclass(frozen=True)
+class _Hit:
+    chunk_id: int
+    product_id: str | None
+    score: float
+    row: tuple  # (process_number, filename, page_number, chunk_index,
+    #              char_offset, page_total, ocr_used, source_type, text)
+
+
+def search_bm25(
+    queries: dict[str, str],
+    process_number: str,
+) -> list[RetrievedChunk]:
+    """Run per-Expected-Product FTS5 BM25 queries, merge, dedup, rank, cap.
+
+    queries: mapping from expected_product_id to FTS5 query string.
+             Empty-string values are skipped.
+    """
+    non_empty = {pid: q for pid, q in queries.items() if q}
+    if not non_empty:
+        return []
+
+    con = sqlite3.connect(str(get_db_path()))
+    try:
+        if not con.execute(_SCHEMA_CHECK).fetchone():
+            raise RuntimeError(
+                "Retrieval database schema not initialised. "
+                "Call init_db(db_path) before search_bm25()."
+            )
+        hits = _run_queries(con, non_empty, process_number)
+    finally:
+        con.close()
+
+    merged = _merge(hits)
+    merged.sort(key=lambda h: h.score)  # most negative = best BM25 match
+    top = merged[:MAX_CHUNKS_PER_ACAO]
+
+    return [
+        RetrievedChunk(
+            process_number=h.row[0],
+            filename=h.row[1],
+            page_number=h.row[2],
+            chunk_index=h.row[3],
+            char_offset=h.row[4],
+            page_total=h.row[5],
+            ocr_used=bool(h.row[6]),
+            source_type=h.row[7],
+            text=h.row[8],
+            cascade_step="bm25",
+            expected_product_id=h.product_id,
+            bm25_score=h.score,
+            rank=i + 1,
+        )
+        for i, h in enumerate(top)
+    ]
+
+
+def _run_queries(
+    con: sqlite3.Connection,
+    queries: dict[str, str],
+    process_number: str,
+) -> list[_Hit]:
+    hits: list[_Hit] = []
+    for product_id, query_str in queries.items():
+        try:
+            rows = con.execute(
+                _SEARCH_SQL, (query_str, process_number, _PER_QUERY_LIMIT)
+            ).fetchall()
+        except sqlite3.OperationalError:
+            continue
+        for row in rows:
+            hits.append(
+                _Hit(
+                    chunk_id=row[0],
+                    product_id=product_id,
+                    score=row[10],
+                    row=row[1:10],
+                )
+            )
+    return hits
+
+
+def _merge(hits: list[_Hit]) -> list[_Hit]:
+    """Deduplicate by chunk_id, keeping the hit with the best (most negative) score."""
+    best: dict[int, _Hit] = {}
+    for h in hits:
+        if h.chunk_id not in best or h.score < best[h.chunk_id].score:
+            best[h.chunk_id] = h
+    return list(best.values())
