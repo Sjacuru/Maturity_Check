@@ -7,6 +7,8 @@ dependencies = [
   "pydantic>=2.7",
   "fastapi>=0.111",
   "uvicorn>=0.29",
+  "pypdf>=6.0",
+  "unstructured[pdf]>=0.22",
 ]
 
 [build-system]
