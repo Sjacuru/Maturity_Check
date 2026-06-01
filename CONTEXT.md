@@ -81,6 +81,18 @@ _Avoid_: search result, hit, match, ranked chunk
 **Retrieval semantics**: Any logic that interprets canonical domain structures for search purposes — BM25 query construction, acronym expansion, cascade execution, chunk ranking, vector similarity.
 _Avoid_: search logic, query logic, downstream logic
 
+**Evaluation module**: The Python package (`src/evaluation/`) responsible for assembling the LLM prompt, executing a single LLM call per Ação, parsing the response, and returning an `EvaluationResult`. Pure evaluation layer — no knowledge of retrieval, SQLite, or Auditor rendering. Public interface: `configure_llm(provider, model, base_url)` and `evaluate(acao_id, process_number, chunks) -> EvaluationResult`.
+_Avoid_: scoring module, LLM module, inference layer
+
+**EvaluationResult**: The forensic evaluation artifact produced by the evaluation module for one Ação/Case pair. Carries identity (`acao_id`, `process_number`), reproducibility metadata (`provider`, `model`), evidence supplied (`retrieved_chunks`, `evidence_char_count`), prompt audit trail (`system_prompt`, `user_prompt`), LLM output (`raw_llm_response`, `reasoning`, `proposed_score`), and three orthogonal status flags (`uncertainty_flag`, `parse_failed`, `no_evidence_found`). Defined as a Pydantic `BaseModel` in `src/evaluation/interfaces/contracts.py`.
+_Avoid_: scoring result, evaluation DTO, response object, score record
+
+**LLMClient**: A minimal Protocol defining the evaluation module's sole interface to any LLM provider. Single method: `complete(system: str, user: str) -> str`. Concrete implementations: `OllamaClient` (local, default) and `GroqClient` (cloud option). Instantiated via `configure_llm()`.
+_Avoid_: AI client, model client, LLM wrapper, provider adapter
+
+**Uncertainty flag**: A boolean field in `EvaluationResult` set by the LLM (via `UNCERTAINTY: yes` in the sentinel block) when retrieved evidence is absent, insufficient, or contradictory with respect to the Ação's Expected Products. Distinct from `parse_failed` (format compliance failure set by Module 4) and `no_evidence_found` (upstream retrieval state set by Module 4 before any LLM call).
+_Avoid_: confidence flag, model confidence, uncertainty score
+
 **Operational continuity**: The property of the ingestion module that allows the system to start and run even when individual source-of-truth artifacts have non-fatal Pydantic validation failures, provided fatal integrity errors are absent.
 _Avoid_: fault tolerance, resilience, degraded mode, graceful degradation
 
@@ -98,6 +110,9 @@ _Avoid_: pipeline, search flow, fallback chain
 - The **ingestion module** loads source-of-truth artifacts and exposes **canonical domain structures** via three singletons
 - The **retrieval module** consumes canonical domain structures and applies **retrieval semantics** to produce **RetrievedChunk** lists as evidence for an Ação
 - The **retrieval module** indexes `list[Chunk]` keyed by `process_number`; the indexing write-path attaches `process_number` internally — callers supply it, extraction never knows it
+- The **evaluation module** consumes `list[RetrievedChunk]` from the retrieval module and IPMP data from the ingestion module to produce one **EvaluationResult** per Ação/Case pair
+- The **evaluation module** calls one **LLMClient** (either `OllamaClient` or `GroqClient`) per evaluation via `configure_llm()`
+- An **EvaluationResult** carries the proposed **Maturity Score**, full audit trail, and three orthogonal status flags for the **Auditor**
 - The **Auditor** validates the system's proposed **Maturity Score** for each **Ação** before it is accepted
 - A **Case** has one `process_number` (required) and zero or one `contract_number` (optional)
 - A **Case** contains one or more **Document Artifacts**

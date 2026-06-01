@@ -109,7 +109,11 @@ Maturity_Check/
 │   ├── test_indexing.py         ← index() integration tests (10 tests)
 │   ├── test_bm25_retrieval.py   ← BM25 query builder + search tests (24 tests)
 │   ├── test_document_retrieval.py ← filename_match + variant_match + cascade tests (19 tests)
-│   └── test_regex_retrieval.py  ← regex search + cascade integration tests (13 tests)
+│   ├── test_regex_retrieval.py  ← regex search + cascade integration tests (13 tests)
+│   ├── test_evaluation_contract.py ← EvaluationResult model + invariant tests (16 tests)
+│   ├── test_response_parser.py  ← sentinel parsing + parse_failed tests (16 tests)
+│   ├── test_prompt_builder.py   ← system/user prompt assembly + ordering tests (15 tests)
+│   └── test_evaluate_orchestration.py ← evaluate() full flow with StubLLMClient (12 tests)
 ├── src/
 │   ├── ingestion/               ← Module 1 (COMPLETE)
 │   │   ├── __init__.py          ← sole public surface
@@ -120,21 +124,35 @@ Maturity_Check/
 │   │   ├── __init__.py          ← sole public surface: Chunk, extract_document
 │   │   ├── chunk.py             ← Chunk pydantic.BaseModel (9 fields)
 │   │   └── pdf.py               ← extract_document() — word-count heuristic + OCR
-│   └── retrieval/               ← Module 3 (IN PROGRESS — issues #11–15)
-│       ├── __init__.py          ← public surface: configure, index, retrieve_for_acao, RetrievedChunk
-│       ├── _config.py           ← module-level DB path: configure() / get_db_path()
+│   ├── retrieval/               ← Module 3 (COMPLETE — issues #11–15)
+│   │   ├── __init__.py          ← public surface: configure, index, retrieve_for_acao, RetrievedChunk
+│   │   ├── _config.py           ← module-level DB path: configure() / get_db_path()
+│   │   ├── interfaces/
+│   │   │   └── contracts.py     ← RetrievedChunk Pydantic model (13 fields)
+│   │   ├── schema/
+│   │   │   └── ddl.py           ← init_db(): chunks table + chunks_fts FTS5 virtual table
+│   │   ├── indexing/
+│   │   │   └── writer.py        ← index(process_number, chunks) — idempotent INSERT OR IGNORE
+│   │   └── query/
+│   │       ├── query_builder.py ← build_bm25_query(): product text → FTS5 OR query string
+│   │       ├── bm25.py          ← search_bm25() + MAX_CHUNKS_PER_ACAO=20
+│   │       ├── document.py      ← retrieve_document_focused(): filename_match + variant_match
+│   │       ├── regex_search.py  ← search_regex(): SQLite user-defined function, OR-combined patterns
+│   │       └── cascade.py       ← retrieve_for_acao(): full cascade A→B→C+D
+│   └── evaluation/              ← Module 4 (COMPLETE — issues #16–20)
+│       ├── __init__.py          ← public surface: configure_llm, evaluate, EvaluationResult
+│       ├── _config.py           ← module-level LLMClient: configure_llm() / get_llm_client()
+│       ├── evaluator.py         ← evaluate(): full orchestration + EVIDENCE_CHAR_WARN_THRESHOLD
 │       ├── interfaces/
-│       │   └── contracts.py     ← RetrievedChunk Pydantic model (13 fields)
-│       ├── schema/
-│       │   └── ddl.py           ← init_db(): chunks table + chunks_fts FTS5 virtual table
-│       ├── indexing/
-│       │   └── writer.py        ← index(process_number, chunks) — idempotent INSERT OR IGNORE
-│       └── query/
-│           ├── query_builder.py ← build_bm25_query(): product text → FTS5 OR query string
-│           ├── bm25.py          ← search_bm25() + MAX_CHUNKS_PER_ACAO=20
-│           ├── document.py      ← retrieve_document_focused(): filename_match + variant_match
-│           ├── regex_search.py  ← search_regex(): SQLite user-defined function, OR-combined patterns
-│           └── cascade.py       ← retrieve_for_acao(): full cascade A→B→C+D
+│       │   └── contracts.py     ← EvaluationResult Pydantic model (14 fields, 3 flag invariants)
+│       ├── llm/
+│       │   ├── protocol.py      ← LLMClient Protocol (complete(system, user) -> str)
+│       │   ├── ollama.py        ← OllamaClient: Ollama HTTP API, temperature=0
+│       │   └── groq.py          ← GroqClient: Groq SDK, temperature=0
+│       ├── prompt/
+│       │   └── builder.py       ← build_system_prompt(acao_id), build_user_prompt(chunks)
+│       └── parsing/
+│           └── response.py      ← ParsedResponse dataclass + parse_llm_response(raw)
 └── data/
     ├── ipmp/
     │   └── acao_01.json         ← complete (Phase 1 scope)
@@ -148,23 +166,23 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Current state (2026-05-30):** Module 1 (ingestion) COMPLETE. Module 2 (extraction) COMPLETE. Module 3 (retrieval) COMPLETE — all issues #11–15 implemented, 147/147 fast tests passing.
+**Current state (2026-06-01):** Module 1 (ingestion) COMPLETE. Module 2 (extraction) COMPLETE. Module 3 (retrieval) COMPLETE. Module 4 (LLM evaluation) COMPLETE — 206 tests passing (59 new Module 4 tests).
 Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TESSERACT_CMD` env var).
 
-**Module 3 progress (issues #11–15):**
-- #11 ✅ `RetrievedChunk` contract + `ChunkRetriever` protocol
-- #12 ✅ SQLite schema (`init_db`) + `index()` writer
-- #13 ✅ BM25 corpus-wide retrieval: `query_builder`, `bm25`, `cascade`, `retrieve_for_acao` wired
-- #14 ✅ Document-focused cascade path: `document.py` (filename_match + variant_match), full cascade
-- #15 ✅ Regex retrieval integration: `regex_search.py`, additive to BM25, SQLite user-defined function
+**Module 4 progress (issues #16–20):**
+- #16 ✅ `EvaluationResult` contract + `configure_llm()` + `LLMClient` protocol
+- #17 ✅ Prompt builder: `build_system_prompt()` + `build_user_prompt()` + evidence ordering
+- #18 ✅ Response parser: sentinel extraction, status flag derivation
+- #19 ✅ `evaluate()` orchestration: full flow, `no_evidence_found` short-circuit, observability
+- #20 ✅ `OllamaClient` + `GroqClient` concrete implementations
 
 **Module sequence (deep modules — one complete before the next):**
 1. Ingestion (`src/ingestion/`) ← **COMPLETE**
 2. PDF extraction + chunking (`src/extraction/`) ← **COMPLETE**
 3. BM25 retrieval (`src/retrieval/`) ← **COMPLETE** (issues #11–15)
-4. LLM evaluation (Ollama/Groq, temperature=0)
-5. Auditor review interface (FastAPI)
+4. LLM evaluation (`src/evaluation/`) ← **COMPLETE** (issues #16–20)
+5. Auditor review interface (FastAPI) ← **NEXT**
 6. Vector fallback (LanceDB)
 7. Frontend (Vue.js 3, Phase 2)
 
@@ -173,8 +191,9 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_01_ingestion.md` — Module 1 PRD (27 user stories, GitHub issues #1–5)
 - `docs/prd_module_02_extraction.md` — Module 2 PRD (27 user stories, GitHub issues #6–10)
 - `docs/prd_module_03_retrieval.md` — Module 3 PRD (36 user stories, GitHub issues #11–15)
+- `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `CONTEXT.md` — canonical domain glossary
-- `docs/adr/` — 18 ADRs, next is `0019-`
+- `docs/adr/` — 21 ADRs, next is `0022-`
 - `docs/dan/` — Deferred Architecture Notes (DAN-0002 CLOSED), next is `0003-`
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
 - `data/rio_manual/acao_01.json` — Rio Manual retrieval context for Ação 1
