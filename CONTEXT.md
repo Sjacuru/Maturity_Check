@@ -99,6 +99,18 @@ _Avoid_: fault tolerance, resilience, degraded mode, graceful degradation
 **Retrieval cascade**: The ordered retrieval strategy for a given Ação: (1) exact document name match, (2) BM25 augmented search, (3) dense vector fallback. Belongs entirely to the retrieval module.
 _Avoid_: pipeline, search flow, fallback chain
 
+**Assessment module**: The Python package (`src/assessment/`) responsible for orchestrating the end-to-end assessment workflow for one Case — accepting Document Artifacts via upload, storing them to disk, calling extraction, indexing, retrieval, and evaluation in sequence, and returning an `EvaluationResult`. Owns the application-service layer; FastAPI routes invoke it; a future CLI may invoke it directly. Does not own HTTP concerns, score persistence, or Auditor rendering. Per-document pipeline: Upload → Store → Extract → Index → Retrieve → Evaluate. (The ingestion module loads IPMP/Rio Manual framework data at startup; it is not a per-document step.)
+_Avoid_: pipeline runner, orchestration layer, workflow engine, ingestion (that term is taken by Module 1)
+
+**Review Outcome**: The Auditor's validated record for one EvaluationResult. Carries: `acao_id`, `process_number`, `final_score` (in {0, 1, 3}), `is_override` (bool), `justification` (str | None — required when `is_override=True`, must be None otherwise), `evidence_references` (list[int] | None — chunk indices into `retrieved_chunks`; None means the Auditor did not use the field; [] means the Auditor explicitly supplied an empty set), and `created_at`. All original EvaluationResult status flags are preserved unchanged. A Review Outcome where `is_override=True` or where a manual score was assigned on a no_evidence_found/parse_failed result is an Auditor Intervention. `created_at` is set at the application/persistence boundary, not from client input.
+_Avoid_: audit record, final evaluation, validated score, auditor response
+
+**Final Score**: The authoritative Maturity Score for an Ação/Case pair after Auditor review — always in {0, 1, 3}. Produced by accepting `proposed_score` or overriding it. The Final Score coexists with `proposed_score` in storage; they may differ.
+_Avoid_: confirmed score, definitive score, accepted score
+
+**Auditor Intervention**: A Review Outcome in which the Final Score was produced by the Auditor manually assigning a score rather than accepting the LLM's `proposed_score`. Applies to: any override (is_override=True), and any manual score assignment on a no_evidence_found or parse_failed EvaluationResult.
+_Avoid_: manual override, correction, human correction
+
 ---
 
 ## Relationships
@@ -114,6 +126,10 @@ _Avoid_: pipeline, search flow, fallback chain
 - The **evaluation module** calls one **LLMClient** (either `OllamaClient` or `GroqClient`) per evaluation via `configure_llm()`
 - An **EvaluationResult** carries the proposed **Maturity Score**, full audit trail, and three orthogonal status flags for the **Auditor**
 - The **Auditor** validates the system's proposed **Maturity Score** for each **Ação** before it is accepted
+- The **assessment module** orchestrates extraction, retrieval, and evaluation for one Case and returns an **EvaluationResult** per Ação
+- The **Auditor** produces one **Review Outcome** per **EvaluationResult**, carrying the **Final Score**
+- A **Review Outcome** either accepts the `proposed_score` (is_override=False) or overrides it (is_override=True) with a mandatory justification
+- An **Auditor Intervention** is a **Review Outcome** where the **Final Score** was not derived from the LLM's `proposed_score`
 - A **Case** has one `process_number` (required) and zero or one `contract_number` (optional)
 - A **Case** contains one or more **Document Artifacts**
 - A **Document Artifact** is chunked into one or more **Chunks** during extraction

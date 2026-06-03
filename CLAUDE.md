@@ -68,25 +68,19 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (18 filled, next: 0019)
-│   │   ├── 0001-ipmp-as-primary-reference.md
-│   │   ├── 0002-drop-tcdf-in.md
-│   │   ├── 0003-bm25-primary-retrieval.md
-│   │   ├── 0004-llm-temperature-zero-evaluation.md
-│   │   ├── 0005-human-in-the-loop-scoring.md
-│   │   ├── 0006-retrieval-cascade-strategy.md
-│   │   ├── 0007-deterministic-identifiers-exact-match.md
-│   │   ├── 0008-action-level-scoring.md
-│   │   ├── 0009-single-llm-call-per-action.md
-│   │   ├── 0010-tolerant-ingestion-loading-strategy.md
-│   │   ├── 0011-phase1-extraction-strategy.md
-│   │   ├── 0012-two-stage-page-extraction.md
-│   │   ├── 0013-chunk-pydantic-basemodel.md
-│   │   ├── 0014-document-artifact-storage-layout.md
-│   │   ├── 0015-refined-retrieval-cascade.md
-│   │   ├── 0016-fts5-indexes-text-only.md
-│   │   ├── 0017-query-side-acronym-expansion.md
-│   │   └── 0018-retrieved-chunk-no-wrapper.md
+│   ├── adr/                     ← Architecture Decision Records (32 filled, next: 0033-)
+│   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
+│   │   ├── 0022-module5-orchestration-service.md
+│   │   ├── 0023-review-outcome-contract.md
+│   │   ├── 0024-shared-sqlite-schema-ownership.md
+│   │   ├── 0025-evaluation-result-persistence-hybrid.md
+│   │   ├── 0026-evaluation-lifecycle-replacement-model.md
+│   │   ├── 0027-assessment-api-contract.md
+│   │   ├── 0028-extracted-artifacts-as-canonical-representation.md
+│   │   ├── 0029-document-fingerprint-reuse-semantics.md
+│   │   ├── 0030-assessment-scope-from-ipmp-store.md
+│   │   ├── 0031-evaluation-result-direct-http-serialization.md
+│   │   └── 0032-module5-configuration-and-startup-sequencing.md
 │   ├── dan/                     ← Deferred Architecture Notes (2 filled, next: 0003)
 │   │   ├── 0001-pdf-extraction-chunking.md
 │   │   └── 0002-bm25-query-generation-strategy.md  ← unresolved: direct text vs offline LLM-assisted query artifacts
@@ -139,20 +133,33 @@ Maturity_Check/
 │   │       ├── document.py      ← retrieve_document_focused(): filename_match + variant_match
 │   │       ├── regex_search.py  ← search_regex(): SQLite user-defined function, OR-combined patterns
 │   │       └── cascade.py       ← retrieve_for_acao(): full cascade A→B→C+D
-│   └── evaluation/              ← Module 4 (COMPLETE — issues #16–20)
-│       ├── __init__.py          ← public surface: configure_llm, evaluate, EvaluationResult
-│       ├── _config.py           ← module-level LLMClient: configure_llm() / get_llm_client()
-│       ├── evaluator.py         ← evaluate(): full orchestration + EVIDENCE_CHAR_WARN_THRESHOLD
+│   ├── evaluation/              ← Module 4 (COMPLETE — issues #16–20)
+│   │   ├── __init__.py          ← public surface: configure_llm, evaluate, EvaluationResult
+│   │   ├── _config.py           ← module-level LLMClient: configure_llm() / get_llm_client()
+│   │   ├── evaluator.py         ← evaluate(): full orchestration + EVIDENCE_CHAR_WARN_THRESHOLD
+│   │   ├── interfaces/
+│   │   │   └── contracts.py     ← EvaluationResult Pydantic model (14 fields, 3 flag invariants)
+│   │   ├── llm/
+│   │   │   ├── protocol.py      ← LLMClient Protocol (complete(system, user) -> str)
+│   │   │   ├── ollama.py        ← OllamaClient: Ollama HTTP API, temperature=0
+│   │   │   └── groq.py          ← GroqClient: Groq SDK, temperature=0
+│   │   ├── prompt/
+│   │   │   └── builder.py       ← build_system_prompt(acao_id), build_user_prompt(chunks)
+│   │   └── parsing/
+│   │       └── response.py      ← ParsedResponse dataclass + parse_llm_response(raw)
+│   └── assessment/              ← Module 5 (GRILL-ME COMPLETE — PRD next, issues #21–25)
+│       ├── __init__.py          ← public surface: configure, init_db, AssessmentService, ReviewOutcome
+│       ├── _config.py           ← module-level DB path: configure() / get_db_path()
+│       ├── service.py           ← AssessmentService: run_assessment(process_number, document_paths)
 │       ├── interfaces/
-│       │   └── contracts.py     ← EvaluationResult Pydantic model (14 fields, 3 flag invariants)
-│       ├── llm/
-│       │   ├── protocol.py      ← LLMClient Protocol (complete(system, user) -> str)
-│       │   ├── ollama.py        ← OllamaClient: Ollama HTTP API, temperature=0
-│       │   └── groq.py          ← GroqClient: Groq SDK, temperature=0
-│       ├── prompt/
-│       │   └── builder.py       ← build_system_prompt(acao_id), build_user_prompt(chunks)
-│       └── parsing/
-│           └── response.py      ← ParsedResponse dataclass + parse_llm_response(raw)
+│       │   └── contracts.py     ← ReviewOutcome Pydantic model (7 fields, validator invariants)
+│       ├── schema/
+│       │   └── ddl.py           ← init_db(): evaluation_results + review_outcomes + document_fingerprints
+│       └── api/
+│           ├── app.py           ← create_app() — FastAPI app; imported by main.py only
+│           ├── routes.py        ← 5 Phase 1 routes
+│           └── schemas.py       ← request body Pydantic models (write-side only)
+├── main.py                      ← runtime entry point: configure → init_db → create_app
 └── data/
     ├── ipmp/
     │   └── acao_01.json         ← complete (Phase 1 scope)
@@ -166,34 +173,37 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Current state (2026-06-01):** Module 1 (ingestion) COMPLETE. Module 2 (extraction) COMPLETE. Module 3 (retrieval) COMPLETE. Module 4 (LLM evaluation) COMPLETE — 206 tests passing (59 new Module 4 tests).
+**Current state (2026-06-02):** Modules 1–5 COMPLETE. 269 tests passing (10 new lifecycle regression tests in Issue #25). Next module: Vector fallback (LanceDB).
 Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TESSERACT_CMD` env var).
 
-**Module 4 progress (issues #16–20):**
-- #16 ✅ `EvaluationResult` contract + `configure_llm()` + `LLMClient` protocol
-- #17 ✅ Prompt builder: `build_system_prompt()` + `build_user_prompt()` + evidence ordering
-- #18 ✅ Response parser: sentinel extraction, status flag derivation
-- #19 ✅ `evaluate()` orchestration: full flow, `no_evidence_found` short-circuit, observability
-- #20 ✅ `OllamaClient` + `GroqClient` concrete implementations
+**Module 5 design decisions (grill-me 2026-06-02):**
+- ADR-0022: `AssessmentService` owns orchestration; FastAPI is presentation layer
+- ADR-0023: Review Outcome contract — accept/override; `final_score` always in {0,1,3}; `justification` required on override
+- ADR-0024: Shared SQLite DB, schema-level table ownership per module
+- ADR-0025: `EvaluationResult` persistence — hybrid (normalised columns + `raw_json` blob)
+- ADR-0026: Replacement lifecycle; no versioning; app-layer 409 guard; explicit DELETE+INSERT (no INSERT OR REPLACE)
+- ADR-0027: 5 Phase 1 routes; multipart file upload; synchronous execution
+- ADR-0028: PDFs are transient; `chunks` table is canonical extracted artifact store; no PDF storage
+- ADR-0029: SHA-256 fingerprint-based reuse/replacement; `document_fingerprints` table owned by Module 5
+- ADR-0030: Assessment scope from `get_ipmp_store()`, not hardcoded; aggregation deferred
+- ADR-0031: `EvaluationResult.model_dump()` as direct HTTP response; no shaped DTOs for reads
+- ADR-0032: Independent `configure(db_path)` per module; `main.py` owns startup sequencing
 
 **Module sequence (deep modules — one complete before the next):**
 1. Ingestion (`src/ingestion/`) ← **COMPLETE**
 2. PDF extraction + chunking (`src/extraction/`) ← **COMPLETE**
 3. BM25 retrieval (`src/retrieval/`) ← **COMPLETE** (issues #11–15)
 4. LLM evaluation (`src/evaluation/`) ← **COMPLETE** (issues #16–20)
-5. Auditor review interface (FastAPI) ← **NEXT**
+5. Auditor review interface (`src/assessment/` + `main.py`) ← **COMPLETE** (issues #21–25)
 6. Vector fallback (LanceDB)
 7. Frontend (Vue.js 3, Phase 2)
 
 **Key reference files:**
-- `docs/MODULE_01_STATE.md` — ingestion design (decisions, models, boundaries, gaps)
-- `docs/prd_module_01_ingestion.md` — Module 1 PRD (27 user stories, GitHub issues #1–5)
-- `docs/prd_module_02_extraction.md` — Module 2 PRD (27 user stories, GitHub issues #6–10)
-- `docs/prd_module_03_retrieval.md` — Module 3 PRD (36 user stories, GitHub issues #11–15)
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
-- `CONTEXT.md` — canonical domain glossary
-- `docs/adr/` — 21 ADRs, next is `0022-`
+- `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
+- `CONTEXT.md` — canonical domain glossary (updated 2026-06-02: Assessment module, Review Outcome, Final Score, Auditor Intervention)
+- `docs/adr/` — 32 ADRs, next is `0033-`
 - `docs/dan/` — Deferred Architecture Notes (DAN-0002 CLOSED), next is `0003-`
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
 - `data/rio_manual/acao_01.json` — Rio Manual retrieval context for Ação 1

@@ -13,7 +13,7 @@ def configure(db_path: str | Path) -> None:
 def get_db_path() -> Path:
     if _db_path is None:
         raise RuntimeError(
-            "Retrieval module not configured. Call configure(db_path) before index() or retrieve_for_acao()."
+            "Assessment module not configured. Call configure(db_path) before using the assessment module."
         )
     return _db_path
 
