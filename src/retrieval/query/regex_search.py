@@ -71,6 +71,7 @@ def search_regex(
             expected_product_id=None,
             bm25_score=None,
             rank=None,
+            retrieval_query=pattern,
         )
         for row in rows
     ]

@@ -136,6 +136,7 @@ def _fetch_all_chunks(
             expected_product_id=None,
             bm25_score=None,
             rank=None,
+            retrieval_query=filename,
         )
         for row in rows
     ]

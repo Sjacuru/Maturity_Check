@@ -1,11 +1,11 @@
 """Route tests for Issues #23 and #24 using FastAPI TestClient.
 
 Tests cover:
-- POST /cases/{process_number}/assess (Issue #23)
-- GET  /cases/{process_number}/evaluations (Issue #23)
-- GET  /cases/{process_number}/evaluations/{acao_id} (Issue #23)
-- POST /cases/{process_number}/evaluations/{acao_id}/review (Issue #24)
-- GET  /cases/{process_number}/evaluations/{acao_id}/review (Issue #24)
+- POST /api/cases/{process_number}/assess (Issue #23)
+- GET  /api/cases/{process_number}/evaluations (Issue #23)
+- GET  /api/cases/{process_number}/evaluations/{acao_id} (Issue #23)
+- POST /api/cases/{process_number}/evaluations/{acao_id}/review (Issue #24)
+- GET  /api/cases/{process_number}/evaluations/{acao_id}/review (Issue #24)
 """
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ def client() -> TestClient:
 
 def _upload_file(client: TestClient, process_number: str, force: bool = False) -> None:
     """Helper: POST /assess with a synthetic PDF upload."""
-    url = f"/cases/{process_number}/assess"
+    url = f"/api/cases/{process_number}/assess"
     if force:
         url += "?force=true"
     with patch("assessment.service.extract_document", return_value=_make_chunks()):
@@ -106,13 +106,15 @@ def _upload_file(client: TestClient, process_number: str, force: bool = False) -
 def test_assess_returns_200_on_first_run(client):
     with patch("assessment.service.extract_document", return_value=_make_chunks()):
         resp = client.post(
-            "/cases/P001/assess",
+            "/api/cases/P001/assess",
             files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
         )
     assert resp.status_code == 200
     body = resp.json()
     assert body["process_number"] == "P001"
     assert body["count"] >= 1
+    assert "documents" in body
+    assert body["documents"] == [{"filename": "EVTEA.pdf", "disposition": "new"}]
 
 
 def test_assess_409_when_review_outcome_exists(client, db_path):
@@ -130,7 +132,7 @@ def test_assess_409_when_review_outcome_exists(client, db_path):
 
     with patch("assessment.service.extract_document", return_value=_make_chunks()):
         resp = client.post(
-            "/cases/P001/assess",
+            "/api/cases/P001/assess",
             files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
         )
     assert resp.status_code == 409
@@ -151,7 +153,7 @@ def test_assess_force_true_replaces_existing(client, db_path):
 
     with patch("assessment.service.extract_document", return_value=_make_chunks()):
         resp = client.post(
-            "/cases/P001/assess?force=true",
+            "/api/cases/P001/assess?force=true",
             files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
         )
     assert resp.status_code == 200
@@ -169,7 +171,7 @@ def test_assess_force_true_replaces_existing(client, db_path):
 
 def test_list_evaluations_returns_all_results(client):
     _upload_file(client, "P001")
-    resp = client.get("/cases/P001/evaluations")
+    resp = client.get("/api/cases/P001/evaluations")
     assert resp.status_code == 200
     body = resp.json()
     assert isinstance(body, list)
@@ -178,7 +180,7 @@ def test_list_evaluations_returns_all_results(client):
 
 
 def test_list_evaluations_empty_when_no_assessment(client):
-    resp = client.get("/cases/UNKNOWN/evaluations")
+    resp = client.get("/api/cases/UNKNOWN/evaluations")
     assert resp.status_code == 200
     assert resp.json() == []
 
@@ -187,7 +189,7 @@ def test_list_evaluations_empty_when_no_assessment(client):
 
 def test_get_evaluation_returns_full_result(client):
     _upload_file(client, "P001")
-    resp = client.get("/cases/P001/evaluations/1")
+    resp = client.get("/api/cases/P001/evaluations/1")
     assert resp.status_code == 200
     body = resp.json()
     assert body["acao_id"] == 1
@@ -202,7 +204,7 @@ def test_get_evaluation_returns_full_result(client):
 
 
 def test_get_evaluation_404_when_missing(client):
-    resp = client.get("/cases/UNKNOWN/evaluations/1")
+    resp = client.get("/api/cases/UNKNOWN/evaluations/1")
     assert resp.status_code == 404
 
 
@@ -211,7 +213,7 @@ def test_get_evaluation_404_when_missing(client):
 def test_submit_review_accept(client):
     _upload_file(client, "P001")
     resp = client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={"final_score": 3, "is_override": False, "justification": None},
     )
     assert resp.status_code == 201
@@ -225,7 +227,7 @@ def test_submit_review_accept(client):
 def test_submit_review_override_with_justification(client):
     _upload_file(client, "P001")
     resp = client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={
             "final_score": 1,
             "is_override": True,
@@ -242,7 +244,7 @@ def test_submit_review_override_with_justification(client):
 def test_submit_review_override_missing_justification_422(client):
     _upload_file(client, "P001")
     resp = client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={"final_score": 1, "is_override": True, "justification": None},
     )
     assert resp.status_code == 422
@@ -251,7 +253,7 @@ def test_submit_review_override_missing_justification_422(client):
 def test_submit_review_invalid_score_422(client):
     _upload_file(client, "P001")
     resp = client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={"final_score": 2, "is_override": False},
     )
     assert resp.status_code == 422
@@ -259,7 +261,7 @@ def test_submit_review_invalid_score_422(client):
 
 def test_submit_review_404_when_no_evaluation(client):
     resp = client.post(
-        "/cases/UNKNOWN/evaluations/1/review",
+        "/api/cases/UNKNOWN/evaluations/1/review",
         json={"final_score": 3, "is_override": False},
     )
     assert resp.status_code == 404
@@ -268,15 +270,15 @@ def test_submit_review_404_when_no_evaluation(client):
 def test_submit_review_409_on_duplicate(client):
     _upload_file(client, "P001")
     payload = {"final_score": 3, "is_override": False}
-    client.post("/cases/P001/evaluations/1/review", json=payload)
-    resp = client.post("/cases/P001/evaluations/1/review", json=payload)
+    client.post("/api/cases/P001/evaluations/1/review", json=payload)
+    resp = client.post("/api/cases/P001/evaluations/1/review", json=payload)
     assert resp.status_code == 409
 
 
 def test_created_at_is_server_side(client):
     _upload_file(client, "P001")
     resp = client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={"final_score": 3, "is_override": False},
     )
     assert resp.status_code == 201
@@ -290,7 +292,7 @@ def test_created_at_is_server_side(client):
 def test_evidence_references_none_vs_empty(client):
     _upload_file(client, "P001")
     resp = client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={"final_score": 3, "is_override": False, "evidence_references": None},
     )
     assert resp.status_code == 201
@@ -302,10 +304,10 @@ def test_evidence_references_none_vs_empty(client):
 def test_get_review_returns_stored_outcome(client):
     _upload_file(client, "P001")
     client.post(
-        "/cases/P001/evaluations/1/review",
+        "/api/cases/P001/evaluations/1/review",
         json={"final_score": 3, "is_override": False},
     )
-    resp = client.get("/cases/P001/evaluations/1/review")
+    resp = client.get("/api/cases/P001/evaluations/1/review")
     assert resp.status_code == 200
     body = resp.json()
     assert body["acao_id"] == 1
@@ -314,5 +316,49 @@ def test_get_review_returns_stored_outcome(client):
 
 
 def test_get_review_404_when_missing(client):
-    resp = client.get("/cases/UNKNOWN/evaluations/1/review")
+    resp = client.get("/api/cases/UNKNOWN/evaluations/1/review")
+    assert resp.status_code == 404
+
+
+# ── /api prefix — Issue #29 ───────────────────────────────────────────────────
+
+def test_assess_reused_disposition_on_second_identical_upload(client):
+    with patch("assessment.service.extract_document", return_value=_make_chunks()):
+        resp1 = client.post(
+            "/api/cases/P001/assess",
+            files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
+        )
+    assert resp1.status_code == 200
+    assert resp1.json()["documents"][0]["disposition"] == "new"
+
+    with patch("assessment.service.extract_document", return_value=_make_chunks()):
+        resp2 = client.post(
+            "/api/cases/P001/assess",
+            files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
+        )
+    assert resp2.status_code == 200
+    assert resp2.json()["documents"][0]["disposition"] == "reused"
+
+
+def test_assess_replaced_disposition_when_content_changes(client):
+    with patch("assessment.service.extract_document", return_value=_make_chunks()):
+        client.post(
+            "/api/cases/P001/assess",
+            files=[("files", ("EVTEA.pdf", io.BytesIO(b"version 1"), "application/pdf"))],
+        )
+    with patch("assessment.service.extract_document", return_value=_make_chunks()):
+        resp = client.post(
+            "/api/cases/P001/assess",
+            files=[("files", ("EVTEA.pdf", io.BytesIO(b"version 2 different content"), "application/pdf"))],
+        )
+    assert resp.status_code == 200
+    assert resp.json()["documents"][0]["disposition"] == "replaced"
+
+
+def test_old_path_without_api_prefix_returns_404(client):
+    with patch("assessment.service.extract_document", return_value=_make_chunks()):
+        resp = client.post(
+            "/cases/P001/assess",
+            files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
+        )
     assert resp.status_code == 404

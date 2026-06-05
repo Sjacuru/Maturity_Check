@@ -41,12 +41,13 @@ async def assess(
             dest.write_bytes(await upload.read())
             document_paths.append(dest)
 
-        results = _service.run_assessment(process_number, document_paths)
+        results, documents = _service.run_assessment(process_number, document_paths)
 
     return {
         "process_number": process_number,
         "acao_ids_assessed": [r.acao_id for r in results],
         "count": len(results),
+        "documents": documents,
     }
 
 

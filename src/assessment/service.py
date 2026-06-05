@@ -11,7 +11,7 @@ from evaluation import evaluate, EvaluationResult
 from evaluation._config import get_llm_client
 from extraction import extract_document
 from ingestion import get_ipmp_store
-from retrieval import index, retrieve_for_acao
+from retrieval import index, invalidate_vector_index, retrieve_for_acao
 
 from assessment._config import get_db_path
 
@@ -23,11 +23,12 @@ class AssessmentService:
         self,
         process_number: str,
         document_paths: list[Path],
-    ) -> list[EvaluationResult]:
+    ) -> tuple[list[EvaluationResult], list[dict[str, str]]]:
         get_llm_client()  # raises RuntimeError if configure_llm() was not called
 
         db_path = get_db_path()
 
+        documents: list[dict[str, str]] = []
         if not document_paths:
             if not _has_indexed_chunks(db_path, process_number):
                 raise RuntimeError(
@@ -36,7 +37,8 @@ class AssessmentService:
                 )
         else:
             for path in document_paths:
-                _process_file(db_path, process_number, path)
+                disposition = _process_file(db_path, process_number, path)
+                documents.append({"filename": path.name, "disposition": disposition})
 
         store = get_ipmp_store()
         results: list[EvaluationResult] = []
@@ -46,7 +48,7 @@ class AssessmentService:
             _persist_evaluation_result(db_path, result)
             results.append(result)
 
-        return results
+        return results, documents
 
 
 def _compute_sha256(path: Path) -> str:
@@ -121,24 +123,28 @@ def _has_indexed_chunks(db_path: Path, process_number: str) -> bool:
         con.close()
 
 
-def _process_file(db_path: Path, process_number: str, path: Path) -> None:
+def _process_file(db_path: Path, process_number: str, path: Path) -> str:
     filename = path.name
     sha256 = _compute_sha256(path)
     stored = _get_stored_fingerprint(db_path, process_number, filename)
 
     if stored == sha256:
         logger.info("Fingerprint match for %s/%s — reusing indexed chunks.", process_number, filename)
-        return
+        return "reused"
 
+    is_replacement = stored is not None
     logger.info(
-        "Fingerprint mismatch for %s/%s — replacing stale chunks.",
+        "Fingerprint mismatch for %s/%s — %s stale chunks.",
         process_number,
         filename,
+        "replacing" if is_replacement else "indexing new",
     )
     _delete_chunks_for_file(db_path, process_number, filename)
+    invalidate_vector_index(process_number)
     chunks = extract_document(path)
     index(process_number, chunks)
     _upsert_fingerprint(db_path, process_number, filename, sha256)
+    return "replaced" if is_replacement else "new"
 
 
 def _persist_evaluation_result(db_path: Path, result: EvaluationResult) -> None:

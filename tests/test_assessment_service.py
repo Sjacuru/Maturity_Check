@@ -157,7 +157,7 @@ def test_first_run_indexes_chunks_and_stores_fingerprint(db_path, dummy_pdf):
 def test_first_run_persists_evaluation_results(db_path, dummy_pdf):
     svc = AssessmentService()
     with patch("assessment.service.extract_document", return_value=_make_chunks("EVTEA.pdf")):
-        results = svc.run_assessment("P001", [dummy_pdf])
+        results, _ = svc.run_assessment("P001", [dummy_pdf])
 
     assert len(results) >= 1
     assert _eval_result_count(db_path, "P001") == len(results)
@@ -167,7 +167,7 @@ def test_first_run_returns_evaluation_result_objects(db_path, dummy_pdf):
     from evaluation import EvaluationResult
     svc = AssessmentService()
     with patch("assessment.service.extract_document", return_value=_make_chunks("EVTEA.pdf")):
-        results = svc.run_assessment("P001", [dummy_pdf])
+        results, _ = svc.run_assessment("P001", [dummy_pdf])
 
     assert all(isinstance(r, EvaluationResult) for r in results)
     assert all(r.process_number == "P001" for r in results)
@@ -177,7 +177,7 @@ def test_raw_json_stored_in_evaluation_results(db_path, dummy_pdf):
     import json
     svc = AssessmentService()
     with patch("assessment.service.extract_document", return_value=_make_chunks("EVTEA.pdf")):
-        results = svc.run_assessment("P001", [dummy_pdf])
+        results, _ = svc.run_assessment("P001", [dummy_pdf])
 
     con = sqlite3.connect(str(db_path))
     rows = con.execute(
@@ -230,7 +230,7 @@ def test_no_files_with_prior_index_succeeds(db_path, dummy_pdf):
 
     # second call with no files — uses existing chunks
     with patch("assessment.service.extract_document") as m:
-        results = svc.run_assessment("P001", [])
+        results, _ = svc.run_assessment("P001", [])
         assert m.call_count == 0  # no extraction called
     assert len(results) >= 1
 

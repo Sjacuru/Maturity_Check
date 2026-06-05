@@ -150,4 +150,83 @@ def test_model_dump_contains_all_fields():
         "process_number", "filename", "page_number", "chunk_index",
         "char_offset", "page_total", "ocr_used", "source_type", "text",
         "cascade_step", "expected_product_id", "bm25_score", "rank",
+        "retrieval_mode", "retrieval_query",
     }
+
+
+# --- retrieval_mode field ---
+
+def test_retrieval_mode_defaults_to_lexical():
+    chunk = RetrievedChunk(**VALID_BM25)
+    assert chunk.retrieval_mode == "lexical"
+
+
+def test_retrieval_mode_lexical_accepted():
+    chunk = RetrievedChunk(**{**VALID_BM25, "retrieval_mode": "lexical"})
+    assert chunk.retrieval_mode == "lexical"
+
+
+def test_retrieval_mode_vector_fallback_accepted():
+    chunk = RetrievedChunk(**{
+        **VALID_BM25,
+        "cascade_step": "vector",
+        "expected_product_id": None,
+        "bm25_score": None,
+        "rank": None,
+        "retrieval_mode": "vector_fallback",
+    })
+    assert chunk.retrieval_mode == "vector_fallback"
+
+
+def test_retrieval_mode_invalid_rejected():
+    with pytest.raises(ValidationError):
+        RetrievedChunk(**{**VALID_BM25, "retrieval_mode": "semantic"})
+
+
+def test_vector_cascade_step_accepted():
+    chunk = RetrievedChunk(**{
+        **VALID_BM25,
+        "cascade_step": "vector",
+        "expected_product_id": None,
+        "bm25_score": None,
+        "rank": None,
+        "retrieval_mode": "vector_fallback",
+    })
+    assert chunk.cascade_step == "vector"
+    assert chunk.retrieval_mode == "vector_fallback"
+
+
+def test_retrieval_mode_serializes_in_model_dump():
+    chunk = RetrievedChunk(**{
+        **VALID_BM25,
+        "cascade_step": "vector",
+        "expected_product_id": None,
+        "bm25_score": None,
+        "rank": None,
+        "retrieval_mode": "vector_fallback",
+    })
+    dumped = chunk.model_dump()
+    assert dumped["retrieval_mode"] == "vector_fallback"
+
+
+# --- retrieval_query field ---
+
+def test_retrieval_query_defaults_to_none():
+    chunk = RetrievedChunk(**VALID_BM25)
+    assert chunk.retrieval_query is None
+
+
+def test_retrieval_query_accepts_string():
+    chunk = RetrievedChunk(**{**VALID_BM25, "retrieval_query": "estudo viabilidade OR EVTEA"})
+    assert chunk.retrieval_query == "estudo viabilidade OR EVTEA"
+
+
+def test_retrieval_query_accepts_none():
+    chunk = RetrievedChunk(**{**VALID_BM25, "retrieval_query": None})
+    assert chunk.retrieval_query is None
+
+
+def test_retrieval_query_serializes_in_model_dump():
+    query = "estudo viabilidade OR EVTEA"
+    chunk = RetrievedChunk(**{**VALID_BM25, "retrieval_query": query})
+    assert chunk.model_dump()["retrieval_query"] == query

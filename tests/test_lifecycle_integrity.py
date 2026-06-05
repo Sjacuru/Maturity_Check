@@ -137,7 +137,7 @@ def pdf_file(tmp_path) -> Path:
 
 
 def _assess(client: TestClient, process_number: str, content: bytes = None, force: bool = False):
-    url = f"/cases/{process_number}/assess"
+    url = f"/api/cases/{process_number}/assess"
     if force:
         url += "?force=true"
     if content is None:
@@ -152,7 +152,7 @@ def _assess(client: TestClient, process_number: str, content: bytes = None, forc
 
 def _review(client: TestClient, process_number: str, acao_id: int = 1):
     return client.post(
-        f"/cases/{process_number}/evaluations/{acao_id}/review",
+        f"/api/cases/{process_number}/evaluations/{acao_id}/review",
         json={"final_score": 3, "is_override": False},
     )
 
@@ -180,10 +180,10 @@ def test_force_replace_review_gone_and_new_eval_present_adr0026(client, db_path)
 
     _assess(client, "P001", force=True)
 
-    review_resp = client.get("/cases/P001/evaluations/1/review")
+    review_resp = client.get("/api/cases/P001/evaluations/1/review")
     assert review_resp.status_code == 404
 
-    eval_resp = client.get("/cases/P001/evaluations/1")
+    eval_resp = client.get("/api/cases/P001/evaluations/1")
     assert eval_resp.status_code == 200
 
 
@@ -203,7 +203,7 @@ def test_force_replace_is_atomic_partial_failure_leaves_no_stale_state_adr0026(d
         raise RuntimeError("simulated extraction failure")
 
     # force=true triggers deletion, then pipeline fails
-    url = "/cases/P001/assess?force=true"
+    url = "/api/cases/P001/assess?force=true"
     with patch("assessment.service.extract_document", side_effect=raising_extract):
         resp = failing_client.post(
             url,
@@ -223,7 +223,7 @@ def test_force_replace_is_atomic_partial_failure_leaves_no_stale_state_adr0026(d
 def test_fingerprint_reuse_skips_extraction_adr0029(client):
     """Same SHA-256 on re-submit must not call extract_document again."""
     content = _fake_bytes_v1()
-    url = "/cases/P001/assess"
+    url = "/api/cases/P001/assess"
 
     # Inline HTTP calls so the outer mock is not overridden by _assess's internal patch.
     with patch("assessment.service.extract_document", return_value=_make_chunks()) as m:
@@ -252,7 +252,7 @@ def test_fingerprint_stored_after_first_index_adr0029(client, db_path):
 
 def test_different_sha256_triggers_reextraction_adr0029(client, db_path):
     """Different file content → extraction called on second run."""
-    url = "/cases/P001/assess"
+    url = "/api/cases/P001/assess"
 
     with patch("assessment.service.extract_document", return_value=_make_chunks()) as m:
         client.post(url, files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_bytes_v1()), "application/pdf"))])
@@ -270,7 +270,7 @@ def test_different_sha256_triggers_reextraction_adr0029(client, db_path):
 
 def test_stale_chunks_replaced_after_fingerprint_mismatch_adr0029(client, db_path):
     """After fingerprint mismatch, only new chunks survive — none from prior extraction."""
-    url = "/cases/P001/assess"
+    url = "/api/cases/P001/assess"
 
     with patch("assessment.service.extract_document", return_value=_make_chunks(n=4)):
         client.post(url, files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_bytes_v1()), "application/pdf"))])
@@ -301,7 +301,7 @@ def test_per_file_replacement_no_contamination_adr0029(client, db_path, tmp_path
 
     with patch("assessment.service.extract_document", side_effect=side_first):
         client.post(
-            "/cases/P001/assess",
+            "/api/cases/P001/assess",
             files=[
                 ("files", ("DocA.pdf", io.BytesIO(b"doc a v1"), "application/pdf")),
                 ("files", ("DocB.pdf", io.BytesIO(b"doc b stable"), "application/pdf")),
@@ -318,7 +318,7 @@ def test_per_file_replacement_no_contamination_adr0029(client, db_path, tmp_path
 
     with patch("assessment.service.extract_document", side_effect=side_second):
         client.post(
-            "/cases/P001/assess",
+            "/api/cases/P001/assess",
             files=[
                 ("files", ("DocA.pdf", io.BytesIO(b"doc a v2 changed"), "application/pdf")),
                 ("files", ("DocB.pdf", io.BytesIO(b"doc b stable"), "application/pdf")),
@@ -363,7 +363,7 @@ def test_raw_json_reflects_latest_evaluation_adr0025(client, db_path):
 def test_get_evaluation_returns_latest_after_force_rerun_adr0026(client, db_path):
     """GET /evaluation must return new data after force=true re-run."""
     _assess(client, "P001")
-    before = client.get("/cases/P001/evaluations/1").json()
+    before = client.get("/api/cases/P001/evaluations/1").json()
 
     class ZeroStub:
         def complete(self, system, user):
@@ -371,9 +371,9 @@ def test_get_evaluation_returns_latest_after_force_rerun_adr0026(client, db_path
 
     eval_cfg._client = ZeroStub()
     _assess(client, "P001", content=_fake_bytes_v2(), force=True)
-    after = client.get("/cases/P001/evaluations/1").json()
+    after = client.get("/api/cases/P001/evaluations/1").json()
 
     assert after["proposed_score"] == 0
     # Confirm only one result remains
-    all_results = client.get("/cases/P001/evaluations").json()
+    all_results = client.get("/api/cases/P001/evaluations").json()
     assert len(all_results) == 1

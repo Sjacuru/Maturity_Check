@@ -32,6 +32,7 @@ class _Hit:
     chunk_id: int
     product_id: str | None
     score: float
+    query_str: str
     row: tuple  # (process_number, filename, page_number, chunk_index,
     #              char_offset, page_total, ocr_used, source_type, text)
 
@@ -79,6 +80,7 @@ def search_bm25(
             expected_product_id=h.product_id,
             bm25_score=h.score,
             rank=i + 1,
+            retrieval_query=h.query_str,
         )
         for i, h in enumerate(top)
     ]
@@ -103,6 +105,7 @@ def _run_queries(
                     chunk_id=row[0],
                     product_id=product_id,
                     score=row[10],
+                    query_str=query_str,
                     row=row[1:10],
                 )
             )
@@ -116,3 +119,4 @@ def _merge(hits: list[_Hit]) -> list[_Hit]:
         if h.chunk_id not in best or h.score < best[h.chunk_id].score:
             best[h.chunk_id] = h
     return list(best.values())
+
