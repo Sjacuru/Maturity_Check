@@ -10,6 +10,9 @@ dependencies = [
   "python-multipart>=0.0.9",
   "pypdf>=6.0",
   "unstructured[pdf]>=0.22",
+  "numpy>=1.26",
+  "lancedb>=0.17",
+  "sentence-transformers>=3.0",
 ]
 
 [build-system]

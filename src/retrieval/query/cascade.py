@@ -42,9 +42,11 @@ def retrieve_for_acao(
     If A or B identifies a document, return all its chunks (regex naturally scoped).
     Step C — corpus-wide BM25.
     Step D — corpus-wide regex (ADR-0007), additive to BM25; not counted against MAX_CHUNKS_PER_ACAO.
+    Step E — vector fallback (ADR-0033): runs only when A–D return zero chunks.
     """
     from retrieval.query.document import retrieve_document_focused
     from retrieval.query.regex_search import search_regex
+    from retrieval.query.vector import search_vector
 
     doc_result = retrieve_document_focused(acao_id, process_number)
     if doc_result is not None:
@@ -59,4 +61,23 @@ def retrieve_for_acao(
         if (r.filename, r.page_number, r.chunk_index) not in bm25_keys
     ]
 
-    return bm25_results + new_hits
+    lexical = bm25_results + new_hits
+    if lexical:
+        return lexical
+
+    query_text = _build_vector_query(acao_id)
+    if not query_text:
+        return []
+    return search_vector(process_number, query_text)
+
+
+def _build_vector_query(acao_id: int) -> str:
+    """Concatenate letter-suffixed Expected Product texts for the Ação as the vector query."""
+    acao = get_ipmp_store().acoes.get(acao_id)
+    if acao is None:
+        return ""
+    parts = [
+        p.texto for p in acao.produtos_esperados
+        if p.id[-1:].isalpha()
+    ]
+    return " ".join(parts)

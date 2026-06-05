@@ -18,7 +18,9 @@ class RetrievedChunk(BaseModel):
     source_type: str
     text: str
     # Retrieval metadata
-    cascade_step: Literal["filename_match", "variant_match", "bm25", "regex"]
-    expected_product_id: str | None  # null on document-focused and regex paths
-    bm25_score: float | None         # null on document-focused and regex paths
-    rank: int | None                 # null on document-focused and regex paths
+    cascade_step: Literal["filename_match", "variant_match", "bm25", "regex", "vector"]
+    expected_product_id: str | None  # null on document-focused, regex, and vector paths
+    bm25_score: float | None         # null on document-focused, regex, and vector paths
+    rank: int | None                 # null on document-focused, regex, and vector paths
+    retrieval_mode: Literal["lexical", "vector_fallback"] = "lexical"
+    retrieval_query: str | None = None

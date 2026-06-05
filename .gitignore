@@ -79,6 +79,9 @@ tmp/
 temp/
 .cache/
 
+# LanceDB vector store (derived from SQLite path; never committed)
+lancedb/
+
 # Project data artifacts — ignore everything in data/ by default,
 # but track source-of-truth JSON artifacts in known subdirectories.
 # New directories (e.g. case_documents/, pdfs/) remain ignored automatically.

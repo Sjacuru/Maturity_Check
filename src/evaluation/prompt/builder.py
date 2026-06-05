@@ -3,7 +3,7 @@ from __future__ import annotations
 from ingestion import get_ipmp_store
 from retrieval.interfaces.contracts import RetrievedChunk
 
-_CASCADE_ORDER = {"filename_match": 0, "variant_match": 1, "bm25": 2, "regex": 3}
+_CASCADE_ORDER = {"filename_match": 0, "variant_match": 1, "bm25": 2, "regex": 3, "vector": 4}
 
 _EXAMPLES_FRAMING = (
     "Os exemplos abaixo ilustram os níveis de pontuação em um contexto "
