@@ -361,4 +361,4 @@ def test_old_path_without_api_prefix_returns_404(client):
             "/cases/P001/assess",
             files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
         )
-    assert resp.status_code == 404
+    assert resp.status_code in (404, 405)  # 405 when StaticFiles mount intercepts

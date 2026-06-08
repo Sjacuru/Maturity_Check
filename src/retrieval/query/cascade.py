@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ingestion import get_acronym_store, get_ipmp_store
+from ingestion import get_acronym_store, get_ipmp_store, get_rio_manual_store
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.query.bm25 import search_bm25
 from retrieval.query.query_builder import build_bm25_query
@@ -27,6 +27,13 @@ def retrieve_bm25_for_acao(
             q = build_bm25_query(product.texto, acronym_map)
             if q:
                 queries[product.id] = q
+
+    rio_acao = get_rio_manual_store().acoes.get(acao_id)
+    if rio_acao:
+        hints = rio_acao.bm25_search_hints
+        all_hints = hints.primary_terms + hints.secondary_terms
+        if all_hints:
+            queries["rio_hints"] = " OR ".join(f'"{t}"' for t in all_hints)
 
     return search_bm25(queries, process_number)
 
