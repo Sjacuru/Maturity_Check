@@ -77,10 +77,10 @@ def run_for(label: str, process_number: str, pdf: Path) -> None:
     print(f"  parse_failed    : {result.parse_failed}")
     print(f"  proposed_score  : {result.proposed_score}")
     print(f"  uncertainty_flag: {result.uncertainty_flag}")
-    print(f"  evidence_chars  : {result.evidence_chars}")
+    print(f"  evidence_chars  : {result.evidence_char_count}")
     print(f"  raw_response len: {len(result.raw_llm_response or '')}")
     print(f"\nLLM REASONING (first 800 chars):")
-    print((result.llm_reasoning or "(none)")[:800])
+    print((result.reasoning or "(none)")[:800])
     print(f"\nFull raw response ({len(result.raw_llm_response or '')} chars):")
     print((result.raw_llm_response or "(none)")[:1200])
 
