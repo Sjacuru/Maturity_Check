@@ -18,7 +18,7 @@ class OllamaClient:
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                "options": {"temperature": 0},
+                "options": {"temperature": 0, "num_ctx": 32768},
                 "stream": False,
             }
         ).encode()

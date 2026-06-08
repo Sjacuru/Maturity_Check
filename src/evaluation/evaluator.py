@@ -12,8 +12,43 @@ from evaluation.prompt.builder import build_system_prompt, build_user_prompt
 
 logger = logging.getLogger(__name__)
 
-# Sits below Mistral 7B's 32K context window after accounting for the system prompt (~3-4k chars).
+# Warn when evidence is large; hard-cap before it crowds out the system prompt + LLM output.
 EVIDENCE_CHAR_WARN_THRESHOLD = 15_000
+_MAX_EVIDENCE_CHARS = 20_000
+
+_CASCADE_PRIORITY = {"filename_match": 0, "variant_match": 1, "bm25": 2, "regex": 3, "vector": 4}
+
+
+def _cap_evidence(
+    chunks: list[RetrievedChunk], acao_id: int, process_number: str
+) -> list[RetrievedChunk]:
+    total = sum(len(c.text) for c in chunks)
+    if total <= _MAX_EVIDENCE_CHARS:
+        return chunks
+    priority_sorted = sorted(
+        chunks,
+        key=lambda c: (
+            _CASCADE_PRIORITY[c.cascade_step],
+            -(c.bm25_score or 0.0) if c.cascade_step == "bm25" else 0.0,
+            c.chunk_index,
+        ),
+    )
+    kept: list[RetrievedChunk] = []
+    running = 0
+    for c in priority_sorted:
+        if running + len(c.text) > _MAX_EVIDENCE_CHARS:
+            break
+        kept.append(c)
+        running += len(c.text)
+    logger.warning(
+        "Evidence truncated: acao_id=%d process=%s dropped %d chunks (%d→%d chars)",
+        acao_id,
+        process_number,
+        len(chunks) - len(kept),
+        total,
+        running,
+    )
+    return kept
 
 
 def evaluate(
@@ -31,6 +66,8 @@ def evaluate(
             f"acao_id {acao_id} not found in IPMPStore. "
             "Ensure the corresponding source-of-truth artifact is loaded."
         )
+
+    chunks = _cap_evidence(chunks, acao_id, process_number)
 
     if not chunks:
         return EvaluationResult(
