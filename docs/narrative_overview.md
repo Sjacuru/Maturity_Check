@@ -15,11 +15,11 @@
 
 O **PPP Maturity Check** é um sistema de suporte à decisão para avaliação de projetos de Parceria Público-Privada (PPP) do Município do Rio de Janeiro. O sistema avalia documentos de processos licitatórios contra o framework **IPMP** (Indicador de Percepção de Maturidade de Projetos), produzindo uma pontuação de maturidade para cada ação avaliada.
 
-O objetivo não é substituir o auditor. É tornar o trabalho do auditor mais rápido, mais rastreável e mais reprodutível. O sistema recupera evidências dos documentos, raciocina sobre elas e propõe uma pontuação. O auditor lê o raciocínio, verifica as evidências e decide — aceitando ou substituindo a pontuação com justificativa.
+O objetivo é tornar o trabalho do auditor mais rápido, rastreável e replicável. O sistema recupera evidências dos documentos, raciocina sobre elas e propõe uma pontuação. O auditor avalia o resultado, verifica as evidências e decide — aceitando ou substituindo a pontuação com justificativa.
 
-**Estado atual:** sete módulos implementados, 300 testes passando, fluxo ponta-a-ponta funcional para a Ação 1. A validação da cadeia de raciocínio (Phase A) foi concluída em junho de 2026, confirmando que o sistema produz os scores esperados em corpus de teste controlado. O próximo passo é a validação com documentos reais de PPP.
+**Estado atual:** sete módulos implementados, 300 testes feitos por IA, fluxo ponta-a-ponta funcional para a Ação 1. A validação da cadeia de raciocínio (Phase A) foi concluída em junho, confirmando que o sistema produz os scores esperados em corpus de teste controlado. O próximo passo é a validação com documentos reais de PPP.
 
-**Restrição central:** reprodutibilidade. A mesma entrada deve produzir a mesma saída em qualquer execução. Esta restrição orienta todas as escolhas técnicas: recuperação BM25 determinística, temperatura zero no LLM, prompt fixo por ação.
+**Restrição central:** normalização de resultados. A mesma entrada deve produzir a mesma saída em qualquer execução. Esta restrição orienta todas as escolhas técnicas: recuperação BM25 determinística, temperatura zero no LLM, prompt fixo por ação.
 
 ### English
 
@@ -39,19 +39,19 @@ The objective is not to replace the auditor. It is to make the auditor's work fa
 
 #### 2.1 Projetos PPP e a necessidade de avaliação
 
-Projetos de Parceria Público-Privada são instrumentos complexos de contratação pública. Eles envolvem comprometimento de recursos públicos por décadas, transferência de riscos entre poder público e iniciativa privada, e impacto direto sobre a qualidade de serviços essenciais para a população. Um projeto mal estruturado pode resultar em litígios prolongados, paralização de obras estratégicas ou perdas fiscais significativas para o município.
+Projetos de Parceria Público-Privada são instrumentos complexos de contratação pública que  envolvem comprometimento de recursos públicos por longo prazo, transferência de riscos entre poder público e iniciativa privada e impacto direto sobre a qualidade de serviços essenciais para a população. Um projeto mal estruturado pode resultar em litígios prolongados, paralização de obras estratégicas, perdas fiscais significativas para o município e prestação de serviço deficiente.
 
-No Município do Rio de Janeiro, a condução de projetos PPP é regulada pela Lei Complementar n.º 105/2009 e orientada por procedimentos documentados no **Manual de Melhores Práticas em Concessões e PPPs do Município do Rio de Janeiro** (Rio Manual). O processo de avaliação verifica se os documentos produzidos ao longo da estruturação do projeto atendem aos critérios de qualidade estabelecidos.
+O processo de avaliação verifica se os documentos produzidos ao longo da estruturação do projeto atendem aos critérios de qualidade estabelecidos.
 
 #### 2.2 O framework IPMP
 
 O **IPMP** — Indicador de Percepção de Maturidade de Projetos — é o framework de avaliação adotado. Ele organiza a avaliação em **46 ações** distribuídas em **5 dimensões**:
 
-1. Pré-Análise
-2. Estudos Técnicos
-3. Modelagem e Estruturação
-4. Edital e Contrato
-5. Monitoramento e Gestão
+1. Estratégica
+2. Técnica
+3. Financeira
+4. Ambiental e Social
+5. Jurídica e Regulatória
 
 Cada ação é pontuada em uma escala de três níveis: **0** (Não Atendido), **1** (Parcialmente Atendido), **3** (Atendido). A pontuação máxima possível é **138 pontos** (46 × 3). Para cada ação, o IPMP define:
 
@@ -83,11 +83,11 @@ In the City of Rio de Janeiro, PPP project management is regulated by Complement
 
 The **IPMP** — Indicador de Percepção de Maturidade de Projetos (Project Maturity Perception Indicator) — is the adopted evaluation framework. It organizes the assessment into **46 actions** across **5 dimensions**:
 
-1. Pre-Analysis
-2. Technical Studies
-3. Modeling and Structuring
-4. Bidding Documents and Contract
-5. Monitoring and Management
+1. Strategic
+2. Technical
+3. Financial
+4. Environmental and Social
+5. Legal and Regulatory
 
 Each action is scored on a three-level scale: **0** (Not Met), **1** (Partially Met), **3** (Met). The maximum possible score is **138 points** (46 × 3). For each action, the IPMP defines:
 
@@ -128,7 +128,7 @@ A pontuação proposta não é um resultado — é uma entrada para o julgamento
 
 #### 3.2 Escopo atual: Ação 1
 
-O sistema foi construído para a Ação 1 do IPMP: *"Descreva o projeto, seu contexto e os objetivos estratégicos."* Esta ação pertence à dimensão de Pré-Análise e avalia quatro produtos esperados (1a–1d).
+O sistema foi construído para a Ação 1 do IPMP: *"Descreva o projeto, seu contexto e os objetivos estratégicos."* Esta ação pertence à dimensão Estratégica e avalia quatro produtos esperados (1a–1d).
 
 A escolha de um escopo estreito foi deliberada. O projeto segue o princípio de **módulos profundos**: um módulo completamente projetado e construído antes do próximo começar. Isso evita dívida técnica oculta e garante que cada camada da arquitetura está validada antes de ser estendida.
 
@@ -161,7 +161,7 @@ The proposed score is not a result — it is an input for the auditor's judgment
 
 #### 3.2 Current scope: Action 1
 
-The system was built for IPMP Action 1: *"Describe the project, its context, and strategic objectives."* This action belongs to the Pre-Analysis dimension and evaluates four expected products (1a–1d).
+The system was built for IPMP Action 1: *"Describe the project, its context, and strategic objectives."* This action belongs to the Strategic dimension and evaluates four expected products (1a–1d).
 
 The choice of a narrow scope was deliberate. The project follows the **deep modules** principle: one module fully designed and built before the next begins. This avoids hidden technical debt and ensures each architectural layer is validated before being extended.
 

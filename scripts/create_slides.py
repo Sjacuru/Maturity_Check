@@ -291,11 +291,11 @@ def slide_ipmp(prs: Presentation) -> None:
 
     # Dimensions table
     dims = [
-        ("1", "Pré-Análise", "Pre-Analysis"),
-        ("2", "Estudos Técnicos", "Technical Studies"),
-        ("3", "Modelagem e Estruturação", "Modeling and Structuring"),
-        ("4", "Edital e Contrato", "Bidding Documents and Contract"),
-        ("5", "Monitoramento e Gestão", "Monitoring and Management"),
+        ("1", "Estratégica", "Strategic"),
+        ("2", "Técnica", "Technical"),
+        ("3", "Financeira", "Financial"),
+        ("4", "Ambiental e Social", "Environmental and Social"),
+        ("5", "Jurídica e Regulatória", "Legal and Regulatory"),
     ]
     t = _add_table(slide, Inches(0.4), Inches(1.3), Inches(7.5),
                    rows=6, cols=3,
