@@ -130,7 +130,7 @@ A pontuação proposta não é um resultado — é uma entrada para o julgamento
 
 O sistema foi construído para a Ação 1 do IPMP: *"Descreva o projeto, seu contexto e os objetivos estratégicos."* Esta ação pertence à dimensão Estratégica e avalia quatro produtos esperados (1a–1d).
 
-A escolha de um escopo estreito foi deliberada. O projeto segue o princípio de **módulos profundos**: um módulo completamente projetado e construído antes do próximo começar. Isso evita dívida técnica oculta e garante que cada camada da arquitetura está validada antes de ser estendida.
+A escolha de um escopo reduzido foi deliberada. O projeto segue o princípio de **módulos profundos/Deep modules**: um módulo completamente projetado e construído antes do próximo começar. Isso evita dívida técnica oculta e garante que cada camada da arquitetura esteja validada antes de ser estendida.
 
 A extensão para as demais 45 ações requer apenas a adição de dados IPMP e Rio Manual correspondentes. A infraestrutura está construída.
 
@@ -138,11 +138,11 @@ A extensão para as demais 45 ações requer apenas a adição de dados IPMP e R
 
 **Reprodutibilidade:** BM25 (recuperação lexical determinística) + temperatura zero no LLM = mesma entrada → mesmo score. Esta propriedade é requisito acadêmico explícito e condição para comparação entre processos diferentes.
 
-**Rastreabilidade:** cada score armazenado carrega sua cadeia de evidências completa — quais trechos foram recuperados, por qual método, qual prompt foi enviado, qual raciocínio foi produzido. O auditor pode auditar o auditor.
+**Rastreabilidade:** cada score armazenado carrega sua cadeia de evidências completa — quais trechos foram recuperados, por qual método, qual prompt foi enviado, qual raciocínio foi produzido. O auditor pode auditar cada passo.
 
 **Separação de responsabilidades:** cada módulo possui uma fronteira clara e uma única responsabilidade. Alterações em um módulo não propagam efeitos inesperados nos demais.
 
-**Humano no loop:** a pontuação final é sempre do auditor. O sistema nunca grava uma pontuação sem validação humana explícita.
+**Humano no loop/Human in the loop:** a pontuação final é sempre do auditor. O sistema nunca grava uma pontuação sem validação humana explícita.
 
 ### English
 
@@ -198,10 +198,10 @@ Resultado persistido; apresentado na interface
         ↓  [Módulo 7 — Frontend]
 Pacote de evidências completo para revisão do auditor
         ↓  [Decisão do auditor]
-Score final gravado com justificativa
+Score final (ou com justificativa)
 ```
 
-#### 4.2 O que muda em cada estágio
+#### 4.2 O que ocorre em cada estágio
 
 **Extração (PDF → chunks):** O PDF passa por um extrator que identifica texto nativo e, onde necessário, aplica OCR. O resultado é uma lista de `Chunk`s — unidades de texto com metadados de proveniência (arquivo, página, offset, indicador de OCR). Esta transformação preserva a localização original de cada trecho, que será exibida ao auditor.
 
@@ -269,15 +269,15 @@ Final score recorded with justification
 
 #### 5.1 Mapa de responsabilidades
 
-| Módulo | Estágio | Entrada | Saída |
-|--------|---------|---------|-------|
-| 1 — Ingestion | Referência | Arquivos IPMP + Rio Manual + siglas | Store de critérios e metadados de busca |
-| 2 — Extraction | Extração | PDF do processo licitatório | Lista de `Chunk`s estruturados |
-| 3 — Retrieval | Recuperação | Chunks indexados + critérios da ação | `RetrievedChunk`s com proveniência |
-| 4 — Evaluation | Avaliação | `RetrievedChunk`s + critérios IPMP | `EvaluationResult` com raciocínio |
-| 5 — Assessment | Orquestração + API | PDFs do caso | Resultados persistidos; endpoints REST |
-| 6 — Vector Fallback | Recuperação (fallback) | Chunks sem resultado léxico | Chunks por similaridade semântica |
-| 7 — Frontend | Interface do auditor | API REST | Painel Vue.js com pacote de evidências |
+| Módulo                | Estágio               | Entrada                               | Saída |
+|--------               |---------              |---------                              |-------|
+| 1 — Ingestion         | Referência            | Arquivos IPMP + Rio Manual + siglas   | Store de critérios e metadados de busca |
+| 2 — Extraction        | Extração              | PDF do processo licitatório           | Lista de `Chunk`s estruturados |
+| 3 — Retrieval         | Recuperação           | Chunks indexados + critérios da ação  | `RetrievedChunk`s com proveniência |
+| 4 — Evaluation        | Avaliação             | `RetrievedChunk`s + critérios IPMP    | `EvaluationResult` com raciocínio |
+| 5 — Assessment        | Orquestração + API    | PDFs do caso                          | Resultados persistidos; endpoints REST |
+| 6 — Vector Fallback   | Recuperação (fallback)| Chunks sem resultado léxico           | Chunks por similaridade semântica |
+| 7 — Frontend          | Interface do auditor  | API REST                              | Painel Vue.js com pacote de evidências |
 
 Cada módulo tem uma única superfície pública (seu `__init__.py`) e não acessa os internos de outros módulos diretamente. Dependências entre módulos são explícitas e unidirecionais.
 
@@ -301,7 +301,7 @@ A cascata executa cinco estratégias em ordem de confiabilidade decrescente:
 
 O LLM recebe dois inputs: um prompt de sistema e um prompt de usuário.
 
-**Prompt de sistema** contém: (1) instrução de papel ("você é um avaliador IPMP"); (2) critérios detalhados da ação incluindo todos os produtos esperados; (3) exemplos pontuados (Atendido, Parcialmente Atendido, Não Atendido) extraídos do IPMP; (4) instrução de formato para o bloco sentinela obrigatório.
+**Prompt de sistema** contém: (1) papel (role) ("você é um avaliador IPMP"); (2) critérios detalhados da ação incluindo todos os produtos esperados; (3) exemplos pontuados (Atendido, Parcialmente Atendido, Não Atendido) extraídos do IPMP; (4) instrução de formato para o bloco sentinela obrigatório.
 
 **Prompt de usuário** contém os chunks recuperados, formatados como `[Arquivo: nome | Página: n]\n\nTexto...`. Cada chunk inclui sua proveniência.
 
@@ -375,17 +375,17 @@ The parser extracts the score and uncertainty flag. If the sentinel block is not
 
 *Cenário: o auditor recebe um processo PPP para avaliação de maturidade.*
 
-O auditor acessa o sistema pelo navegador. Na tela inicial, informa o número do processo e faz upload dos documentos do processo licitatório — PDFs como o EVTEA (Estudo de Viabilidade Técnica, Econômica e Ambiental) e o Relatório de Pré-Análise. O sistema aceita múltiplos arquivos e identifica automaticamente documentos já indexados (reuso por fingerprint SHA-256) versus documentos novos.
+O auditor acessa o sistema pelo navegador. Na tela inicial, informa o número do processo e faz upload dos documentos do processo licitatório — PDFs como o EVTEA (Estudo de Viabilidade Técnica, Econômica e Ambiental) e o Relatório de Pré-Análise. O sistema aceita múltiplos arquivos e tenta identificar automaticamente documentos já indexados (uso do SHA-256 como fingerprint - HASH) versus documentos novos.
 
 O sistema extrai e indexa o texto dos documentos novos. Para a Ação 1, executa a cascata de recuperação e identifica os trechos relevantes. Em seguida, envia esses trechos ao LLM com os critérios IPMP e aguarda o raciocínio. Todo o processo é síncrono — o auditor aguarda o resultado na mesma sessão.
 
 A interface exibe o painel da Ação 1. O auditor encontra, em sequência:
 
-1. Os critérios IPMP completos da ação (collapsível)
+1. Os critérios IPMP completos da ação (collapsible)
 2. Os trechos recuperados com fonte, página, tipo de busca e query exata utilizada
-3. O prompt completo enviado ao modelo (collapsível)
+3. O prompt completo enviado ao modelo (collapsible)
 4. O raciocínio livre produzido pelo LLM
-5. O flag de incerteza (se `UNCERTAINTY: yes`, um chip de alerta é exibido)
+5. O flag de incerteza (se `UNCERTAINTY: yes`, um indicador de alerta é exibido)
 6. A pontuação proposta (0, 1 ou 3)
 
 O auditor lê o raciocínio. Se concordar, clica em "Aceitar". Se discordar — por exemplo, porque o modelo não encontrou um documento relevante que o auditor conhece — clica em "Substituir", seleciona a pontuação correta e escreve a justificativa. A decisão é gravada com a pontuação final, a justificativa e o registro de se houve substituição.
@@ -396,7 +396,7 @@ O valor do sistema para o auditor está na qualidade do pacote de evidências, n
 
 | Elemento | O que apresenta | Questão de qualidade |
 |---|---|---|
-| Evidências recuperadas | Trechos do documento com arquivo e página | Os chunks certos foram encontrados? |
+| Evidências recuperadas | Trechos do documento com arquivo e página | Os melhores chunks  foram recuperados? |
 | Proveniência da recuperação | Etapa da cascata + query exata | O método de busca foi adequado para este documento? |
 | Critérios IPMP | Texto completo da ação | O auditor pode verificar se o modelo avaliou pelos critérios corretos |
 | Prompt completo | System + user prompt exatos | O auditor pode verificar o que foi enviado ao modelo |
@@ -455,7 +455,7 @@ O sistema está completo para o fluxo ponta-a-ponta da Ação 1. Sete módulos f
 - **Módulo 2 (Extraction):** extração de texto nativo via heurística de contagem de palavras + OCR via Tesseract como fallback. Chunking por página com suporte a sub-páginas longas.
 - **Módulo 3 (Retrieval):** cascata completa A→B→C→D→E. BM25 via SQLite FTS5. Regex via função definida pelo usuário em SQLite. Vector fallback via LanceDB + sentence-transformers.
 - **Módulo 4 (Evaluation):** cliente Ollama (local, Mistral) e Groq (nuvem). Prompt fixo por ação. Parse com sentinelas. Flag de incerteza. Evidence cap de 20k chars.
-- **Módulo 5 (Assessment):** orquestrador + API REST FastAPI. 5 rotas Phase 1. Persistência híbrida no SQLite. Controle de ciclo de vida por fingerprint SHA-256.
+- **Módulo 5 (Assessment):** orquestrador + API REST FastAPI. 5 rotas Phase 1. Persistência híbrida no SQLite. Controle de ciclo de vida por fingerprint/HASH SHA-256.
 - **Módulo 6 (Vector Fallback):** LanceDB com indexação sob demanda. Invalidação automática na substituição de chunks.
 - **Módulo 7 (Frontend):** Vue.js 3 + Vuetify 3. Duas views: Upload e Resultado do Assessment. Painel de Ação com pacote de evidências completo. Formulário de revisão do auditor. Servido pelo FastAPI como arquivos estáticos.
 
@@ -531,7 +531,7 @@ Code analysis revealed that the `retrieve_bm25_for_acao()` function was generati
 
 #### 8.1 Evidências reunidas (Phase A)
 
-A Phase A de validação foi concluída em junho de 2026. Seu objetivo foi validar cada estágio da cadeia de raciocínio para a Ação 1 usando um corpus de teste controlado.
+A Phase A de validação foi concluída em junho. Seu objetivo foi validar cada estágio da cadeia de raciocínio para a Ação 1 usando um corpus de teste controlado.
 
 **Corpus de teste criado (A2):**
 
