@@ -1,0 +1,464 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-06-18",
+    "population_stages_completed": ["A", "B", "C"],
+    "stage_b_sources": [
+      "SMG-040_101607_2024_1.pdf (Vol.1 — Edital e Memorando de Justificativa)",
+      "SMG-040_101607_2024_2.pdf (Vol.2 — Estudo Econômico de Referência, Anexo III)"
+    ],
+    "scope": "Retrieval profile for IPMP Ação 1. Query terms are in Portuguese to match Brazilian public procurement case documents. Terms derived via Stage A (IPMP concept extraction), Stage B (real-document observation of SMG-040), and Stage C (Rio Manual and acronym cross-reference)."
+  },
+  "acao_id": 1,
+  "profile_maturity": "observed",
+  "expected_products": {
+    "1a": {
+      "evidence_intent": "Seção que justifica a necessidade do projeto: o problema identificado, falha de serviço, vencimento de contrato, ou demanda pública não atendida que motiva a contratação.",
+      "retrieval_signal_concepts": [
+        {
+          "key": "legal_necessity",
+          "text": "Demonstração de conveniência e oportunidade e efetivo interesse público"
+        },
+        {
+          "key": "service_continuity",
+          "text": "Necessidade de continuidade de atividades ou serviços públicos em decorrência de contratos em vencimento"
+        },
+        {
+          "key": "public_utility_service",
+          "text": "Prestação de serviço público de uso e utilidade pública"
+        },
+        {
+          "key": "project_need_statement",
+          "text": "Declaração explícita da necessidade que justifica o projeto"
+        }
+      ],
+      "query_terms": [
+        {
+          "encoding": "phrase",
+          "text": "conveniência e oportunidade",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "legal_necessity"
+        },
+        {
+          "encoding": "phrase",
+          "text": "efetivo interesse público",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "legal_necessity"
+        },
+        {
+          "encoding": "phrase",
+          "text": "necessidade que justifica o projeto",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "project_need_statement"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Relatório de Pré-Análise",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "project_need_statement"
+        },
+        {
+          "encoding": "phrase",
+          "text": "continuidade das atividades",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "service_continuity"
+        },
+        {
+          "encoding": "phrase",
+          "text": "mobiliário urbano",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "public_utility_service"
+        },
+        {
+          "encoding": "phrase",
+          "text": "prestação de serviço público",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "public_utility_service"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["contrato", "vencimento"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "service_continuity"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["necessidade", "contratar"],
+          "distance": 7,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "project_need_statement"
+        }
+      ],
+      "evidence_logic_patterns": [
+        "Seção que descreve explicitamente o problema ou a necessidade pública que motiva o projeto",
+        "Trecho que menciona vencimento ou encerramento de contrato vigente como gatilho para nova licitação",
+        "Declaração de que o projeto visa assegurar continuidade de serviço público essencial de uso e utilidade pública"
+      ],
+      "negative_evidence_patterns": [
+        "Seções que descrevem apenas características técnicas da solução proposta sem explicar a razão de ser do projeto"
+      ]
+    },
+    "1b": {
+      "evidence_intent": "Seção que descreve o panorama econômico, social e/ou ambiental no qual o projeto se insere — diagnóstico de contexto, não justificativa de necessidade nem definição de objetivos.",
+      "retrieval_signal_concepts": [
+        {
+          "key": "economic_viability_study",
+          "text": "Estudo de viabilidade econômico-financeira com modelagem de fluxo de caixa descontado"
+        },
+        {
+          "key": "socioeconomic_panorama",
+          "text": "Análise socioeconômica do contexto regional, setorial ou de mercado"
+        },
+        {
+          "key": "benchmarking",
+          "text": "Comparação com projetos análogos de outros entes federativos ou municípios"
+        },
+        {
+          "key": "investment_scale",
+          "text": "Dimensionamento do projeto: escala de investimentos, área de cobertura, número de equipamentos"
+        }
+      ],
+      "query_terms": [
+        {
+          "encoding": "phrase",
+          "text": "análise socioeconômica",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "socioeconomic_panorama"
+        },
+        {
+          "encoding": "phrase",
+          "text": "benefícios socioeconômicos",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "socioeconomic_panorama"
+        },
+        {
+          "encoding": "phrase",
+          "text": "impacto econômico",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "socioeconomic_panorama"
+        },
+        {
+          "encoding": "phrase",
+          "text": "estudo econômico de referência",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "economic_viability_study"
+        },
+        {
+          "encoding": "phrase",
+          "text": "fluxo de caixa descontado",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "economic_viability_study"
+        },
+        {
+          "encoding": "phrase",
+          "text": "viabilidade econômico-financeira",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "economic_viability_study"
+        },
+        {
+          "encoding": "phrase",
+          "text": "projetos análogos",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "benchmarking"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["panorama", "econômico"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "socioeconomic_panorama"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["entes", "federativos"],
+          "distance": 3,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "benchmarking"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["investimentos", "estimativa"],
+          "distance": 7,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "investment_scale"
+        }
+      ],
+      "evidence_logic_patterns": [
+        "Estudo econômico-financeiro de referência com modelagem de fluxo de caixa, CAPEX, estrutura de receitas e custos operacionais",
+        "Análise comparativa com concessões de porte similar realizadas por outros entes federativos",
+        "Seção que contextualiza o mercado setorial: dimensionamento da receita esperada, benchmarks de custo, estrutura de tributação"
+      ],
+      "negative_evidence_patterns": [
+        "Trechos que apenas listam objetivos do projeto sem apresentar dados do contexto econômico, social ou ambiental"
+      ]
+    },
+    "1c": {
+      "evidence_intent": "Seção que define explicitamente os objetivos estratégicos do projeto — o conjunto de metas ou propósitos que o projeto visa atingir além da solução técnica imediata.",
+      "retrieval_signal_concepts": [
+        {
+          "key": "strategic_objectives",
+          "text": "Definição explícita dos objetivos estratégicos do projeto"
+        },
+        {
+          "key": "public_interest_goals",
+          "text": "Metas de interesse público: segurança, modernização tecnológica, inclusão social, cobertura geográfica"
+        },
+        {
+          "key": "risk_framework",
+          "text": "Matriz de riscos e alocação de responsabilidades entre as partes"
+        },
+        {
+          "key": "policy_compliance",
+          "text": "Conformidade com políticas gerais e diretrizes governamentais do município"
+        }
+      ],
+      "query_terms": [
+        {
+          "encoding": "phrase",
+          "text": "diretrizes governamentais",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "policy_compliance"
+        },
+        {
+          "encoding": "phrase",
+          "text": "políticas gerais do Município",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "policy_compliance"
+        },
+        {
+          "encoding": "phrase",
+          "text": "vantagem econômica e operacional",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "strategic_objectives"
+        },
+        {
+          "encoding": "phrase",
+          "text": "objetivos estratégicos",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "strategic_objectives"
+        },
+        {
+          "encoding": "phrase",
+          "text": "segurança pública",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "public_interest_goals"
+        },
+        {
+          "encoding": "phrase",
+          "text": "atualização tecnológica",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "public_interest_goals"
+        },
+        {
+          "encoding": "phrase",
+          "text": "matriz de risco",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "risk_framework"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["objetivos", "projeto"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "strategic_objectives"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["renovação", "tecnológica"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "public_interest_goals"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["alocação", "risco"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "risk_framework"
+        }
+      ],
+      "evidence_logic_patterns": [
+        "Seção que lista os objetivos que o projeto busca alcançar além da solução técnica: segurança pública, modernização tecnológica, cobertura geográfica, inclusão social",
+        "Matriz ou tabela de riscos com definição dos riscos contratuais e sua alocação entre as partes (concessionária, poder concedente, compartilhado)",
+        "Referência explícita à conformidade com políticas gerais do município ou diretrizes governamentais"
+      ],
+      "negative_evidence_patterns": [
+        "Seção de especificações técnicas detalhadas sem vínculo explícito com objetivos de política pública ou metas estratégicas"
+      ]
+    },
+    "1d": {
+      "evidence_intent": "Seção que demonstra alinhamento do projeto com instrumentos de planejamento formais: PPA, LOA, LDO, Plano Estratégico Municipal, legislação de concessões, ou programas governamentais vigentes.",
+      "retrieval_signal_concepts": [
+        {
+          "key": "municipal_planning_alignment",
+          "text": "Alinhamento com Plano Estratégico e Lei Orgânica Municipal"
+        },
+        {
+          "key": "budget_instruments",
+          "text": "Previsão no Plano Plurianual, LOA e LDO vigentes"
+        },
+        {
+          "key": "legal_framework",
+          "text": "Enquadramento em legislação de concessões e PPP municipal e federal"
+        },
+        {
+          "key": "sectoral_program_alignment",
+          "text": "Integração com programas setoriais municipais de mobilidade urbana ou infraestrutura urbana"
+        }
+      ],
+      "query_terms": [
+        {
+          "encoding": "phrase",
+          "text": "Plano Estratégico",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "municipal_planning_alignment"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Lei Orgânica Municipal",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "municipal_planning_alignment"
+        },
+        {
+          "encoding": "phrase",
+          "text": "plano plurianual",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "budget_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "planos estratégicos do Município",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "municipal_planning_alignment"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Lei Orgânica do Município",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "legal_framework"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Lei Complementar Municipal",
+          "type": "A",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "legal_framework"
+        },
+        {
+          "encoding": "phrase",
+          "text": "mobilidade urbana",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "sectoral_program_alignment"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["alinhamento", "política"],
+          "distance": 7,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "municipal_planning_alignment"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["integração", "mobilidade"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "sectoral_program_alignment"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["concessão", "serviço", "público"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "real_world",
+          "status": "active",
+          "concept_ref": "legal_framework"
+        }
+      ],
+      "evidence_logic_patterns": [
+        "Referência explícita ao Plano Estratégico Municipal, PPA, LOA ou LDO vigente como instrumento de alinhamento do projeto",
+        "Citação da Lei Orgânica Municipal ou da legislação municipal de PPP como fundamento legal do projeto",
+        "Menção à integração com programas de mobilidade urbana municipal como BRT, bicicletas compartilhadas ou sistema de transporte integrado",
+        "Nota: para concessões de mobiliário urbano, o alinhamento é com planejamento municipal — a ausência de referências a planos nacionais setoriais (PNL, PDE, Plansab) é esperada e não configura não atendimento"
+      ],
+      "negative_evidence_patterns": [
+        "Citação isolada de planos nacionais setoriais sem correspondência com o setor de mobiliário urbano (PNL, PDE, Plansab, PNLP são inaplicáveis a este setor)"
+      ]
+    }
+  }
+}

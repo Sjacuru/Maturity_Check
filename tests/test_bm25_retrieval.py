@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 
 from extraction import Chunk
+from ingestion.retrieval_profile import RetrievalProfileStore
 from retrieval import configure, index
 from retrieval.query.bm25 import MAX_CHUNKS_PER_ACAO, search_bm25
 from retrieval.query.cascade import retrieve_bm25_for_acao
@@ -213,8 +214,11 @@ def test_search_bm25_best_score_wins_dedup(db):
 # cascade integration tests (uses real IPMP data from data/ipmp/)
 # ---------------------------------------------------------------------------
 
-def test_retrieve_bm25_for_acao_returns_relevant_chunks(db):
-    # "projeto" and "natureza" appear in produto 1a query from acao_01.json
+def test_retrieve_bm25_for_acao_returns_relevant_chunks(db, monkeypatch):
+    # Patch profile to empty so cascade uses IPMP fallback queries.
+    # "projeto" and "natureza" appear in produto 1a IPMP text.
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", RetrievalProfileStore(acoes={}))
     chunk = make_chunk(text="O projeto revela a natureza do problema e sua finalidade socioeconômica")
     index("P001", [chunk])
     results = retrieve_bm25_for_acao(1, "P001")
@@ -228,8 +232,11 @@ def test_retrieve_bm25_for_unknown_acao_returns_empty(db):
     assert results == []
 
 
-def test_retrieve_for_acao_public_api(db):
+def test_retrieve_for_acao_public_api(db, monkeypatch):
+    # Patch profile to empty so cascade uses IPMP fallback queries.
+    import ingestion.retrieval_profile as _rp
     from retrieval import retrieve_for_acao
+    monkeypatch.setattr(_rp, "_store", RetrievalProfileStore(acoes={}))
     chunk = make_chunk(text="projeto viabilidade natureza finalidade")
     index("P001", [chunk])
     results = retrieve_for_acao(1, "P001")

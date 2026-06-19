@@ -68,7 +68,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (32 filled, next: 0033-)
+│   ├── adr/                     ← Architecture Decision Records (48 filled, next: 0049-)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -80,10 +80,13 @@ Maturity_Check/
 │   │   ├── 0029-document-fingerprint-reuse-semantics.md
 │   │   ├── 0030-assessment-scope-from-ipmp-store.md
 │   │   ├── 0031-evaluation-result-direct-http-serialization.md
-│   │   └── 0032-module5-configuration-and-startup-sequencing.md
+│   │   ├── 0032-module5-configuration-and-startup-sequencing.md
+│   │   ├── 0033–0046            ← Modules 6–7 decisions (vector fallback, frontend)
+│   │   ├── 0047-retrieval-profile-architecture.md  ← evidence ontology, derived artifact, maturity model
+│   │   └── 0048-query-construction-and-encoding.md ← phrase preservation, NEAR(), encoding by type
 │   ├── dan/                     ← Deferred Architecture Notes (2 filled, next: 0003)
 │   │   ├── 0001-pdf-extraction-chunking.md
-│   │   └── 0002-bm25-query-generation-strategy.md  ← unresolved: direct text vs offline LLM-assisted query artifacts
+│   │   └── 0002-bm25-query-generation-strategy.md  ← CLOSED: resolved by ADR-0047 + ADR-0048; Evolution section added 2026-06-18
 │   ├── MODULE_01_STATE.md       ← ingestion layer full architectural state
 │   ├── prd_module_01_ingestion.md ← Module 1 PRD (27 user stories, GitHub issues #1–5)
 │   ├── prd_module_02_extraction.md ← Module 2 PRD (27 user stories, GitHub issues #6–10)
@@ -173,7 +176,7 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Current state (2026-06-02):** Modules 1–5 COMPLETE. 269 tests passing (10 new lifecycle regression tests in Issue #25). Next module: Vector fallback (LanceDB).
+**Current state (2026-06-18):** Modules 1–7 COMPLETE. 300 tests. Retrieval profile architecture designed (ADR-0047 + ADR-0048); documentation phase complete. Next: Phase 2 implementation — retrieval profile schema, Layer 1 query-construction fix, `get_retrieval_profile_store()`, `data/retrieval_profiles/acao_01.json`, empirical validation (Strategy A vs B).
 Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TESSERACT_CMD` env var).
 
@@ -202,9 +205,10 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 **Key reference files:**
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
-- `CONTEXT.md` — canonical domain glossary (updated 2026-06-02: Assessment module, Review Outcome, Final Score, Auditor Intervention)
-- `docs/adr/` — 32 ADRs, next is `0033-`
-- `docs/dan/` — Deferred Architecture Notes (DAN-0002 CLOSED), next is `0003-`
+- `CONTEXT.md` — canonical domain glossary (updated 2026-06-18: Retrieval Profile, Evidence Ontology, Evidence Intent, Retrieval Signal Concept, Query Term, Evidence Logic Pattern, Profile Maturity, Term Status)
+- `docs/adr/` — 48 ADRs, next is `0049-`
+- `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
+- `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
 - `data/rio_manual/acao_01.json` — Rio Manual retrieval context for Ação 1
 

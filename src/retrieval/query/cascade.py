@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from ingestion import get_acronym_store, get_ipmp_store, get_rio_manual_store
+from ingestion import get_acronym_store, get_ipmp_store, get_retrieval_profile_store, get_rio_manual_store
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.query.bm25 import search_bm25
-from retrieval.query.query_builder import build_bm25_query
+from retrieval.query.query_builder import build_bm25_query, build_query_from_terms
 
 
 def retrieve_bm25_for_acao(
@@ -12,19 +12,31 @@ def retrieve_bm25_for_acao(
 ) -> list[RetrievedChunk]:
     """Retrieve chunks using the BM25 corpus-wide path only.
 
-    Builds one FTS5 OR query per letter-suffixed Expected Product (1a, 1b …),
-    merges and deduplicates results, returns at most MAX_CHUNKS_PER_ACAO chunks.
+    Builds one FTS5 OR query per letter-suffixed Expected Product (1a, 1b …).
+    When a retrieval profile exists for the Ação, uses its curated Layer C query
+    terms (phrase and NEAR encodings) for the relevant Expected Product.
+    Falls back to build_bm25_query() for any product without a profile entry.
+    Merges and deduplicates results, returns at most MAX_CHUNKS_PER_ACAO chunks.
     Returns [] when acao_id is not found in the IPMP store.
     """
     acao = get_ipmp_store().acoes.get(acao_id)
     if acao is None:
         return []
 
+    profile_acao = get_retrieval_profile_store().acoes.get(acao_id)
     acronym_map = get_acronym_store()
+
     queries: dict[str, str] = {}
     for product in acao.produtos_esperados:
         if product.id[-1:].isalpha():
-            q = build_bm25_query(product.texto, acronym_map)
+            profile_product = (
+                profile_acao.expected_products.get(product.id)
+                if profile_acao else None
+            )
+            if profile_product and profile_product.query_terms:
+                q = build_query_from_terms(profile_product.query_terms)
+            else:
+                q = build_bm25_query(product.texto, acronym_map)
             if q:
                 queries[product.id] = q
 

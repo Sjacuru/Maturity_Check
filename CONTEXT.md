@@ -64,6 +64,15 @@ _Avoid_: data migration, update cycle, versioning, backfill
 **Artifact integrity**: The structural soundness of a source-of-truth artifact — parseable JSON, structurally valid schema, internally consistent identifiers (e.g., filename suffix matches `acao_id`).
 _Avoid_: data quality, completeness, domain validity
 
+**Retrieval Profile**: A derived knowledge artifact (`data/retrieval_profiles/acao_NN.json`) containing the evidence ontology for one Ação — Evidence Intent, Retrieval Signal Concepts, Query Terms, Evidence Logic Patterns, and profile maturity level. Synthesised from IPMP, Rio Manual, acronym tables, and real-document observation; distinct from all three because it evolves and is not a canonical normative source.
+_Avoid_: query artifact, query file, search config, retrieval config
+
+**Profile Maturity**: The confidence level of a Retrieval Profile, reflecting how extensively it has been grounded in real PPP case documents. Three levels: `seed` (canonical sources only, not yet trusted for production), `observed` (validated against at least one real case document), `mature` (validated across multiple cases and sectors). Stored as `profile_maturity` in the profile JSON.
+_Avoid_: profile version, profile quality, profile completeness
+
+**Term Status**: The current confidence level of an individual Query Term within a Retrieval Profile, based on accumulated empirical evidence from retrieval testing. Four values: `active` (in use, untested), `experimental` (tentatively added, pending validation), `validated` (confirmed to contribute useful recall), `deprecated` (empirically shown to be noise; retained for auditability). Distinct from `provenance`, which explains origin rather than confidence.
+_Avoid_: term quality, term confidence, term flag
+
 ### Module Concepts
 
 **Ingestion module**: The Python package (`src/ingestion/`) responsible for loading, validating, and exposing canonical domain structures from source-of-truth artifacts. Owns no retrieval semantics.
@@ -80,6 +89,21 @@ _Avoid_: search result, hit, match, ranked chunk
 
 **Retrieval semantics**: Any logic that interprets canonical domain structures for search purposes — BM25 query construction, acronym expansion, cascade execution, chunk ranking, vector similarity.
 _Avoid_: search logic, query logic, downstream logic
+
+**Evidence Ontology**: The four-layer framework used to model what an Expected Product is asking for and how to retrieve it. Layer A (Evidence Intent) — what the requirement verifies; Layer B (Retrieval Signal Concept) — what concepts indicate the evidence; Layer C (Query Terms) — how those concepts appear in real documents; Layer D (Evidence Logic Pattern) — what relational structure constitutes strong evidence. Layers A, B, and D are never FTS5 inputs; only Layer C terms enter the retrieval pipeline.
+_Avoid_: evidence model, retrieval model, evidence framework
+
+**Evidence Intent**: A Layer A artifact in the Evidence Ontology — a one-sentence description of what an Expected Product is verifying, expressed as an evaluation objective. Never a query term. Example: "Justificativa do projeto — motivos pelos quais o projeto é necessário."
+_Avoid_: evidence description, evaluation goal, retrieval objective
+
+**Retrieval Signal Concept**: A Layer B artifact in the Evidence Ontology — a conceptual bridge between an Evidence Intent and the observable language in real documents. Names a concept that, if present in a document, indicates the evidence is likely there. Never a query term. Example: "diagnóstico do estado atual do problema."
+_Avoid_: retrieval concept, search concept, evidence indicator
+
+**Query Term**: A Layer C artifact in the Evidence Ontology — the actual FTS5 input derived from a Retrieval Signal Concept. Carries: `encoding` (phrase or near), query text or tokens, `type` (A/B/C), `provenance` (real_world or canonical), `status`, and optional `concept_ref`. All query-facing string values are in Portuguese. One Retrieval Signal Concept may generate multiple Query Terms.
+_Avoid_: anchor, search term, BM25 term, retrieval term
+
+**Evidence Logic Pattern**: A Layer D artifact in the Evidence Ontology — a description of the relational or causal structure that constitutes strong evidence for an Expected Product (e.g., Problema → Necessidade → Intervenção → Resultado). Never a query term; used only by future reranking agents and the LLM evaluation layer to assess evidence strength.
+_Avoid_: evidence pattern, scoring logic, evaluation rule
 
 **Evaluation module**: The Python package (`src/evaluation/`) responsible for assembling the LLM prompt, executing a single LLM call per Ação, parsing the response, and returning an `EvaluationResult`. Pure evaluation layer — no knowledge of retrieval, SQLite, or Auditor rendering. Public interface: `configure_llm(provider, model, base_url)` and `evaluate(acao_id, process_number, chunks) -> EvaluationResult`.
 _Avoid_: scoring module, LLM module, inference layer
@@ -135,6 +159,11 @@ _Avoid_: manual override, correction, human correction
 - A **Document Artifact** is chunked into one or more **Chunks** during extraction
 - A **Chunk** carries provenance: the **Document Artifact** filename and page number it came from
 - The retrieval module searches **Chunks** to find evidence for an **Ação's** Expected Products
+- A **Retrieval Profile** synthesises data from one **IPMP** artifact, one **Rio Manual** artifact, the acronym table, and real-document observation for the same **Ação**
+- A **Retrieval Profile** contains one **Evidence Ontology** entry per letter-suffixed **Expected Product**
+- Each **Evidence Ontology** entry contains one **Evidence Intent** (Layer A), one or more **Retrieval Signal Concepts** (Layer B), one or more **Query Terms** (Layer C), and zero or more **Evidence Logic Patterns** (Layer D)
+- The ingestion module exposes **Retrieval Profiles** via `get_retrieval_profile_store()` alongside `get_ipmp_store()` and `get_rio_manual_store()`
+- **Profile Maturity** advances from `seed` to `observed` only after at least one real PPP case document has been used in a population session (Stage B)
 
 ---
 
@@ -159,3 +188,4 @@ _Avoid_: manual override, correction, human correction
 - **"normalization"** was considered to include query-oriented transformations (sub-item filtering, acronym expansion) — resolved: normalization in the ingestion module means structural normalization only; all retrieval-oriented transformations are retrieval semantics and belong to the retrieval module.
 - **"gap"** was used to mean both structural errors and intentionally incomplete domain data — resolved: structural errors are **artifact integrity** failures (fatal); intentionally incomplete data is captured in `_meta.known_gaps` and is a valid document state (non-fatal).
 - **"canonical"** was used loosely to refer to both the JSON file and the loaded Python object — resolved: the JSON file is the **source-of-truth artifact**; the loaded, validated Python object is the **canonical domain structure**.
+- **"anchor"** was used to mean vocabulary source, phrase encoding mechanism, and FTS5 query term simultaneously — retired: the term is now disambiguated into **Evidence Intent** (Layer A — what to look for), **Retrieval Signal Concept** (Layer B — what concept indicates the evidence), and **Query Term** (Layer C — the actual FTS5 input). "Anchor" should not be used in this system.

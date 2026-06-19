@@ -1,8 +1,8 @@
 # DAN-0002 — Retrieval: BM25 Query Generation Strategy
 
-**Status:** Closed — decision recorded in `docs/handoffs/module3-grillme-bm25-query-generation.md`
-**Related ADR:** ADR-0003 (BM25 primary retrieval), ADR-0006 (retrieval cascade)
-**Closed:** 2026-05-30 | **Last updated:** 2026-05-29
+**Status:** Closed — decisions recorded in ADR-0047 (Retrieval Profile Architecture) and ADR-0048 (Query Construction and Encoding)
+**Related ADR:** ADR-0003 (BM25 primary retrieval), ADR-0006 (retrieval cascade), ADR-0047, ADR-0048
+**Closed:** 2026-05-30 | **Last updated:** 2026-06-18
 
 ---
 
@@ -144,3 +144,25 @@ Both positions rest on assumptions that have not been tested against real Case d
 > **(B)** an offline preparation step that generates and persists a `data/retrieval_queries/acao_*.json` artifact, making retrieval-query vocabulary a first-class artifact managed alongside IPMP and Rio Manual artifacts?
 >
 > If (B): what triggers a re-run of the offline preparation? What versioning or hash strategy ensures reproducibility when the LLM or prompt changes?
+
+---
+
+## Evolution of Query Generation Strategy
+
+This DAN's original question — "direct IPMP text vs. offline query artifacts?" — was resolved in an architectural interview session (2026-06-17/18). The resolution supersedes both Position A and Position B as originally framed.
+
+**What the original positions shared:** both treated query generation as a vocabulary extraction problem. Position A extracted vocabulary from IPMP text directly. Position B extracted vocabulary via an LLM reading the same IPMP text offline. Both started from the same source and would have reproduced the same governance framing language, either directly or at one remove.
+
+**What was replaced:** direct IPMP text tokenisation (`build_bm25_query()` applied to `produto.texto`) was replaced by structured retrieval profiles. The specific failure was diagnosed: `produto.texto` is governance criterion language written for human auditors, not evidence-bearing vocabulary from case documents. Tokenising it into single-word OR-clauses matches IPMP's own framing terms against unrelated chunks rather than finding the evidence IPMP describes.
+
+**What was not adopted:** fully automated LLM-assisted query generation without real-document grounding. An LLM reading only IPMP text would reproduce the same governance framing language at a different level of indirection — the same vocabulary problem in a different form.
+
+**What was adopted:** structured curation via retrieval profiles. Each Expected Product's query terms are derived through a three-stage process — (A) IPMP concept extraction, (B) mandatory real-document observation, (C) Rio Manual and canonical cross-reference. The process is structured and repeatable; real PPP case documents are a required input, not optional enrichment. The resulting artifact is `data/retrieval_profiles/acao_NN.json`.
+
+**Why this supersedes the original framing:** the retrieval profile encodes not just vocabulary but evidence types (A/B/C/D), encoding strategies (phrase vs. NEAR()), provenance, confidence level, and conceptual traceability. The core architectural principle adopted is: *evidence is modeled as relationships, not merely vocabulary*. Neither Position A nor Position B anticipated this.
+
+**Scalability concern resolved:** unsustainable manual maintenance of phrase-variant sets across 46 Ações was explicitly rejected. NEAR() proximity encoding for Type C (process and relational evidence) avoids enumerating paraphrase variants. The structured population methodology (domain expert + ontology framework + real documents) makes the process repeatable across Ações without open-ended manual enumeration.
+
+**ADR-0003 determinism preserved:** retrieval profiles are persisted JSON artifacts. Once generated, runtime retrieval loads them deterministically — same profile → same queries → same BM25 results. The non-deterministic step (human judgment + document reading during a population session) is entirely offline.
+
+**Architecture decisions:** ADR-0047 (Retrieval Profile Architecture), ADR-0048 (Query Construction and Encoding).

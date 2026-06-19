@@ -1,9 +1,32 @@
 from __future__ import annotations
 
 import re
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ingestion.retrieval_profile import NearQueryTerm, PhraseQueryTerm
 
 _PUNCT_RE = re.compile(r"[^\w\s]", flags=re.UNICODE)
 _MIN_WORD_LEN = 5
+
+
+def build_query_from_terms(
+    terms: list[PhraseQueryTerm | NearQueryTerm],
+) -> str:
+    """Build an FTS5 OR query from a list of retrieval profile QueryTerm objects.
+
+    Phrase terms become "exact phrase" clauses.
+    NEAR terms become NEAR("tok1" "tok2", N) proximity clauses.
+    Returns empty string when terms is empty.
+    """
+    clauses: list[str] = []
+    for term in terms:
+        if term.encoding == "phrase":
+            clauses.append(f'"{term.text}"')
+        else:  # near
+            token_str = " ".join(f'"{t}"' for t in term.tokens)
+            clauses.append(f"NEAR({token_str}, {term.distance})")
+    return " OR ".join(clauses)
 
 
 def build_bm25_query(

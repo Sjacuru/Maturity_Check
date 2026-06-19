@@ -211,7 +211,11 @@ def test_cascade_uses_filename_match_when_available(db):
     assert results[0].cascade_step == "filename_match"
 
 
-def test_cascade_falls_back_to_bm25_when_no_document_match(db):
+def test_cascade_falls_back_to_bm25_when_no_document_match(db, monkeypatch):
+    # Patch profile to empty so cascade uses IPMP fallback queries.
+    import ingestion.retrieval_profile as _rp
+    from ingestion.retrieval_profile import RetrievalProfileStore
+    monkeypatch.setattr(_rp, "_store", RetrievalProfileStore(acoes={}))
     index("P001", [make_chunk(filename="doc.pdf", text="projeto natureza finalidade estratégico")])
     results = retrieve_for_acao(1, "P001")
     assert isinstance(results, list)

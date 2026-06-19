@@ -121,7 +121,11 @@ def test_search_regex_no_chunks_for_process_returns_empty(db):
 # Full cascade: regex additive to BM25
 # ---------------------------------------------------------------------------
 
-def test_cascade_adds_regex_only_chunk(db):
+def test_cascade_adds_regex_only_chunk(db, monkeypatch):
+    # Patch profile to empty so cascade uses IPMP fallback queries.
+    import ingestion.retrieval_profile as _rp
+    from ingestion.retrieval_profile import RetrievalProfileStore
+    monkeypatch.setattr(_rp, "_store", RetrievalProfileStore(acoes={}))
     # bm25_chunk: BM25 terms present, no law ref
     # regex_chunk: law ref present, no BM25 terms
     bm25_chunk = make_chunk(

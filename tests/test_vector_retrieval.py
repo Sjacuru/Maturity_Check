@@ -19,6 +19,10 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 import pytest
 
+# Capture the real search_vector at module-load time (before any test fixture
+# can stub it) so tests that need the real implementation can restore it.
+from retrieval.query.vector import search_vector as _REAL_SEARCH_VECTOR
+
 import retrieval.query.vector as vector_mod
 from retrieval import configure as retrieval_configure, RetrievedChunk
 from retrieval._config import _reset as retrieval_reset
@@ -344,9 +348,13 @@ def test_cascade_calls_vector_only_on_zero_lexical(db_path):
     assert len(result) == 1
 
 
-def test_cascade_calls_vector_when_lexical_empty(db_path):
+def test_cascade_calls_vector_when_lexical_empty(db_path, monkeypatch):
     """Vector fallback must run when lexical cascade returns zero chunks."""
+    import retrieval.query.vector as _vec
     from retrieval.query.cascade import retrieve_for_acao
+
+    # Restore real search_vector so the SentenceTransformer/lancedb patches below take effect.
+    monkeypatch.setattr(_vec, "search_vector", _REAL_SEARCH_VECTOR)
 
     stub_model = _make_stub_model()
     stub_model.encode.return_value = np.zeros((1, 384), dtype=np.float32)
