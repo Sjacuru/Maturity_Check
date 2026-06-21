@@ -71,17 +71,26 @@ def _check_no_review_outcomes(db_path: Path, process_number: str) -> None:
 
 
 def _force_delete(db_path: Path, process_number: str) -> None:
+    from retrieval import invalidate_vector_index
+
     con = sqlite3.connect(str(db_path))
     try:
-        con.execute(
-            "DELETE FROM review_outcomes WHERE process_number = ?", (process_number,)
-        )
-        con.execute(
-            "DELETE FROM evaluation_results WHERE process_number = ?", (process_number,)
-        )
+        con.execute("DELETE FROM review_outcomes WHERE process_number = ?", (process_number,))
+        con.execute("DELETE FROM evaluation_results WHERE process_number = ?", (process_number,))
+        # Wipe all indexed chunks so only files from the new upload are in scope.
+        # chunks_fts is a content table — its rows must be deleted by rowid explicitly.
+        rows = con.execute(
+            "SELECT id FROM chunks WHERE process_number = ?", (process_number,)
+        ).fetchall()
+        for (row_id,) in rows:
+            con.execute("DELETE FROM chunks_fts WHERE rowid = ?", (row_id,))
+        con.execute("DELETE FROM chunks WHERE process_number = ?", (process_number,))
+        con.execute("DELETE FROM document_fingerprints WHERE process_number = ?", (process_number,))
         con.commit()
     finally:
         con.close()
+
+    invalidate_vector_index(process_number)
 
 
 # ── GET /cases/{process_number}/evaluations ──────────────────────────────────

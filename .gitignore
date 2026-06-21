@@ -89,6 +89,9 @@ data/*
 !data/ipmp/
 !data/rio_manual/
 !data/acronyms/
+!data/retrieval_profiles/
+# Machine-specific SSL cert bundle (corporate proxy CA)
+data/corporate_ca.pem
 # Ignore PDFs anywhere under data/ in case they land in a tracked subdirectory
 data/**/*.pdf
 

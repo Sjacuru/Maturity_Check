@@ -3,6 +3,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import uvicorn
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from assessment import configure as assessment_configure, init_db as assessment_init_db
 from assessment.api.app import create_app
@@ -22,7 +25,7 @@ def _bootstrap() -> None:
     assessment_configure(_DB_PATH)
     assessment_init_db(_DB_PATH)
 
-    configure_llm(provider="ollama", model="mistral")
+    configure_llm(provider="groq", model="llama-3.3-70b-versatile")
 
 
 _bootstrap()
