@@ -8,6 +8,10 @@ from retrieval.interfaces.contracts import RetrievedChunk
 
 MAX_CHUNKS_PER_ACAO = 20
 
+# Each product gets up to this many best-scoring chunks before cross-product dedup.
+# 4 products × 5 = 20 candidates, minus physical duplicates → fits MAX_CHUNKS_PER_ACAO.
+_PER_PRODUCT_TARGET = 5
+
 _PER_QUERY_LIMIT = MAX_CHUNKS_PER_ACAO * 4
 
 _SCHEMA_CHECK = "SELECT name FROM sqlite_master WHERE type='table' AND name='chunks'"
@@ -113,9 +117,27 @@ def _run_queries(
 
 
 def _merge(hits: list[_Hit]) -> list[_Hit]:
-    """Deduplicate by chunk_id, keeping the hit with the best (most negative) score."""
-    best: dict[int, _Hit] = {}
+    """Fair per-product selection followed by cross-product physical deduplication.
+
+    Step 1 — per product: keep the _PER_PRODUCT_TARGET best-scoring chunks so
+    that no single product monopolises the final pool.
+    Step 2 — cross-product: when the same physical chunk appears under multiple
+    products, keep only the copy with the best (most negative) BM25 score,
+    preserving that product's attribution.
+    """
+    # Step 1: collect best _PER_PRODUCT_TARGET hits per product_id
+    per_product: dict[str | None, list[_Hit]] = {}
     for h in hits:
+        per_product.setdefault(h.product_id, []).append(h)
+
+    selected: list[_Hit] = []
+    for phits in per_product.values():
+        phits.sort(key=lambda h: h.score)   # most negative first
+        selected.extend(phits[:_PER_PRODUCT_TARGET])
+
+    # Step 2: deduplicate by physical chunk_id, keeping best score
+    best: dict[int, _Hit] = {}
+    for h in selected:
         if h.chunk_id not in best or h.score < best[h.chunk_id].score:
             best[h.chunk_id] = h
     return list(best.values())

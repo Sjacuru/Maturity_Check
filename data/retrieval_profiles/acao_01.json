@@ -1,8 +1,12 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-06-18",
-    "population_stages_completed": ["A", "B", "C"],
+    "last_updated": "2026-06-22",
+    "population_stages_completed": [
+      "A",
+      "B",
+      "C"
+    ],
     "stage_b_sources": [
       "SMG-040_101607_2024_1.pdf (Vol.1 — Edital e Memorando de Justificativa)",
       "SMG-040_101607_2024_2.pdf (Vol.2 — Estudo Econômico de Referência, Anexo III)"
@@ -13,108 +17,453 @@
   "profile_maturity": "observed",
   "expected_products": {
     "1a": {
-      "evidence_intent": "Seção que justifica a necessidade do projeto: o problema identificado, falha de serviço, vencimento de contrato, ou demanda pública não atendida que motiva a contratação.",
+      "evidence_intent": "Seção que descreve os motivos pelos quais o projeto é necessário: diagnóstico de deficiências operacionais, problemas de capacidade, demanda pública não atendida, fragmentação ou encerramento contratual, ou outro evento-gatilho administrativo que justifica a nova contratação.",
       "retrieval_signal_concepts": [
         {
-          "key": "legal_necessity",
-          "text": "Demonstração de conveniência e oportunidade e efetivo interesse público"
+          "key": "existing_problem",
+          "text": "Diagnóstico de problemas atuais no serviço ou infraestrutura: deficiências, obsolescência, degradação, capacidade insuficiente ou falhas na prestação"
         },
         {
-          "key": "service_continuity",
-          "text": "Necessidade de continuidade de atividades ou serviços públicos em decorrência de contratos em vencimento"
+          "key": "public_demand",
+          "text": "Evidência de demanda social crescente ou não atendida que justifica a intervenção"
         },
         {
-          "key": "public_utility_service",
-          "text": "Prestação de serviço público de uso e utilidade pública"
+          "key": "contract_governance_context",
+          "text": "Necessidade de nova contratação por fragmentação de contratos, falhas de governança ou reestruturação da gestão"
         },
         {
-          "key": "project_need_statement",
-          "text": "Declaração explícita da necessidade que justifica o projeto"
+          "key": "trigger_event",
+          "text": "Evento administrativo ou contratual específico que torna a nova licitação necessária agora: vencimento, encerramento ou término de vigência"
         }
       ],
       "query_terms": [
         {
           "encoding": "phrase",
-          "text": "conveniência e oportunidade",
-          "type": "A",
-          "provenance": "canonical",
-          "status": "active",
-          "concept_ref": "legal_necessity"
-        },
-        {
-          "encoding": "phrase",
-          "text": "efetivo interesse público",
-          "type": "A",
-          "provenance": "canonical",
-          "status": "active",
-          "concept_ref": "legal_necessity"
-        },
-        {
-          "encoding": "phrase",
-          "text": "necessidade que justifica o projeto",
-          "type": "A",
-          "provenance": "canonical",
-          "status": "active",
-          "concept_ref": "project_need_statement"
-        },
-        {
-          "encoding": "phrase",
-          "text": "Relatório de Pré-Análise",
-          "type": "A",
-          "provenance": "canonical",
-          "status": "active",
-          "concept_ref": "project_need_statement"
-        },
-        {
-          "encoding": "phrase",
-          "text": "continuidade das atividades",
+          "text": "fragmentação contratual",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
-          "concept_ref": "service_continuity"
+          "concept_ref": "existing_problem"
         },
         {
           "encoding": "phrase",
-          "text": "mobiliário urbano",
+          "text": "obsolescência",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
-          "concept_ref": "public_utility_service"
+          "concept_ref": "existing_problem"
         },
         {
           "encoding": "phrase",
-          "text": "prestação de serviço público",
+          "text": "degradação",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
-          "concept_ref": "public_utility_service"
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "phrase",
+          "text": "falhas na prestação",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "phrase",
+          "text": "deficiência operacional",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "phrase",
+          "text": "insuficiência da infraestrutura",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "phrase",
+          "text": "capacidade insuficiente",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
         },
         {
           "encoding": "near",
-          "tokens": ["contrato", "vencimento"],
+          "tokens": [
+            "deficiência",
+            "infraestrutura"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "capacidade",
+            "insuficiente"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "atendimento",
+            "insuficiente"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "infraestrutura",
+            "precária"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "serviço",
+            "ineficiente"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "serviço",
+            "deficiente"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "falhas",
+            "prestação"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "limitações",
+            "operacionais"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "phrase",
+          "text": "requalificação",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "necessidade",
+            "modernização"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "existing_problem"
+        },
+        {
+          "encoding": "phrase",
+          "text": "demanda crescente",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "phrase",
+          "text": "necessidade da população",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "phrase",
+          "text": "expansão da cobertura",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "phrase",
+          "text": "atendimento insuficiente",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "demanda",
+            "crescente"
+          ],
+          "distance": 3,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "necessidade",
+            "população"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "expansão",
+            "cobertura"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "demanda",
+            "atendida"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "necessidade",
+            "atendimento"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "public_demand"
+        },
+        {
+          "encoding": "phrase",
+          "text": "harmonização contratual",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "contract_governance_context"
+        },
+        {
+          "encoding": "phrase",
+          "text": "reorganização da gestão",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "contract_governance_context"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "harmonização",
+            "contratual"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "contract_governance_context"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "reorganização",
+            "gestão"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "contract_governance_context"
+        },
+        {
+          "encoding": "phrase",
+          "text": "vencimento contratual",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "phrase",
+          "text": "encerramento contratual",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "phrase",
+          "text": "término da vigência",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "phrase",
+          "text": "necessidade de nova contratação",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "phrase",
+          "text": "contrato vigente",
+          "type": "B",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "contrato",
+            "vencimento"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",
           "status": "active",
-          "concept_ref": "service_continuity"
+          "concept_ref": "trigger_event"
         },
         {
           "encoding": "near",
-          "tokens": ["necessidade", "contratar"],
-          "distance": 7,
+          "tokens": [
+            "encerramento",
+            "contrato"
+          ],
+          "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
-          "concept_ref": "project_need_statement"
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "término",
+            "vigência"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "nova",
+            "contratação"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "licitação",
+            "necessária"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "trigger_event"
+        },
+        {
+          "encoding": "near",
+          "tokens": [
+            "continuidade",
+            "serviço"
+          ],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "trigger_event"
         }
       ],
       "evidence_logic_patterns": [
-        "Seção que descreve explicitamente o problema ou a necessidade pública que motiva o projeto",
-        "Trecho que menciona vencimento ou encerramento de contrato vigente como gatilho para nova licitação",
-        "Declaração de que o projeto visa assegurar continuidade de serviço público essencial de uso e utilidade pública"
+        "Seção de diagnóstico que descreve problemas operacionais, deficiências de infraestrutura, capacidade insuficiente ou obsolescência que justificam a intervenção",
+        "Trecho que demonstra demanda crescente ou não atendida como motivação da contratação",
+        "Passagem que descreve fragmentação contratual ou necessidade de reorganização da gestão como justificativa do novo modelo de concessão",
+        "Trecho que menciona vencimento, encerramento ou término da vigência de contrato existente como evento-gatilho da nova licitação"
       ],
       "negative_evidence_patterns": [
-        "Seções que descrevem apenas características técnicas da solução proposta sem explicar a razão de ser do projeto"
+        "Seções que descrevem apenas características técnicas da solução proposta sem explicar a razão de ser do projeto",
+        "Seções de objetivos estratégicos que descrevem o que o projeto pretende alcançar, e não o problema atual que justifica a intervenção (evidência de produto 1c, não 1a)",
+        "Passagens que citam 'contrato vigente' apenas em referência às obrigações contratuais em curso, sem relação com vencimento ou gatilho de nova licitação"
       ]
     },
     "1b": {
@@ -196,7 +545,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["panorama", "econômico"],
+          "tokens": [
+            "panorama",
+            "econômico"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",
@@ -205,7 +557,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["entes", "federativos"],
+          "tokens": [
+            "entes",
+            "federativos"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "real_world",
@@ -214,7 +569,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["investimentos", "estimativa"],
+          "tokens": [
+            "investimentos",
+            "estimativa"
+          ],
           "distance": 7,
           "type": "C",
           "provenance": "real_world",
@@ -310,7 +668,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["objetivos", "projeto"],
+          "tokens": [
+            "objetivos",
+            "projeto"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",
@@ -319,7 +680,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["renovação", "tecnológica"],
+          "tokens": [
+            "renovação",
+            "tecnológica"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",
@@ -328,7 +692,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["alocação", "risco"],
+          "tokens": [
+            "alocação",
+            "risco"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",
@@ -424,7 +791,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["alinhamento", "política"],
+          "tokens": [
+            "alinhamento",
+            "política"
+          ],
           "distance": 7,
           "type": "C",
           "provenance": "real_world",
@@ -433,7 +803,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["integração", "mobilidade"],
+          "tokens": [
+            "integração",
+            "mobilidade"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",
@@ -442,7 +815,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["concessão", "serviço", "público"],
+          "tokens": [
+            "concessão",
+            "serviço",
+            "público"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "real_world",

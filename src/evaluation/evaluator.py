@@ -29,7 +29,7 @@ def _cap_evidence(
         chunks,
         key=lambda c: (
             _CASCADE_PRIORITY[c.cascade_step],
-            -(c.bm25_score or 0.0) if c.cascade_step == "bm25" else 0.0,
+            (c.bm25_score or 0.0) if c.cascade_step == "bm25" else 0.0,
             c.chunk_index,
         ),
     )
