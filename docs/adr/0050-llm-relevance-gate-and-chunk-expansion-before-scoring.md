@@ -1,0 +1,54 @@
+# LLM-based relevance gate and neighbor-chunk expansion before final scoring
+
+**Status:** accepted — amends ADR-0019 (which remains the final safety net, not the primary selection mechanism)
+
+A model-based relevance gate runs between retrieval (`retrieve_for_acao()`, ADR-0049's hybrid RRF cascade) and final scoring (`evaluate()`). For each letter-suffixed Expected Product, it filters a wider RRF-ranked candidate pool down to genuinely relevant chunks, expands survivors with their immediate document neighbors, and strips boilerplate noise from kept text — before the existing per-Ação character budget (ADR-0019, ~21,000 chars) and final scoring prompt ever see the result.
+
+## Why this needs its own ADR
+
+ADR-0019 established "pass all retrieved chunks to the LLM, bounded only by a character cap" specifically because, at the time, evidence selection was "a hypothetical — not a measured — context window problem" and any future filtering stage would be "an evaluation concern" requiring its own decision record. This is that stage. It introduces model-based judgment into what was previously a fully deterministic algorithmic pipeline (BM25 → RRF fusion → character truncation), which is a real architectural shift worth recording on its own terms, separate from ADR-0049's retrieval-layer changes.
+
+## Decision
+
+**Module:** `src/evaluation/evidence_selection.py`. Public function `select_evidence(acao_id, process_number, candidates)` is called from `AssessmentService.run_assessment()` between `retrieve_for_acao()` and `evaluate()`:
+
+```
+retrieve_for_acao()  →  select_evidence()  →  evaluate()
+```
+
+**Gate model:** A second, independently-configured LLM client — always local Ollama/Mistral, decoupled from whatever client is configured for final scoring (currently Groq). Mirrors the existing `configure_llm()`/`get_llm_client()` pattern in `evaluation/_config.py` with a second pair: `configure_gate_llm()`/`get_gate_llm_client()`. `main.py`'s `_bootstrap()` calls both. Rationale: the gate needs one LLM call per candidate chunk (potentially 80 per Ação — see candidate pool size below), and Groq's account is rate-limited to 12,000 tokens/minute (discovered while calibrating ADR-0019's amendment) — far too tight to absorb that call volume. Local Ollama has no such limit. This also means the system now depends on Ollama being available even when final scoring uses Groq.
+
+**Candidate pool — wider than Branch 1's per-product cap:** The gate runs on each product's top-20 RRF-ranked candidates (ADR-0049), *before* the per-product top-5 selection — not on the already-narrowed top-5. This is the part that actually justifies the gate's existence: it lets a genuinely relevant chunk ranked #8 by RRF beat an irrelevant chunk ranked #3. Gating only the already-capped top-5 would make the gate a rubber stamp on Branch 1's ranking rather than a real improvement to selection quality.
+
+**Relevance scope — product-specific, not Ação-level:** The classification prompt asks whether a chunk evidences *this specific product's* `evidence_intent` (from the retrieval profile), not whether it relates to the project in general. Preserves the per-product fairness structure ADR-0049 was built to protect — a chunk that's broadly "about the project" but useless for 1c's risk-matrix requirement is discarded for 1c specifically.
+
+**Classification output — binary, plus deletion-only cleaning:** The gate returns a binary relevant/not-relevant verdict (no graded confidence — simpler and more reliable for a small local model in a short prompt). For chunks classified relevant, the same call also returns a cleaned version of the text: the model identifies spans to *delete* (letterhead addresses, repeated headers/footers, irrelevant proper names, duplicate sentences — the "Category A" header-noise chunks identified in earlier retrieval diagnostics) and returns what remains, **character-for-character identical to the source for every retained span**. No summarizing, no rephrasing — this project's design ("the system surfaces evidence, the auditor confirms scores," the 7-element auditor review interface) depends on evidence being traceable verbatim to source pages.
+
+**Verification of deletion-only compliance:** After the gate returns cleaned text, a programmatic check confirms the cleaned text is a valid subsequence of the original (every remaining character appears in the same order in the source, ignoring whitespace). If the model violated the deletion-only instruction (inserted, reordered, or altered text), the cleaning attempt is discarded and the original uncleaned chunk text is used instead. The gate's classification verdict is never overridden by this check — only the cleaned-text output is.
+
+**Neighbor expansion:** For each chunk classified relevant (an "anchor"), fetch its immediate neighbors in `(page_number, chunk_index)` reading order within the same `(process_number, filename)` — the previous and next chunk in the document's natural linear sequence, crossing page boundaries when the anchor is first/last on its page. New public function `retrieval.fetch_neighbor_chunks(process_number, filename, page_number, chunk_index)`, added to retrieval's existing public surface (retrieval owns all `chunks`-table access; evaluation never queries it directly — consistent with ADR-0024's schema ownership). Neighbors go through the same per-product relevance gate (classification + cleaning) before being added.
+
+**Expansion cap — 5 per product:** Up to 5 expansion (neighbor) chunks per product, in addition to up to 5 anchors per product selected from the gated top-20 pool — up to 10 chunks per product, up to 40 total across 1a–1d.
+
+**Budget reconciliation with ADR-0019's ~21,000-char cap:** 40 chunks will frequently exceed the budget even after relevance filtering. When the post-gate, post-expansion population exceeds the character budget, **expansion chunks are trimmed before anchors, weakest products' expansion first** — ranked by each chunk's RRF-fused score (ADR-0049) among the relevant population, since the gate's binary verdict provides no further ranking signal. Anchors are only trimmed if reducing expansion to zero still exceeds budget. `evaluator.py`'s existing `_cap_evidence()` remains as a final safety net for that residual case — its cascade-priority-then-score ordering no longer carries the same meaning (everything reaching it already passed relevance filtering), but it still guarantees the hard character ceiling is never exceeded regardless of upstream logic.
+
+**rio_hints bypasses the gate entirely.** It has no `evidence_intent` (it's a flat list of Rio Manual document names/phrases, not an IPMP product), so the product-specific relevance criterion doesn't apply. It passes through unfiltered and uncleaned, exactly as today — consistent with ADR-0049's decision that rio_hints is a structurally lower-priority, BM25-only lane.
+
+**Audit trail:** Rejected candidates are recorded on `EvaluationResult` (chunk identity + `expected_product_id`; the binary gate provides no richer "reason" than the verdict itself). Extends the existing 7-element auditor review interface with visibility into this new filtering stage — consistent with why `retrieval_query` and `cascade_step` are already exposed per chunk today. An auditor reviewing a low score for a product can now see what was found and discarded, not only what survived.
+
+## Consequences
+
+- The retrieval-to-scoring pipeline is no longer fully deterministic-algorithmic end to end: the gate introduces LLM judgment (at temperature=0, for reproducibility within a fixed model version) into what chunks the final scoring LLM ever sees. Reproducibility now also depends on the gate model's version, not only the final-scoring model's.
+- Every assessment now requires Ollama running locally, regardless of which provider handles final scoring.
+- Gate call volume: up to 20 candidates × 4 products = 80 initial classification calls, plus up to 5 × 4 = 20 neighbor-expansion calls — up to 100 local LLM calls per Ação assessment. Local-only, so no rate-limit cost, but real latency cost per assessment.
+- `EvaluationResult`'s schema (ADR-0025's hybrid normalized-columns + `raw_json` persistence) gains a rejected-chunks field. Additive change, backward compatible with existing persisted rows.
+- `_cap_evidence()`'s role changes from primary evidence-selection mechanism to final safety net. Its existing cascade-priority ordering logic is retained but is now rarely the deciding factor, since the gate + expansion-trimming logic does most of the real selection work upstream.
+
+## Considered options
+
+- **Gate the already-capped top-5 only** — rejected: makes the gate a confirm/reject layer on top of Branch 1's ranking rather than a genuine improvement; a relevant chunk ranked 6th-20th by RRF would never get evaluated.
+- **Graded relevance confidence instead of binary** — rejected: asks more of a small local model in a single short prompt; binary classification is more reliable, and RRF score (already computed) serves as a sufficient ranking signal for the one place a ranking is actually needed (trimming expansion chunks under budget pressure).
+- **Allow rephrasing/summarizing during cleaning** — rejected: breaks verbatim evidentiary traceability, a core property of this system's audit design.
+- **No programmatic verification of deletion-only compliance** — rejected: would silently trust LLM instruction-following with no fallback, risking corrupted evidence text reaching the auditor.
+- **Run the gate on the same provider as final scoring (Groq)** — rejected: Groq's account-level 12,000 TPM rate limit (discovered during ADR-0019's amendment) cannot absorb the gate's call volume without serializing requests across multiple minutes per assessment.
+- **Drop rio_hints once the gate exists** — rejected: removes a retrieval signal that has caught real matches in past diagnostic runs, for no benefit (rio_hints isn't competing with product-gated chunks for the same role).
