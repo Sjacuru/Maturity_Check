@@ -9,7 +9,7 @@ from retrieval.interfaces.contracts import RetrievedChunk
 MAX_CHUNKS_PER_ACAO = 20
 
 # Each product gets up to this many best-scoring chunks before cross-product dedup.
-# 4 products × 5 = 20 candidates, minus physical duplicates → fits MAX_CHUNKS_PER_ACAO.
+# 5 products × 5 = 25 candidates, minus physical duplicates → capped at MAX_CHUNKS_PER_ACAO.
 _PER_PRODUCT_TARGET = 5
 
 _PER_QUERY_LIMIT = MAX_CHUNKS_PER_ACAO * 4
