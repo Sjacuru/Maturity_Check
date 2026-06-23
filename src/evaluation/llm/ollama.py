@@ -18,7 +18,10 @@ class OllamaClient:
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                "options": {"temperature": 0, "num_ctx": 8192},
+                # Mistral 7B's real native context window (see ADR-0019 amendment, 2026-06-23).
+                # Was hardcoded to 8192 — a quarter of the model's real capacity — which
+                # silently undermined the evidence-cap calculation in evaluator.py.
+                "options": {"temperature": 0, "num_ctx": 32768},
                 "stream": False,
             }
         ).encode()

@@ -13,8 +13,12 @@ from evaluation.prompt.builder import build_system_prompt, build_user_prompt
 logger = logging.getLogger(__name__)
 
 # Warn when evidence is large; hard-cap before it crowds out the system prompt + LLM output.
-EVIDENCE_CHAR_WARN_THRESHOLD = 15_000
-_MAX_EVIDENCE_CHARS = 20_000
+# Calibrated against Mistral 7B's real 32,768-token context window (see ADR-0019 amendment,
+# 2026-06-23): ~1,869 tokens system prompt + ~1,500 tokens completion + ~10% safety margin
+# leaves ~25,800 tokens (~77,000 chars at 3.0 chars/token for Portuguese) for evidence.
+# 50,000/35,000 are clean, conservative values well under that computed ceiling.
+EVIDENCE_CHAR_WARN_THRESHOLD = 35_000
+_MAX_EVIDENCE_CHARS = 50_000
 
 _CASCADE_PRIORITY = {"filename_match": 0, "variant_match": 1, "bm25": 2, "regex": 3, "vector": 4}
 

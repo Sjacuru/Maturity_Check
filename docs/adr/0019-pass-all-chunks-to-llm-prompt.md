@@ -23,3 +23,22 @@ Evidence section character count is logged at INFO on every evaluation. A WARNIN
 ## Consequences
 
 If real evaluation runs expose a context overflow or score-quality degradation, the fix must be located before implementing it: a tighter `MAX_CHUNKS_PER_ACAO` in Module 3 (retrieval concern) or an evidence-selection stage in Module 4 (evaluation concern). The WARNING logs and INFO metrics provide the evidence base for that decision. Either path requires its own ADR.
+
+## Amendment (2026-06-23): corrected evidence cap and num_ctx bugfix
+
+The predicted context-overflow scenario occurred: a real evaluation run retrieved 57,000 chars of evidence (27 chunks via BM25 + additive regex), which exhausted the Ollama/Mistral context window before the model could emit the `SCORE:` sentinel. The fix applied at the time introduced `_MAX_EVIDENCE_CHARS = 20_000` and `EVIDENCE_CHAR_WARN_THRESHOLD = 15_000` in `evaluator.py`, with cascade-priority truncation (`_cap_evidence()`).
+
+That fix was miscalibrated. `ollama.py` hardcoded `num_ctx=8192` — a quarter of Mistral 7B's real native context window of 32,768 tokens. The 20,000-char cap was sized as if the usable window were far smaller than it actually is, which in turn caused legitimate evidence (1c/1d/rio_hints chunks in later Ação 1 retrieval runs) to be truncated by `_cap_evidence()` even though the corpus had room for it.
+
+**Corrected calculation**, measured against Mistral 7B's actual 32,768-token window:
+- System prompt for Ação 1, measured: 6,541 chars (~1,869 tokens at ~3.5 chars/token)
+- Reserved for completion (reasoning + sentinel block): ~1,500 tokens
+- Safety margin (~10%, against tokenizer-estimate error and Ollama's behavior near the `num_ctx` boundary): ~3,277 tokens
+- Remaining for evidence: ~25,800 tokens ≈ ~77,000 chars at a conservative 3.0 chars/token for Portuguese (accented text tokenizes less efficiently than English)
+
+**New values** (chosen as a clean, conservative number well under the ~77,000-char computed ceiling, rather than the precise computed value):
+- `_MAX_EVIDENCE_CHARS`: 20,000 → **50,000**
+- `EVIDENCE_CHAR_WARN_THRESHOLD`: 15,000 → **35,000** (keeps the same ~70% ratio to the cap)
+- `ollama.py` `num_ctx`: 8192 → **32768** (same underlying bug, fixed on both sides — raising the char cap without this fix would have recreated the original incident)
+
+This amendment changes only the numeric thresholds and the Ollama client's context-window configuration. The core architecture this ADR establishes — pass all chunks bounded by a single global cap, deterministic chunk ordering, no per-evaluation filtering — is unchanged and remains in force. A model-based relevance gate (selecting which chunks reach the LLM based on actual relevance rather than a character budget alone) is a separate, larger architectural change tracked in its own ADR.
