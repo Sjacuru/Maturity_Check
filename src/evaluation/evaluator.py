@@ -6,7 +6,7 @@ from ingestion import get_ipmp_store
 from retrieval.interfaces.contracts import RetrievedChunk
 
 from evaluation._config import get_llm_client, get_model, get_provider
-from evaluation.interfaces.contracts import EvaluationResult
+from evaluation.interfaces.contracts import EvaluationResult, RejectedChunk
 from evaluation.parsing.response import parse_llm_response
 from evaluation.prompt.builder import build_system_prompt, build_user_prompt
 
@@ -60,10 +60,12 @@ def evaluate(
     acao_id: int,
     process_number: str,
     chunks: list[RetrievedChunk],
+    rejected_chunks: list[RejectedChunk] | None = None,
 ) -> EvaluationResult:
     client = get_llm_client()  # raises if configure_llm() not called
     provider = get_provider()
     model = get_model()
+    rejected_chunks = rejected_chunks or []
 
     store = get_ipmp_store()
     if acao_id not in store.acoes:
@@ -81,6 +83,7 @@ def evaluate(
             provider=provider,
             model=model,
             retrieved_chunks=[],
+            rejected_chunks=rejected_chunks,
             evidence_char_count=0,
             system_prompt=None,
             user_prompt=None,
@@ -122,6 +125,7 @@ def evaluate(
         provider=provider,
         model=model,
         retrieved_chunks=chunks,
+        rejected_chunks=rejected_chunks,
         evidence_char_count=evidence_char_count,
         system_prompt=system_prompt,
         user_prompt=user_prompt,

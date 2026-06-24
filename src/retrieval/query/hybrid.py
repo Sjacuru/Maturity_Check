@@ -33,6 +33,91 @@ def _vector_query_text(profile_product, ipmp_texto: str) -> str:
     return ipmp_texto
 
 
+def _fused_candidates_for_product(
+    product,
+    profile_product,
+    acronym_map: dict[str, str],
+    process_number: str,
+) -> list[tuple[float, RetrievedChunk]]:
+    """BM25 + vector candidates for one product, fused via RRF, sorted best-first.
+
+    Returns up to _CANDIDATE_POOL_SIZE (score, chunk) pairs, NOT capped to
+    _PER_PRODUCT_TARGET — callers decide how many to keep.
+    """
+    if profile_product and profile_product.query_terms:
+        bm25_query = build_query_from_terms(profile_product.query_terms)
+    else:
+        bm25_query = build_bm25_query(product.texto, acronym_map)
+
+    vector_query = _vector_query_text(profile_product, product.texto)
+
+    bm25_hits = (
+        fetch_bm25_candidates(bm25_query, process_number, product.id, limit=_CANDIDATE_POOL_SIZE)
+        if bm25_query
+        else []
+    )
+    vector_hits = (
+        vector_mod.search_vector(process_number, vector_query, k=_CANDIDATE_POOL_SIZE)
+        if vector_query
+        else []
+    )
+    if not bm25_hits and not vector_hits:
+        return []
+
+    by_key: dict[_Key, RetrievedChunk] = {}
+    for c in bm25_hits:
+        by_key[_natural_key(c)] = c
+    for c in vector_hits:
+        by_key.setdefault(_natural_key(c), c)
+
+    fused_scores = fuse_rankings(
+        [
+            [_natural_key(c) for c in bm25_hits],
+            [_natural_key(c) for c in vector_hits],
+        ]
+    )
+    ranked_keys = sorted(fused_scores, key=lambda key: fused_scores[key], reverse=True)
+
+    return [
+        (fused_scores[key], by_key[key].model_copy(update={"expected_product_id": product.id}))
+        for key in ranked_keys
+    ]
+
+
+def retrieve_hybrid_candidates_for_acao(
+    acao_id: int,
+    process_number: str,
+) -> dict[str, list[tuple[float, RetrievedChunk]]]:
+    """Per-Expected-Product RRF-fused candidates, wider than the per-product cap (ADR-0050).
+
+    For each letter-suffixed Expected Product, returns up to _CANDIDATE_POOL_SIZE
+    (fused_score, chunk) pairs sorted best-first — BEFORE the _PER_PRODUCT_TARGET
+    narrowing that retrieve_hybrid_for_acao() applies. This is the wider pool the
+    relevance gate (evidence_selection.select_evidence) classifies against, so a
+    genuinely relevant chunk ranked below 5 by RRF still gets a chance.
+
+    Returns {} when acao_id is not found in the IPMP store.
+    """
+    acao = get_ipmp_store().acoes.get(acao_id)
+    if acao is None:
+        return {}
+
+    profile_acao = get_retrieval_profile_store().acoes.get(acao_id)
+    acronym_map = get_acronym_store()
+
+    candidates: dict[str, list[tuple[float, RetrievedChunk]]] = {}
+    for product in acao.produtos_esperados:
+        if not product.id[-1:].isalpha():
+            continue
+        profile_product = (
+            profile_acao.expected_products.get(product.id) if profile_acao else None
+        )
+        ranked = _fused_candidates_for_product(product, profile_product, acronym_map, process_number)
+        if ranked:
+            candidates[product.id] = ranked
+    return candidates
+
+
 def retrieve_hybrid_for_acao(
     acao_id: int,
     process_number: str,
@@ -63,58 +148,14 @@ def retrieve_hybrid_for_acao(
     if acao is None:
         return []
 
-    profile_acao = get_retrieval_profile_store().acoes.get(acao_id)
-    acronym_map = get_acronym_store()
+    candidates = retrieve_hybrid_candidates_for_acao(acao_id, process_number)
 
     # key -> (fused_score, chunk) for the best-scoring IPMP product lane that claimed it.
     product_selected: dict[_Key, tuple[float, RetrievedChunk]] = {}
-
-    for product in acao.produtos_esperados:
-        if not product.id[-1:].isalpha():
-            continue
-
-        profile_product = (
-            profile_acao.expected_products.get(product.id) if profile_acao else None
-        )
-
-        if profile_product and profile_product.query_terms:
-            bm25_query = build_query_from_terms(profile_product.query_terms)
-        else:
-            bm25_query = build_bm25_query(product.texto, acronym_map)
-
-        vector_query = _vector_query_text(profile_product, product.texto)
-
-        bm25_hits = (
-            fetch_bm25_candidates(bm25_query, process_number, product.id, limit=_CANDIDATE_POOL_SIZE)
-            if bm25_query
-            else []
-        )
-        vector_hits = (
-            vector_mod.search_vector(process_number, vector_query, k=_CANDIDATE_POOL_SIZE)
-            if vector_query
-            else []
-        )
-        if not bm25_hits and not vector_hits:
-            continue
-
-        by_key: dict[_Key, RetrievedChunk] = {}
-        for c in bm25_hits:
-            by_key[_natural_key(c)] = c
-        for c in vector_hits:
-            by_key.setdefault(_natural_key(c), c)
-
-        fused_scores = fuse_rankings(
-            [
-                [_natural_key(c) for c in bm25_hits],
-                [_natural_key(c) for c in vector_hits],
-            ]
-        )
-        ranked_keys = sorted(fused_scores, key=lambda key: fused_scores[key], reverse=True)
-
-        for key in ranked_keys[:_PER_PRODUCT_TARGET]:
-            score = fused_scores[key]
+    for product_id, ranked in candidates.items():
+        for score, chunk in ranked[:_PER_PRODUCT_TARGET]:
+            key = _natural_key(chunk)
             if key not in product_selected or score > product_selected[key][0]:
-                chunk = by_key[key].model_copy(update={"expected_product_id": product.id})
                 product_selected[key] = (score, chunk)
 
     rio_selected: dict[_Key, RetrievedChunk] = {}

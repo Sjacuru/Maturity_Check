@@ -9,7 +9,7 @@ load_dotenv()
 
 from assessment import configure as assessment_configure, init_db as assessment_init_db
 from assessment.api.app import create_app
-from evaluation import configure_llm
+from evaluation import configure_gate_llm, configure_llm
 from retrieval import configure as retrieval_configure
 from retrieval.schema.ddl import init_db as retrieval_init_db
 
@@ -26,6 +26,9 @@ def _bootstrap() -> None:
     assessment_init_db(_DB_PATH)
 
     configure_llm(provider="groq", model="llama-3.3-70b-versatile")
+    # Relevance gate (ADR-0050) always runs locally — Groq's account-level rate
+    # limit can't absorb its call volume (see ADR-0019 amendment).
+    configure_gate_llm(provider="ollama", model="mistral")
 
 
 _bootstrap()

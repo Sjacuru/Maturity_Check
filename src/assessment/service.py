@@ -7,11 +7,14 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from evaluation import evaluate, EvaluationResult
-from evaluation._config import get_llm_client
+from evaluation import evaluate, select_evidence, EvaluationResult, RejectedChunk
+from evaluation._config import get_gate_llm_client, get_llm_client
 from extraction import extract_document
 from ingestion import get_ipmp_store
-from retrieval import index, invalidate_vector_index, retrieve_for_acao
+from retrieval import index, invalidate_vector_index, retrieve_hybrid_candidates_for_acao
+from retrieval.interfaces.contracts import RetrievedChunk
+from retrieval.query.document import retrieve_document_focused
+from retrieval.query.regex_search import search_regex
 
 from assessment._config import get_db_path
 
@@ -25,6 +28,7 @@ class AssessmentService:
         document_paths: list[Path],
     ) -> tuple[list[EvaluationResult], list[dict[str, str]]]:
         get_llm_client()  # raises RuntimeError if configure_llm() was not called
+        get_gate_llm_client()  # raises RuntimeError if configure_gate_llm() was not called
 
         db_path = get_db_path()
 
@@ -43,12 +47,40 @@ class AssessmentService:
         store = get_ipmp_store()
         results: list[EvaluationResult] = []
         for acao_id in store.acoes:
-            retrieved = retrieve_for_acao(acao_id, process_number)
-            result = evaluate(acao_id, process_number, retrieved)
+            accepted, rejected = _retrieve_and_select(acao_id, process_number)
+            result = evaluate(acao_id, process_number, accepted, rejected_chunks=rejected)
             _persist_evaluation_result(db_path, result)
             results.append(result)
 
         return results, documents
+
+
+def _retrieve_and_select(
+    acao_id: int, process_number: str
+) -> tuple[list[RetrievedChunk], list[RejectedChunk]]:
+    """Step A/B short-circuit (ungated) -> Step C gate (ADR-0050) -> Step D regex (additive, ungated).
+
+    Document-focused matches (Step A/B) already return all of a single
+    document's chunks; that's a different evidentiary basis than per-product
+    query-based retrieval, so the relevance gate — built around per-product
+    evidence_intent — does not apply to them. Regex hits (Step D) stay
+    additive and ungated, unchanged from the pre-ADR-0050 cascade.
+    """
+    doc_result = retrieve_document_focused(acao_id, process_number)
+    if doc_result is not None:
+        return doc_result, []
+
+    candidates = retrieve_hybrid_candidates_for_acao(acao_id, process_number)
+    selection = select_evidence(acao_id, process_number, candidates)
+
+    accepted_keys = {(c.filename, c.page_number, c.chunk_index) for c in selection.accepted}
+    regex_results = search_regex(acao_id, process_number)
+    new_regex_hits = [
+        r for r in regex_results
+        if (r.filename, r.page_number, r.chunk_index) not in accepted_keys
+    ]
+
+    return selection.accepted + new_regex_hits, selection.rejected
 
 
 def _compute_sha256(path: Path) -> str:

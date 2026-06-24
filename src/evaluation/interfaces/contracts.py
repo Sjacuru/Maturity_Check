@@ -7,12 +7,27 @@ from retrieval.interfaces.contracts import RetrievedChunk
 _VALID_SCORES = {0, 1, 3}
 
 
+class RejectedChunk(BaseModel):
+    """A candidate the relevance gate (ADR-0050) classified as not relevant.
+
+    Identity only — the binary gate provides no richer "reason" than the
+    verdict itself. Recorded for auditor visibility into what was found and
+    discarded per product, not just what survived.
+    """
+
+    filename: str
+    page_number: int
+    chunk_index: int
+    expected_product_id: str
+
+
 class EvaluationResult(BaseModel):
     acao_id: int
     process_number: str
     provider: str
     model: str
     retrieved_chunks: list[RetrievedChunk]
+    rejected_chunks: list[RejectedChunk] = []
     evidence_char_count: int
     system_prompt: str | None
     user_prompt: str | None
