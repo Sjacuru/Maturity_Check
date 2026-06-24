@@ -257,3 +257,95 @@ def test_is_verbatim_subsequence_rejects_reordering():
 
 def test_is_verbatim_subsequence_ignores_whitespace_differences():
     assert es._is_verbatim_subsequence("projeto\nnecessário", "projeto   necessário")
+
+
+def _two_product_profile(intent_a: str = "X", intent_c: str = "Y") -> RetrievalProfileStore:
+    return RetrievalProfileStore(
+        acoes={
+            1: AcaoRetrievalProfile(
+                acao_id=1,
+                profile_maturity="seed",
+                expected_products={
+                    "1a": ExpectedProductProfile(
+                        evidence_intent=intent_a, retrieval_signal_concepts=[], query_terms=[]
+                    ),
+                    "1c": ExpectedProductProfile(
+                        evidence_intent=intent_c, retrieval_signal_concepts=[], query_terms=[]
+                    ),
+                },
+            )
+        }
+    )
+
+
+def test_chunk_accepted_by_two_products_is_deduplicated(monkeypatch):
+    """Final scoring is one combined call across all products (ADR-0009) — a
+    chunk claimed relevant by two products must still reach evaluate() once."""
+    import ingestion.retrieval_profile as _rp
+
+    monkeypatch.setattr(_rp, "_store", _two_product_profile())
+    _no_neighbors(monkeypatch)
+    _set_gate(lambda system, user: "RELEVANT: yes\nCLEANED:\n" + user.split("\n", 1)[-1])
+
+    shared_chunk = make_chunk(page_number=3, chunk_index=0, text="conteudo compartilhado")
+    result = select_evidence(
+        1,
+        "P001",
+        {
+            "1a": [(0.9, shared_chunk)],  # higher score
+            "1c": [(0.5, shared_chunk)],  # lower score
+        },
+    )
+
+    matches = [c for c in result.accepted if c.page_number == 3 and c.chunk_index == 0]
+    assert len(matches) == 1
+    assert matches[0].expected_product_id == "1a"  # higher-scoring product wins
+
+
+def test_anchor_wins_over_expansion_for_same_physical_chunk(monkeypatch):
+    """A chunk that is one product's anchor and another product's fetched
+    neighbor must appear once, attributed to the anchor (higher-confidence)."""
+    import ingestion.retrieval_profile as _rp
+
+    monkeypatch.setattr(_rp, "_store", _two_product_profile())
+
+    shared_chunk = make_chunk(page_number=5, chunk_index=1, text="ancora e vizinho")
+
+    def fake_neighbors(process_number, filename, page_number, chunk_index):
+        if page_number == 5 and chunk_index == 0:
+            return None, shared_chunk  # 1c's anchor's "next" neighbor is shared_chunk
+        return None, None
+
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", fake_neighbors)
+    _set_gate(lambda system, user: "RELEVANT: yes\nCLEANED:\n" + user.split("\n", 1)[-1])
+
+    c_anchor = make_chunk(page_number=5, chunk_index=0, text="ancora de 1c")
+    result = select_evidence(
+        1,
+        "P001",
+        {
+            "1a": [(0.9, shared_chunk)],  # 1a claims it directly as an anchor
+            "1c": [(0.5, c_anchor)],  # 1c's anchor, whose neighbor is shared_chunk
+        },
+    )
+
+    matches = [c for c in result.accepted if c.page_number == 5 and c.chunk_index == 1]
+    assert len(matches) == 1
+    assert matches[0].expected_product_id == "1a"
+
+
+def test_deduplicate_across_products_prefers_higher_score():
+    chunk = make_chunk(page_number=7, chunk_index=2)
+    anchors = [(0.3, chunk), (0.8, chunk)]
+    deduped_anchors, deduped_expansions = es._deduplicate_across_products(anchors, [])
+    assert len(deduped_anchors) == 1
+    assert deduped_anchors[0][0] == 0.8
+
+
+def test_deduplicate_across_products_expansion_loses_to_anchor():
+    chunk = make_chunk(page_number=9, chunk_index=4)
+    anchors = [(0.5, chunk)]
+    expansions = [(0.9, chunk)]  # higher score, but still must lose to the anchor
+    deduped_anchors, deduped_expansions = es._deduplicate_across_products(anchors, expansions)
+    assert len(deduped_anchors) == 1
+    assert deduped_expansions == []

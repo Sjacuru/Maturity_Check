@@ -87,13 +87,54 @@ def select_evidence(
             _expand_anchors(product_anchors, product_id, process_number, evidence_intent, rejected)
         )
 
-    accepted_anchors = [chunk for _, chunk in scored_anchors]
-    accepted_expansions = _trim_expansions_to_budget(scored_anchors, scored_expansions)
+    deduped_anchors, deduped_expansions = _deduplicate_across_products(
+        scored_anchors, scored_expansions
+    )
+    accepted_anchors = [chunk for _, chunk in deduped_anchors]
+    accepted_expansions = _trim_expansions_to_budget(deduped_anchors, deduped_expansions)
 
     return EvidenceSelectionResult(
         accepted=accepted_anchors + accepted_expansions,
         rejected=rejected,
     )
+
+
+def _natural_key(chunk: RetrievedChunk) -> tuple[str, int, int]:
+    return (chunk.filename, chunk.page_number, chunk.chunk_index)
+
+
+def _deduplicate_across_products(
+    scored_anchors: list[tuple[float, RetrievedChunk]],
+    scored_expansions: list[tuple[float, RetrievedChunk]],
+) -> tuple[list[tuple[float, RetrievedChunk]], list[tuple[float, RetrievedChunk]]]:
+    """Collapse the same physical chunk accepted by multiple products to one copy.
+
+    Final scoring is a single combined LLM call across all products (ADR-0009),
+    and build_user_prompt() doesn't even include expected_product_id — the LLM
+    cannot tell two copies of the same chunk's text apart, so a chunk accepted
+    by multiple products' gates must still reach evaluate() only once. This is
+    ADR-0049's "one physical chunk, one attribution" invariant, extended to
+    the gated path (ADR-0050 amendment, 2026-06-24): anchors win over
+    expansions for the same physical chunk (a higher-confidence inclusion
+    than a fetched neighbor); within each tier, the highest-scoring copy
+    wins, mirroring ADR-0049's tie-break rule.
+    """
+    best_anchor: dict[tuple[str, int, int], tuple[float, RetrievedChunk]] = {}
+    for score, chunk in scored_anchors:
+        key = _natural_key(chunk)
+        if key not in best_anchor or score > best_anchor[key][0]:
+            best_anchor[key] = (score, chunk)
+    anchor_keys = set(best_anchor.keys())
+
+    best_expansion: dict[tuple[str, int, int], tuple[float, RetrievedChunk]] = {}
+    for score, chunk in scored_expansions:
+        key = _natural_key(chunk)
+        if key in anchor_keys:
+            continue  # already included as an anchor — anchors win
+        if key not in best_expansion or score > best_expansion[key][0]:
+            best_expansion[key] = (score, chunk)
+
+    return list(best_anchor.values()), list(best_expansion.values())
 
 
 def _expand_anchors(
