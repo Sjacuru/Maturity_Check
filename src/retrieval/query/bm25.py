@@ -116,6 +116,59 @@ def _run_queries(
     return hits
 
 
+def fetch_bm25_candidates(
+    query_str: str,
+    process_number: str,
+    expected_product_id: str | None,
+    limit: int = 20,
+) -> list[RetrievedChunk]:
+    """Run a single FTS5 query and return up to `limit` ranked candidates.
+
+    Unlike search_bm25(), this does not merge across products or apply the
+    per-product/global caps — it's the raw per-product candidate list used as
+    one input to RRF fusion against vector candidates (ADR-0049).
+    Returns [] for an empty query_str.
+    """
+    if not query_str:
+        return []
+
+    con = sqlite3.connect(str(get_db_path()))
+    try:
+        if not con.execute(_SCHEMA_CHECK).fetchone():
+            raise RuntimeError(
+                "Retrieval database schema not initialised. "
+                "Call init_db(db_path) before fetch_bm25_candidates()."
+            )
+        try:
+            rows = con.execute(
+                _SEARCH_SQL, (query_str, process_number, limit)
+            ).fetchall()
+        except sqlite3.OperationalError:
+            return []
+    finally:
+        con.close()
+
+    return [
+        RetrievedChunk(
+            process_number=row[1],
+            filename=row[2],
+            page_number=row[3],
+            chunk_index=row[4],
+            char_offset=row[5],
+            page_total=row[6],
+            ocr_used=bool(row[7]),
+            source_type=row[8],
+            text=row[9],
+            cascade_step="bm25",
+            expected_product_id=expected_product_id,
+            bm25_score=row[10],
+            rank=i + 1,
+            retrieval_query=query_str,
+        )
+        for i, row in enumerate(rows)
+    ]
+
+
 def _merge(hits: list[_Hit]) -> list[_Hit]:
     """Fair per-product selection followed by cross-product physical deduplication.
 

@@ -4,11 +4,14 @@ All ML dependencies (sentence_transformers, lancedb) are patched at the
 vector.py import path so the main suite never loads the ML stack (ADR-0039).
 
 Tests validate:
-- Fallback activation: vector called only when lexical returns zero (ADR-0033)
 - Lazy initialization: model not loaded on module import
 - Index lifecycle: create on first call, reuse on second, invalidate on replacement
 - Provenance tagging: returned chunks carry retrieval_mode="vector_fallback"
 - LanceDB boundary: ensure_vector_index_exists, search_vector, invalidate_vector_index
+
+search_vector() now runs unconditionally per Expected Product, fused with BM25
+via RRF (ADR-0049, superseding ADR-0033's zero-results-only trigger). See
+tests/test_hybrid_retrieval.py for fusion-behavior coverage.
 """
 from __future__ import annotations
 
@@ -18,10 +21,6 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
-
-# Capture the real search_vector at module-load time (before any test fixture
-# can stub it) so tests that need the real implementation can restore it.
-from retrieval.query.vector import search_vector as _REAL_SEARCH_VECTOR
 
 import retrieval.query.vector as vector_mod
 from retrieval import configure as retrieval_configure, RetrievedChunk
@@ -310,7 +309,12 @@ def test_invalidate_noop_when_lancedb_dir_absent(db_path):
     mock_connect.assert_not_called()
 
 
-# ── cascade Step E integration ─────────────────────────────────────────────────
+# ── cascade Step C integration (hybrid retrieval, ADR-0049) ───────────────────
+#
+# Vector is no longer a zero-results fallback (ADR-0033, superseded) — it now
+# runs unconditionally per Expected Product, fused with BM25 via RRF. See
+# tests/test_hybrid_retrieval.py for fusion-behavior coverage; the tests below
+# only confirm cascade.py wires retrieve_hybrid_for_acao() correctly.
 
 def _make_lexical_chunk(process_number: str = "P001") -> RetrievedChunk:
     return RetrievedChunk(
@@ -330,63 +334,16 @@ def _make_lexical_chunk(process_number: str = "P001") -> RetrievedChunk:
     )
 
 
-def test_cascade_calls_vector_only_on_zero_lexical(db_path):
-    """Vector fallback must not run when lexical retrieval returns chunks."""
-    from retrieval.query.cascade import retrieve_for_acao
-
-    lexical_chunk = _make_lexical_chunk()
-
-    # Lazy imports inside retrieve_for_acao are bound at call time from their
-    # source modules, so patch paths must point to the source modules.
-    with patch("retrieval.query.cascade.retrieve_bm25_for_acao", return_value=[lexical_chunk]), \
-         patch("retrieval.query.regex_search.search_regex", return_value=[]), \
-         patch("retrieval.query.document.retrieve_document_focused", return_value=None), \
-         patch("retrieval.query.vector.search_vector") as mock_vector:
-        result = retrieve_for_acao(1, "P001")
-
-    mock_vector.assert_not_called()
-    assert len(result) == 1
-
-
-def test_cascade_calls_vector_when_lexical_empty(db_path, monkeypatch):
-    """Vector fallback must run when lexical cascade returns zero chunks."""
-    import retrieval.query.vector as _vec
-    from retrieval.query.cascade import retrieve_for_acao
-
-    # Restore real search_vector so the SentenceTransformer/lancedb patches below take effect.
-    monkeypatch.setattr(_vec, "search_vector", _REAL_SEARCH_VECTOR)
-
-    stub_model = _make_stub_model()
-    stub_model.encode.return_value = np.zeros((1, 384), dtype=np.float32)
-    stub_table = _make_stub_table([
-        _make_lancedb_hit(chunk_index=0, text="Relevant content"),
-    ])
-    stub_db = _make_stub_db(table_exists=True, table=stub_table)
-
-    with patch("retrieval.query.cascade.retrieve_bm25_for_acao", return_value=[]), \
-         patch("retrieval.query.regex_search.search_regex", return_value=[]), \
-         patch("retrieval.query.document.retrieve_document_focused", return_value=None), \
-         patch("sentence_transformers.SentenceTransformer", return_value=stub_model), \
-         patch("lancedb.connect", return_value=stub_db):
-        result = retrieve_for_acao(1, "P001")
-
-    assert len(result) == 1
-    assert result[0].retrieval_mode == "vector_fallback"
-    assert result[0].cascade_step == "vector"
-
-
 def test_cascade_lexical_results_have_lexical_mode(db_path):
-    """All lexically retrieved chunks must carry retrieval_mode='lexical'."""
+    """All hybrid-retrieved chunks must carry retrieval_mode='lexical' when sourced from BM25."""
     from retrieval.query.cascade import retrieve_for_acao
 
     lexical_chunk = _make_lexical_chunk()
 
-    with patch("retrieval.query.cascade.retrieve_bm25_for_acao", return_value=[lexical_chunk]), \
+    with patch("retrieval.query.cascade.retrieve_hybrid_for_acao", return_value=[lexical_chunk]), \
          patch("retrieval.query.regex_search.search_regex", return_value=[]), \
-         patch("retrieval.query.document.retrieve_document_focused", return_value=None), \
-         patch("retrieval.query.vector.search_vector") as mock_vector:
+         patch("retrieval.query.document.retrieve_document_focused", return_value=None):
         result = retrieve_for_acao(1, "P001")
 
-    mock_vector.assert_not_called()
     for chunk in result:
         assert chunk.retrieval_mode == "lexical"

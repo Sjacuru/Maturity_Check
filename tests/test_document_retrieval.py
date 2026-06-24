@@ -4,7 +4,7 @@ import pytest
 
 from extraction import Chunk
 from retrieval import configure, index
-from retrieval.query.cascade import retrieve_bm25_for_acao, retrieve_for_acao
+from retrieval.query.cascade import retrieve_for_acao
 from retrieval.query.document import retrieve_document_focused
 from retrieval.schema.ddl import init_db
 

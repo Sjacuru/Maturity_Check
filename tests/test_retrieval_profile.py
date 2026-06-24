@@ -15,7 +15,7 @@ from ingestion.retrieval_profile import (
     get_retrieval_profile_store,
 )
 from retrieval import configure, index
-from retrieval.query.cascade import retrieve_bm25_for_acao
+from retrieval.query.hybrid import retrieve_hybrid_for_acao
 from retrieval.query.query_builder import build_query_from_terms
 from retrieval.schema.ddl import init_db
 
@@ -299,7 +299,7 @@ def test_cascade_uses_profile_term_to_retrieve_chunk(db, monkeypatch):
     monkeypatch.setattr(_rp, "_store", _make_profile_with_1a_term(profile_phrase))
 
     index("P001", [make_chunk(text=f"documento descreve a {profile_phrase} de forma detalhada")])
-    results = retrieve_bm25_for_acao(1, "P001")
+    results = retrieve_hybrid_for_acao(1, "P001")
     assert any(profile_phrase in r.text for r in results)
 
 
@@ -311,7 +311,7 @@ def test_cascade_falls_back_when_no_profile_for_acao(db, monkeypatch):
 
     # Words from IPMP 1a text that pass the 5-char filter
     index("P001", [make_chunk(text="projeto natureza finalidade contexto socioeconômico")])
-    results = retrieve_bm25_for_acao(1, "P001")
+    results = retrieve_hybrid_for_acao(1, "P001")
     assert len(results) >= 1
 
 
@@ -324,7 +324,7 @@ def test_cascade_falls_back_per_product_when_missing_from_profile(db, monkeypatc
 
     # "panorama" from IPMP 1b text — only reachable via build_bm25_query fallback for 1b
     index("P001", [make_chunk(text="panorama econômico social ambiental relevante do projeto")])
-    results = retrieve_bm25_for_acao(1, "P001")
+    results = retrieve_hybrid_for_acao(1, "P001")
     assert len(results) >= 1
 
 
@@ -337,5 +337,5 @@ def test_cascade_rio_hints_unchanged_by_profile(db, monkeypatch):
 
     # "conveniência e oportunidade" is a Rio Manual primary_term for acao 1
     index("P001", [make_chunk(text="conveniência e oportunidade do projeto está demonstrada")])
-    results = retrieve_bm25_for_acao(1, "P001")
+    results = retrieve_hybrid_for_acao(1, "P001")
     assert len(results) >= 1

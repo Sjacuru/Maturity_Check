@@ -7,7 +7,7 @@ from extraction import Chunk
 from ingestion.retrieval_profile import RetrievalProfileStore
 from retrieval import configure, index
 from retrieval.query.bm25 import MAX_CHUNKS_PER_ACAO, search_bm25
-from retrieval.query.cascade import retrieve_bm25_for_acao
+from retrieval.query.hybrid import retrieve_hybrid_for_acao
 from retrieval.query.query_builder import build_bm25_query
 from retrieval.schema.ddl import init_db
 
@@ -153,12 +153,18 @@ def test_search_bm25_assigns_expected_product_id(db):
 
 
 def test_search_bm25_caps_at_max_chunks_per_acao(db):
+    # _PER_PRODUCT_TARGET=5 limits a single product's contribution, so the
+    # global cap requires multiple non-overlapping products to actually exercise
+    # it: 5 products x 5 exclusive chunks each = 25 candidates, capped to 20.
+    markers = ["grupoa", "grupob", "grupoc", "grupod", "grupoe"]
     chunks = [
-        make_chunk(page_number=i, chunk_index=0, text="viabilidade projeto econômico")
-        for i in range(1, MAX_CHUNKS_PER_ACAO + 5)
+        make_chunk(page_number=i * 5 + j, chunk_index=0, text=f"viabilidade projeto {marker}")
+        for i, marker in enumerate(markers)
+        for j in range(5)
     ]
     index("P001", chunks)
-    results = search_bm25({"1a": '"viabilidade"'}, "P001")
+    queries = {f"1{letter}": f'"{marker}"' for letter, marker in zip("abcde", markers)}
+    results = search_bm25(queries, "P001")
     assert len(results) == MAX_CHUNKS_PER_ACAO
 
 
@@ -214,21 +220,21 @@ def test_search_bm25_best_score_wins_dedup(db):
 # cascade integration tests (uses real IPMP data from data/ipmp/)
 # ---------------------------------------------------------------------------
 
-def test_retrieve_bm25_for_acao_returns_relevant_chunks(db, monkeypatch):
+def test_retrieve_hybrid_for_acao_returns_relevant_chunks(db, monkeypatch):
     # Patch profile to empty so cascade uses IPMP fallback queries.
     # "projeto" and "natureza" appear in produto 1a IPMP text.
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", RetrievalProfileStore(acoes={}))
     chunk = make_chunk(text="O projeto revela a natureza do problema e sua finalidade socioeconômica")
     index("P001", [chunk])
-    results = retrieve_bm25_for_acao(1, "P001")
+    results = retrieve_hybrid_for_acao(1, "P001")
     assert len(results) >= 1
     assert all(r.cascade_step == "bm25" for r in results)
 
 
-def test_retrieve_bm25_for_unknown_acao_returns_empty(db):
+def test_retrieve_hybrid_for_unknown_acao_returns_empty(db):
     index("P001", [make_chunk()])
-    results = retrieve_bm25_for_acao(999, "P001")
+    results = retrieve_hybrid_for_acao(999, "P001")
     assert results == []
 
 
