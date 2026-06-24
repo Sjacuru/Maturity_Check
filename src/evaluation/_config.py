@@ -15,7 +15,9 @@ _model: str | None = None
 _gate_client: LLMClient | None = None
 
 
-def configure_llm(provider: str, model: str, base_url: str | None = None) -> None:
+def configure_llm(
+    provider: str, model: str, base_url: str | None = None, num_predict: int | None = None
+) -> None:
     global _client, _provider, _model
     if provider not in _SUPPORTED_PROVIDERS:
         raise ValueError(
@@ -26,7 +28,10 @@ def configure_llm(provider: str, model: str, base_url: str | None = None) -> Non
     from evaluation.llm.groq import GroqClient
 
     if provider == "ollama":
-        _client = OllamaClient(model=model, base_url=base_url)
+        kwargs = {"model": model, "base_url": base_url}
+        if num_predict is not None:
+            kwargs["num_predict"] = num_predict
+        _client = OllamaClient(**kwargs)
     else:
         _client = GroqClient(model=model)
     _provider = provider
@@ -53,7 +58,9 @@ def get_model() -> str:
     return _model
 
 
-def configure_gate_llm(provider: str, model: str, base_url: str | None = None) -> None:
+def configure_gate_llm(
+    provider: str, model: str, base_url: str | None = None, num_predict: int | None = None
+) -> None:
     global _gate_client
     if provider not in _SUPPORTED_PROVIDERS:
         raise ValueError(
@@ -64,7 +71,10 @@ def configure_gate_llm(provider: str, model: str, base_url: str | None = None) -
     from evaluation.llm.groq import GroqClient
 
     if provider == "ollama":
-        _gate_client = OllamaClient(model=model, base_url=base_url)
+        kwargs = {"model": model, "base_url": base_url}
+        if num_predict is not None:
+            kwargs["num_predict"] = num_predict
+        _gate_client = OllamaClient(**kwargs)
     else:
         _gate_client = GroqClient(model=model)
 

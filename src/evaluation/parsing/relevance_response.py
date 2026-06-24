@@ -3,8 +3,18 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-_RELEVANT_RE = re.compile(r"^RELEVANT:\s*(yes|no)\s*$", re.IGNORECASE | re.MULTILINE)
-_CLEANED_RE = re.compile(r"^CLEANED:\s*\n", re.IGNORECASE | re.MULTILINE)
+# Leading whitespace tolerated — local models often prefix a line with a
+# stray space as a completion artifact; strict ^-anchoring rejected those
+# otherwise-well-formed responses as parse failures.
+# Portuguese-finetuned models often answer "sim"/"não" despite being told to
+# use the literal English tokens — accept both rather than treating a
+# correctly-understood-but-differently-worded answer as a parse failure.
+_RELEVANT_RE = re.compile(
+    r"^[ \t]*RELEVANT:\s*(yes|no|sim|n[aã]o)\s*$", re.IGNORECASE | re.MULTILINE
+)
+_CLEANED_RE = re.compile(r"^[ \t]*CLEANED:\s*\n", re.IGNORECASE | re.MULTILINE)
+
+_AFFIRMATIVE = {"yes", "sim"}
 
 
 @dataclass
@@ -25,7 +35,7 @@ def parse_relevance_response(raw: str) -> RelevanceVerdict:
     if not match:
         return RelevanceVerdict(relevant=False, cleaned_text=None, parse_failed=True)
 
-    relevant = match.group(1).lower() == "yes"
+    relevant = match.group(1).lower() in _AFFIRMATIVE
     if not relevant:
         return RelevanceVerdict(relevant=False, cleaned_text=None, parse_failed=False)
 

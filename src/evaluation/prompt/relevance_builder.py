@@ -1,19 +1,32 @@
 from __future__ import annotations
 
 _INSTRUCTIONS = """\
-Avalie o trecho de texto fornecido e responda em até dois blocos:
+Responda SEMPRE em português, mesmo que o trecho contenha termos em outro idioma.
+Não resuma, não traduza, não reescreva, não explique o conteúdo. Sua resposta \
+deve conter APENAS o bloco sentinela abaixo, nada mais.
 
-1. Se o trecho for relevante ao critério acima, copie o texto do trecho \
-removendo apenas elementos de ruído: cabeçalhos e rodapés repetidos (nome \
-do órgão, endereço), nomes próprios irrelevantes ao critério, e frases \
-duplicadas. Não resuma, não reescreva, não altere nenhuma palavra mantida \
-— apenas remova trechos de ruído, preservando o restante caractere por \
-caractere, exatamente como no original.
+Se o trecho NÃO for relevante ao critério acima, responda exatamente:
+RELEVANT: no
 
-2. Bloco sentinela final (últimas linhas da resposta, sem texto após):
-RELEVANT: <yes ou no>
+Se o trecho FOR relevante ao critério acima, copie o texto do trecho removendo \
+apenas elementos de ruído (cabeçalhos e rodapés repetidos, nome do órgão, \
+endereço, nomes próprios irrelevantes ao critério, frases duplicadas), \
+preservando todo o restante caractere por caractere, exatamente como no \
+original — e responda exatamente:
+RELEVANT: yes
 CLEANED:
-<texto limpo, apenas quando RELEVANT: yes; omita este bloco quando RELEVANT: no>\
+<aqui o texto limpo>
+
+Não use a palavra "yes" ou "no" entre os símbolos < >: escreva apenas a \
+palavra escolhida. Não inclua nenhum texto antes ou depois deste bloco.
+
+Exemplo de resposta válida para um trecho relevante:
+RELEVANT: yes
+CLEANED:
+O contrato vigente encontra-se próximo do término de sua vigência.
+
+Exemplo de resposta válida para um trecho não relevante:
+RELEVANT: no\
 """
 
 

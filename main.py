@@ -27,8 +27,14 @@ def _bootstrap() -> None:
 
     configure_llm(provider="groq", model="llama-3.3-70b-versatile")
     # Relevance gate (ADR-0050) always runs locally — Groq's account-level rate
-    # limit can't absorb its call volume (see ADR-0019 amendment).
-    configure_gate_llm(provider="ollama", model="mistral")
+    # limit can't absorb its call volume (see ADR-0019 amendment). num_predict
+    # is capped low: classifying + lightly cleaning one chunk needs a few
+    # hundred tokens at most, and with up to ~100 calls per assessment, an
+    # uncapped generation that runs long even once balloons total latency.
+    # bode-alpaca-pt-br (PT-BR finetuned) replaced base mistral: faster once
+    # warm and consistently produces the literal RELEVANT: yes/no format
+    # instead of rambling or translating the sentinel label.
+    configure_gate_llm(provider="ollama", model="splitpierre/bode-alpaca-pt-br", num_predict=600)
 
 
 _bootstrap()
