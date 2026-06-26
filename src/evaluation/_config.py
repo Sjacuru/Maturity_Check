@@ -16,7 +16,11 @@ _gate_client: LLMClient | None = None
 
 
 def configure_llm(
-    provider: str, model: str, base_url: str | None = None, num_predict: int | None = None
+    provider: str,
+    model: str,
+    base_url: str | None = None,
+    num_predict: int | None = None,
+    num_ctx: int | None = None,
 ) -> None:
     global _client, _provider, _model
     if provider not in _SUPPORTED_PROVIDERS:
@@ -31,6 +35,8 @@ def configure_llm(
         kwargs = {"model": model, "base_url": base_url}
         if num_predict is not None:
             kwargs["num_predict"] = num_predict
+        if num_ctx is not None:
+            kwargs["num_ctx"] = num_ctx
         _client = OllamaClient(**kwargs)
     else:
         _client = GroqClient(model=model)
@@ -59,7 +65,11 @@ def get_model() -> str:
 
 
 def configure_gate_llm(
-    provider: str, model: str, base_url: str | None = None, num_predict: int | None = None
+    provider: str,
+    model: str,
+    base_url: str | None = None,
+    num_predict: int | None = None,
+    num_ctx: int | None = None,
 ) -> None:
     global _gate_client
     if provider not in _SUPPORTED_PROVIDERS:
@@ -74,6 +84,8 @@ def configure_gate_llm(
         kwargs = {"model": model, "base_url": base_url}
         if num_predict is not None:
             kwargs["num_predict"] = num_predict
+        if num_ctx is not None:
+            kwargs["num_ctx"] = num_ctx
         _gate_client = OllamaClient(**kwargs)
     else:
         _gate_client = GroqClient(model=model)

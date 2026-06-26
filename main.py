@@ -34,7 +34,16 @@ def _bootstrap() -> None:
     # bode-alpaca-pt-br (PT-BR finetuned) replaced base mistral: faster once
     # warm and consistently produces the literal RELEVANT: yes/no format
     # instead of rambling or translating the sentinel label.
-    configure_gate_llm(provider="ollama", model="splitpierre/bode-alpaca-pt-br", num_predict=600)
+    # num_ctx=4096 matches Bode's real native context window (Llama-2 7B
+    # architecture, confirmed via `ollama show` -> llama.context_length: 4096).
+    # OllamaClient's default of 32768 is calibrated for Mistral and would force
+    # this model 8x beyond its trained context range.
+    configure_gate_llm(
+        provider="ollama",
+        model="splitpierre/bode-alpaca-pt-br",
+        num_predict=600,
+        num_ctx=4096,
+    )
 
 
 _bootstrap()

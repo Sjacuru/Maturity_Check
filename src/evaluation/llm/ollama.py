@@ -10,6 +10,7 @@ class OllamaClient:
         model: str,
         base_url: str | None = None,
         num_predict: int = 2048,
+        num_ctx: int = 32768,
         timeout: float = 180.0,
     ) -> None:
         self._model = model
@@ -21,6 +22,15 @@ class OllamaClient:
         # evaluator's reasoning text; the gate client is configured with a
         # smaller value since it only needs to classify + lightly clean one chunk.
         self._num_predict = num_predict
+        # Default 32768 matches Mistral 7B's real native context window (ADR-0019
+        # amendment, 2026-06-23). NOT a safe default for every model: Bode
+        # (Llama-2 7B architecture) is natively 4096 — confirmed via Ollama's
+        # /api/show (llama.context_length: 4096). Requesting num_ctx beyond a
+        # model's trained range forces RoPE position extrapolation, which can
+        # degrade attention quality even for short prompts well within the
+        # smaller window. configure_gate_llm() passes the model-appropriate
+        # value explicitly; this default only suits Mistral-family models.
+        self._num_ctx = num_ctx
         self._timeout = timeout
 
     def complete(self, system: str, user: str) -> str:
@@ -32,12 +42,9 @@ class OllamaClient:
                     {"role": "system", "content": system},
                     {"role": "user", "content": user},
                 ],
-                # Mistral 7B's real native context window (see ADR-0019 amendment, 2026-06-23).
-                # Was hardcoded to 8192 — a quarter of the model's real capacity — which
-                # silently undermined the evidence-cap calculation in evaluator.py.
                 "options": {
                     "temperature": 0,
-                    "num_ctx": 32768,
+                    "num_ctx": self._num_ctx,
                     "num_predict": self._num_predict,
                 },
                 "stream": False,
