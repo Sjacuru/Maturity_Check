@@ -176,7 +176,32 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Current state (2026-06-18):** Modules 1–7 COMPLETE. 300 tests. Retrieval profile architecture designed (ADR-0047 + ADR-0048); documentation phase complete. Next: Phase 2 implementation — retrieval profile schema, Layer 1 query-construction fix, `get_retrieval_profile_store()`, `data/retrieval_profiles/acao_01.json`, empirical validation (Strategy A vs B).
+**Current state (2026-07-01):** Modules 1–7 COMPLETE. 388 tests (376 fast + 12 slow-marked — `pytest -m "not slow"` runs 376). Retrieval profile architecture (ADR-0047+0048) implemented and populated for Ação 1. Hybrid BM25+vector retrieval (ADR-0049) and the LLM relevance gate (ADR-0050) are both live, validated against the real corpus, and latency-tuned (ADR-0050's 2026-06-29 amendment + ADR-0051).
+
+**Evidence pipeline enhancements (2026-07-01):**
+- Pre-gate semantic dedup (`_prefilter_near_duplicates`, threshold=0.92) live in `evidence_selection.py`: drops near-exact candidate duplicates before gate evaluation, saving ~6 gate calls/run (3 for 1b conclusion copies, 3 for 1d boilerplate copies). Does not affect post-gate dedup (threshold=0.70).
+- 1b retrieval profile expanded with 5 empirically-derived terms: "fluxo de caixa livre", "receita projetada", "premissas básicas", "CAPEX", "custos operacionais". BM25 ranking shifted (conclusion demoted from rank 1 to rank 5) but RRF vector component still surfaces pg=192 conclusion first — confirmed content gap: document provides financial viability conclusion, not the "panorama" IPMP expects for 1b.
+- 1d profile: known false-positive (pg=235 BASE LEGAL boilerplate) not yet addressed — deferred to next retrieval profile review.
+
+**Relevance gate, current configuration:** `qwen2.5:7b` via Ollama (not `bode-alpaca-pt-br` — see ADR-0050 amendment for why). Binary relevant/not-relevant only — no LLM cleaning (dropped; `evaluation/evidence_selection.py::strip_extraction_noise()` is the only cleaning now, deterministic). `_MAX_EXAMINED=8` candidates examined per product; per-product gating runs concurrently via `ThreadPoolExecutor`. Measured: ~20.6 min for a full Ação 1 assessment on the reference CPU-only hardware (6-core/12-thread, no usable GPU) — down from 68 min pre-fix, but still far from "all 46 actions in one interactive sitting" (~15.8 hours extrapolated). **ADR-0051: interactive assessments are scoped to one Ação today, a small batch (3-4) once Phase 1 expands — never a full 46-action run in one sitting.** Smaller local models (`LiquidAI/LFM2.5-350M`) were tested and rejected (blanket-accept failure, not viable at that size for this task).
+
+**Current enhancement queue — ALL COMPLETE:**
+1. ✅ Retrieval profiles — 1b updated with 5 real-document terms (marked experimental to avoid BM25 TOC ranking)
+2. ✅ Pre-gate semantic dedup (`_prefilter_near_duplicates`, threshold=0.92)
+3. ✅ Regex retrieval REMOVED from cascade (ADR-0052) — Step D dropped entirely. Restores pg=211 (1c strategic metas) to every evidence set by eliminating the cap displacement. `search_regex()` preserved as utility.
+4. ✅ Deterministic concept attribution (`_attribute_concepts`) — `matched_concepts` on both `RetrievedChunk` and `RejectedChunk`
+5. ✅ `build_query_from_terms` filters experimental/deprecated terms — BM25 retrieval only uses active/validated terms
+
+**Key architectural lessons from this work:**
+- `build_query_from_terms` now filters by status (active/validated only) — experimental terms excluded from BM25 but included in concept attribution
+- Experimental terms in retrieval profiles = "registered for attribution and future validation, not yet trusted for retrieval"
+- `_prefilter_near_duplicates` runs in production `select_evidence()` but live_report.py must also call it for accurate representation
+- Ollama KV cache can produce identical test output across runs for identical prompts — careful comparison of candidate rankings (not just gate verdicts) is needed to verify retrieval changes
+
+**Latency:** ~17-20 min/Ação (ADR-0051 scope: one Ação at a time). Pre-gate dedup saves ~6 gate calls (3 for 1b conclusion copies, 3 for 1d boilerplate). Further reduction requires non-LLM pre-filter or fine-tuned small model (deferred).
+
+**Tests:** 386 fast + 12 slow = 398 total. Run with `pytest -m "not slow"` for fast path.
+
 Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TESSERACT_CMD` env var).
 
@@ -206,7 +231,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (updated 2026-06-18: Retrieval Profile, Evidence Ontology, Evidence Intent, Retrieval Signal Concept, Query Term, Evidence Logic Pattern, Profile Maturity, Term Status)
-- `docs/adr/` — 48 ADRs, next is `0049-`
+- `docs/adr/` — 51 ADRs, next is `0052-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1

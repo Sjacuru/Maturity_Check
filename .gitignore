@@ -100,3 +100,10 @@ docs/SMG-040_101607_2024_*.pdf
 
 # Personal teaching workspace (not part of the deliverable)
 Learning/
+
+# Master's course workspace (personal notes and slides — not part of the deliverable)
+docs/Master/
+
+# Accidental .env copies
+____env copy
+*env copy*

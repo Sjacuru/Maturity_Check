@@ -20,3 +20,7 @@ inconsistent; pre-filtering BM25 results risks missing law-number evidence not r
 focused (all chunks from identified document) vs. BM25-ranked (top-k chunks by term relevance).
 `RetrievedChunk.cascade_step` distinguishes `"filename_match"`, `"variant_match"`, `"bm25"`, and
 `"regex"`. Dense vector fallback (ADR-0006 step 3) remains in scope for Phase 2.
+
+**Amendment (ADR-0052):** Corpus-wide regex (Step D) was removed from `retrieve_for_acao()` and
+the assessment service. `cascade_step="regex"` no longer appears in live retrieval results. The
+`search_regex()` function is preserved as a utility. See ADR-0052 for full rationale.

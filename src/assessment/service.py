@@ -14,11 +14,11 @@ from ingestion import get_ipmp_store
 from retrieval import index, invalidate_vector_index, retrieve_hybrid_candidates_for_acao
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.query.document import retrieve_document_focused
-from retrieval.query.regex_search import search_regex
 
 from assessment._config import get_db_path
 
 logger = logging.getLogger(__name__)
+
 
 
 class AssessmentService:
@@ -58,13 +58,14 @@ class AssessmentService:
 def _retrieve_and_select(
     acao_id: int, process_number: str
 ) -> tuple[list[RetrievedChunk], list[RejectedChunk]]:
-    """Step A/B short-circuit (ungated) -> Step C gate (ADR-0050) -> Step D regex (additive, ungated).
+    """Step A/B short-circuit (ungated) -> Step C gate (ADR-0050).
 
     Document-focused matches (Step A/B) already return all of a single
     document's chunks; that's a different evidentiary basis than per-product
     query-based retrieval, so the relevance gate — built around per-product
-    evidence_intent — does not apply to them. Regex hits (Step D) stay
-    additive and ungated, unchanged from the pre-ADR-0050 cascade.
+    evidence_intent — does not apply to them.
+
+    Regex (Step D) was removed in ADR-0052 — see cascade.py for reasoning.
     """
     doc_result = retrieve_document_focused(acao_id, process_number)
     if doc_result is not None:
@@ -72,15 +73,7 @@ def _retrieve_and_select(
 
     candidates = retrieve_hybrid_candidates_for_acao(acao_id, process_number)
     selection = select_evidence(acao_id, process_number, candidates)
-
-    accepted_keys = {(c.filename, c.page_number, c.chunk_index) for c in selection.accepted}
-    regex_results = search_regex(acao_id, process_number)
-    new_regex_hits = [
-        r for r in regex_results
-        if (r.filename, r.page_number, r.chunk_index) not in accepted_keys
-    ]
-
-    return selection.accepted + new_regex_hits, selection.rejected
+    return selection.accepted, selection.rejected
 
 
 def _compute_sha256(path: Path) -> str:

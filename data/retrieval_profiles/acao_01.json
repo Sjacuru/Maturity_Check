@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-06-22",
+    "last_updated": "2026-07-01",
     "population_stages_completed": [
       "A",
       "B",
@@ -578,6 +578,46 @@
           "provenance": "real_world",
           "status": "active",
           "concept_ref": "investment_scale"
+        },
+        {
+          "encoding": "phrase",
+          "text": "fluxo de caixa livre",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "experimental",
+          "concept_ref": "economic_viability_study"
+        },
+        {
+          "encoding": "phrase",
+          "text": "receita projetada",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "experimental",
+          "concept_ref": "economic_viability_study"
+        },
+        {
+          "encoding": "phrase",
+          "text": "premissas básicas",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "experimental",
+          "concept_ref": "economic_viability_study"
+        },
+        {
+          "encoding": "phrase",
+          "text": "CAPEX",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "experimental",
+          "concept_ref": "investment_scale"
+        },
+        {
+          "encoding": "phrase",
+          "text": "custos operacionais",
+          "type": "B",
+          "provenance": "real_world",
+          "status": "experimental",
+          "concept_ref": "economic_viability_study"
         }
       ],
       "evidence_logic_patterns": [

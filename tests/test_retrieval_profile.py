@@ -261,6 +261,31 @@ def test_mixed_phrase_and_near_are_or_joined():
     assert result == '"efetivo interesse público" OR NEAR("contrato" "vencimento", 5)'
 
 
+def test_experimental_terms_excluded_from_query():
+    """Experimental terms must not appear in the BM25 query — they cause
+    spurious high-scoring matches on pages like TOC entries that list section
+    titles containing the experimental terms. They remain in the profile for
+    attribution and future promotion to active."""
+    terms = [
+        PhraseQueryTerm(encoding="phrase", text="termo ativo", type="A", provenance="canonical", status="active"),
+        PhraseQueryTerm(encoding="phrase", text="CAPEX", type="B", provenance="real_world", status="experimental"),
+        PhraseQueryTerm(encoding="phrase", text="depreciado", type="B", provenance="real_world", status="deprecated"),
+    ]
+    result = build_query_from_terms(terms)
+    assert result == '"termo ativo"'
+    assert "CAPEX" not in result
+    assert "depreciado" not in result
+
+
+def test_validated_terms_included_in_query():
+    """Validated terms (manually confirmed) must be included in the BM25 query."""
+    terms = [
+        PhraseQueryTerm(encoding="phrase", text="termo validado", type="A", provenance="canonical", status="validated"),
+    ]
+    result = build_query_from_terms(terms)
+    assert result == '"termo validado"'
+
+
 # ---------------------------------------------------------------------------
 # Cascade integration — profile store interaction
 # ---------------------------------------------------------------------------

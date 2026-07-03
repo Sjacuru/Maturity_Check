@@ -118,49 +118,23 @@ def test_search_regex_no_chunks_for_process_returns_empty(db):
 
 
 # ---------------------------------------------------------------------------
-# Full cascade: regex additive to BM25
+# Cascade: regex was removed from the cascade in ADR-0052.
+# search_regex() is preserved as a utility but no longer called by
+# retrieve_for_acao(). The tests below that verified cascade integration
+# with regex were removed when Step D was dropped.
 # ---------------------------------------------------------------------------
 
-def test_cascade_adds_regex_only_chunk(db, monkeypatch):
-    # Patch profile to empty so cascade uses IPMP fallback queries.
+def test_cascade_does_not_include_regex_step(db, monkeypatch):
+    """Cascade (Step C) returns only BM25/vector results — no regex step."""
     import ingestion.retrieval_profile as _rp
     from ingestion.retrieval_profile import RetrievalProfileStore
     monkeypatch.setattr(_rp, "_store", RetrievalProfileStore(acoes={}))
-    # bm25_chunk: BM25 terms present, no law ref
-    # regex_chunk: law ref present, no BM25 terms
-    bm25_chunk = make_chunk(
-        page_number=1,
-        text="O projeto revela a natureza do problema socioeconômico.",
-    )
-    regex_chunk = make_chunk(
+
+    law_only_chunk = make_chunk(
         page_number=2,
-        text="11.079/2004",  # bare law number, no IPMP search terms
+        text="11.079/2004",  # matches regex but no IPMP content terms
     )
-    index("P001", [bm25_chunk, regex_chunk])
+    index("P001", [law_only_chunk])
     results = retrieve_for_acao(1, "P001")
-    steps = {r.cascade_step for r in results}
-    assert "bm25" in steps
-    assert "regex" in steps
-
-
-def test_cascade_regex_chunk_not_duplicated_when_also_in_bm25(db):
-    # This chunk matches both BM25 terms and a law number regex
-    chunk = make_chunk(
-        text="O projeto está previsto na Lei 11.079/2004 para concessões de natureza pública.",
-    )
-    index("P001", [chunk])
-    results = retrieve_for_acao(1, "P001")
-    keys = [(r.filename, r.page_number, r.chunk_index) for r in results]
-    assert len(keys) == len(set(keys))
-
-
-def test_cascade_regex_not_run_when_document_path_succeeds(db):
-    # When filename matches, document path runs and regex is NOT run separately
-    doc_chunk = make_chunk(
-        filename="Relatório de Pré-Análise.pdf",
-        text="Lei 11.079/2004 — conteúdo do relatório de pré-análise.",
-    )
-    index("P001", [doc_chunk])
-    results = retrieve_for_acao(1, "P001")
-    # All chunks come from the document path; none from the regex step
-    assert all(r.cascade_step == "filename_match" for r in results)
+    cascade_steps = {r.cascade_step for r in results}
+    assert "regex" not in cascade_steps

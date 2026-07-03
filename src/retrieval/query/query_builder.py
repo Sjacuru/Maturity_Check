@@ -13,14 +13,23 @@ _MIN_WORD_LEN = 5
 def build_query_from_terms(
     terms: list[PhraseQueryTerm | NearQueryTerm],
 ) -> str:
-    """Build an FTS5 OR query from a list of retrieval profile QueryTerm objects.
+    """Build an FTS5 OR query from active/validated retrieval profile query terms.
+
+    Only terms with status 'active' or 'validated' are included. Experimental
+    terms are excluded from BM25 retrieval — they are registered in the profile
+    for attribution and future validation but not yet trusted for retrieval
+    (e.g., they may boost irrelevant pages such as TOC entries alongside the
+    substantive content they were designed to find). Deprecated terms are also
+    excluded.
 
     Phrase terms become "exact phrase" clauses.
     NEAR terms become NEAR("tok1" "tok2", N) proximity clauses.
-    Returns empty string when terms is empty.
+    Returns empty string when no eligible terms exist.
     """
     clauses: list[str] = []
     for term in terms:
+        if term.status not in ("active", "validated"):
+            continue
         if term.encoding == "phrase":
             clauses.append(f'"{term.text}"')
         else:  # near

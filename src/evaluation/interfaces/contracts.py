@@ -10,15 +10,17 @@ _VALID_SCORES = {0, 1, 3}
 class RejectedChunk(BaseModel):
     """A candidate the relevance gate (ADR-0050) classified as not relevant.
 
-    Identity only — the binary gate provides no richer "reason" than the
-    verdict itself. Recorded for auditor visibility into what was found and
-    discarded per product, not just what survived.
+    Recorded for auditor visibility into what was found and discarded per
+    product. matched_concepts lists concept keys whose query terms appeared in
+    the chunk text even though the gate rejected it — a non-empty list is a
+    signal worth auditor review (possible gate miss or marginal relevance).
     """
 
     filename: str
     page_number: int
     chunk_index: int
     expected_product_id: str
+    matched_concepts: list[str] = []
 
 
 class EvaluationResult(BaseModel):

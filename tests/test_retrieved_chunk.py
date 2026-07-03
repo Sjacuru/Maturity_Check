@@ -150,7 +150,7 @@ def test_model_dump_contains_all_fields():
         "process_number", "filename", "page_number", "chunk_index",
         "char_offset", "page_total", "ocr_used", "source_type", "text",
         "cascade_step", "expected_product_id", "bm25_score", "rank",
-        "retrieval_mode", "retrieval_query",
+        "retrieval_mode", "retrieval_query", "matched_concepts",
     }
 
 

@@ -24,3 +24,7 @@ class RetrievedChunk(BaseModel):
     rank: int | None                 # null on document-focused, regex, and vector paths
     retrieval_mode: Literal["lexical", "vector_fallback"] = "lexical"
     retrieval_query: str | None = None
+    # Concept keys from the retrieval profile whose query terms were found in
+    # the accepted chunk's text — populated deterministically post-gate for
+    # auditor traceability (ADR-0052). Empty for ungated paths (regex, doc-focused).
+    matched_concepts: list[str] = []

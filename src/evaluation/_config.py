@@ -21,6 +21,7 @@ def configure_llm(
     base_url: str | None = None,
     num_predict: int | None = None,
     num_ctx: int | None = None,
+    timeout: float | None = None,
 ) -> None:
     global _client, _provider, _model
     if provider not in _SUPPORTED_PROVIDERS:
@@ -37,6 +38,8 @@ def configure_llm(
             kwargs["num_predict"] = num_predict
         if num_ctx is not None:
             kwargs["num_ctx"] = num_ctx
+        if timeout is not None:
+            kwargs["timeout"] = timeout
         _client = OllamaClient(**kwargs)
     else:
         _client = GroqClient(model=model)
@@ -70,6 +73,7 @@ def configure_gate_llm(
     base_url: str | None = None,
     num_predict: int | None = None,
     num_ctx: int | None = None,
+    timeout: float | None = None,
 ) -> None:
     global _gate_client
     if provider not in _SUPPORTED_PROVIDERS:
@@ -86,6 +90,8 @@ def configure_gate_llm(
             kwargs["num_predict"] = num_predict
         if num_ctx is not None:
             kwargs["num_ctx"] = num_ctx
+        if timeout is not None:
+            kwargs["timeout"] = timeout
         _gate_client = OllamaClient(**kwargs)
     else:
         _gate_client = GroqClient(model=model)

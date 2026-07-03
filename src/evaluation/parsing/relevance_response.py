@@ -12,7 +12,6 @@ from dataclasses import dataclass
 _RELEVANT_RE = re.compile(
     r"^[ \t]*RELEVANT:\s*(yes|no|sim|n[aã]o)\s*$", re.IGNORECASE | re.MULTILINE
 )
-_CLEANED_RE = re.compile(r"^[ \t]*CLEANED:\s*\n", re.IGNORECASE | re.MULTILINE)
 
 _AFFIRMATIVE = {"yes", "sim"}
 
@@ -20,28 +19,21 @@ _AFFIRMATIVE = {"yes", "sim"}
 @dataclass
 class RelevanceVerdict:
     relevant: bool
-    cleaned_text: str | None
     parse_failed: bool
 
 
 def parse_relevance_response(raw: str) -> RelevanceVerdict:
-    """Parse the relevance gate's RELEVANT:/CLEANED: sentinel response (ADR-0050).
+    """Parse the relevance gate's RELEVANT: sentinel response (ADR-0050).
 
-    parse_failed=True signals the caller should treat cleaned_text as
-    unavailable (fall back to the original chunk text) without overriding
-    a successfully-parsed relevant=True/False verdict.
+    Binary verdict only — no cleaning step (dropped 2026-06-29: empirically,
+    asking the model to also regenerate a cleaned copy of the chunk text cost
+    50-86s per accept vs. ~4s for a bare yes/no, and the cleaning was already
+    unreliable enough that its output was rarely used in practice).
+    parse_failed=True means the RELEVANT: line itself couldn't be found —
+    callers should treat that as not relevant (safe default).
     """
     match = _RELEVANT_RE.search(raw)
     if not match:
-        return RelevanceVerdict(relevant=False, cleaned_text=None, parse_failed=True)
-
+        return RelevanceVerdict(relevant=False, parse_failed=True)
     relevant = match.group(1).lower() in _AFFIRMATIVE
-    if not relevant:
-        return RelevanceVerdict(relevant=False, cleaned_text=None, parse_failed=False)
-
-    cleaned_match = _CLEANED_RE.search(raw, match.end())
-    if not cleaned_match:
-        return RelevanceVerdict(relevant=True, cleaned_text=None, parse_failed=True)
-
-    cleaned_text = raw[cleaned_match.end():].strip()
-    return RelevanceVerdict(relevant=True, cleaned_text=cleaned_text or None, parse_failed=False)
+    return RelevanceVerdict(relevant=relevant, parse_failed=False)

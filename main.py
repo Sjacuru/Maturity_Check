@@ -31,18 +31,27 @@ def _bootstrap() -> None:
     # is capped low: classifying + lightly cleaning one chunk needs a few
     # hundred tokens at most, and with up to ~100 calls per assessment, an
     # uncapped generation that runs long even once balloons total latency.
-    # bode-alpaca-pt-br (PT-BR finetuned) replaced base mistral: faster once
-    # warm and consistently produces the literal RELEVANT: yes/no format
-    # instead of rambling or translating the sentinel label.
-    # num_ctx=4096 matches Bode's real native context window (Llama-2 7B
-    # architecture, confirmed via `ollama show` -> llama.context_length: 4096).
-    # OllamaClient's default of 32768 is calibrated for Mistral and would force
-    # this model 8x beyond its trained context range.
+    # qwen2.5:7b replaced bode-alpaca-pt-br (2026-06-28): direct A/B diagnostic
+    # against 5 known-outcome chunks showed Bode unreliably either stopped
+    # generating right after "RELEVANT: yes" (no CLEANED: block at all) or
+    # regurgitated its few-shot example verbatim instead of editing the real
+    # input — both confirmed via raw-response inspection, not inferred. qwen2.5
+    # produced genuine, content-specific CLEANED extracts in every case tested
+    # and never failed the format. num_ctx=32768 matches its real native
+    # context window (confirmed via `ollama show qwen2.5:7b` -> "context
+    # length 32768"), not assumed from Mistral's value.
+    # timeout=300: Ollama unloads idle models, and reloading qwen2.5:7b's ~5GB
+    # of weights plus allocating a 32768-token KV cache can exceed the
+    # OllamaClient default of 180s on a cold daemon (observed: a live
+    # assessment's first gate call timed out at 180s; once warm, calls take
+    # 4-6s). This only matters for the first call after Ollama has evicted the
+    # model — steady-state latency is unaffected.
     configure_gate_llm(
         provider="ollama",
-        model="splitpierre/bode-alpaca-pt-br",
+        model="qwen2.5:7b",
         num_predict=600,
-        num_ctx=4096,
+        num_ctx=32768,
+        timeout=300.0,
     )
 
 

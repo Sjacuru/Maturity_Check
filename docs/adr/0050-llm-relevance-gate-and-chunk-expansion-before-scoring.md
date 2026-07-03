@@ -58,6 +58,38 @@ Per ADR-0009 ("one LLM call per action, not one call per sub-item") and confirme
 2. Expansions are deduplicated against the deduplicated anchor set first (an anchor is a higher-confidence inclusion than a fetched neighbor, so it always wins), then against each other by the same best-score rule (an expansion's "score" is its anchor's score, already tracked for the budget-trim step).
 3. Deduplication runs *before* the budget-trim step, not after — a smaller, duplicate-free evidence set means the trim logic sees accurate character accounting and is less likely to discard a genuinely distinct chunk to make room for what would have been a redundant copy.
 
+## Amendment (2026-06-29): gate model swap to qwen2.5:7b, retrieval_signal_concepts in the relevance criterion, and a latency redesign
+
+### Model swap: `bode-alpaca-pt-br` → `qwen2.5:7b`
+
+Direct A/B diagnostic against 5 known-outcome chunks (2 boilerplate false-positive candidates, 2 genuinely relevant chunks, 1 confirmed-irrelevant neighbor) found Bode unreliable in two distinct, reproducible ways: it would either stop generating immediately after the `RELEVANT: yes` line (no `CLEANED:` block at all — `parse_failed=True`, silently falling back to uncleaned text), or it would regurgitate its own few-shot example verbatim regardless of the actual input — confirmed by testing the exact same canned example sentence already present in this ADR's original prompt. `qwen2.5:7b` produced genuine, content-specific output in every test case and never failed the format, at the cost of being CPU-bound-slower per call on this hardware (see Latency below). `num_ctx=32768` matches its real native context window (confirmed via `ollama show qwen2.5:7b` → "context length 32768"), not assumed from Mistral's value.
+
+### `retrieval_signal_concepts` now part of the gate's relevance criterion, not just `evidence_intent`
+
+`build_relevance_system_prompt()` originally received only `evidence_intent` — a single narrow framing sentence per product. `hybrid.py`'s vector query (`_vector_query_text()`) was already combining `evidence_intent` *and* `retrieval_signal_concepts` for retrieval, but the gate never saw the concepts. This produced a structural false-negative pattern: 1c's risk-matrix chunk and 1b's economic-viability conclusion were both rejected because the literal framing sentence ("objetivos estratégicos do projeto," "panorama econômico... não justificativa") didn't mention risk matrices or viability conclusions, even though both are documented `retrieval_signal_concepts` for those products. Fix: the gate prompt now lists `retrieval_signal_concepts` as explicit alternative-evidence bullets ("Qualquer um dos elementos abaixo também conta como evidência válida"), matching what the vector query already considers.
+
+### Cleaning step dropped entirely
+
+The gate no longer returns a `CLEANED:` block — only `RELEVANT: yes`/`RELEVANT: no`. Two independent findings justified this: (1) cleaning was unreliable regardless of model, per the failure modes above; (2) it was the dominant cost driver — an accept-with-cleaning call took 50-86s vs. ~4s for a same-content reject, because cleaning requires hundreds of tokens of sequential generation while a verdict requires three. A new deterministic pass, `strip_extraction_noise()` (header/address block, digital-signature block, version tag, vertically-rotated watermark — all confirmed via real corpus inspection, including two distinct PDF-extraction ligature-corruption variants of "Cavalcanti"), runs before the gate ever sees chunk text and is now the only cleaning that happens. Verified to be a no-op on already-clean text across the real corpus — strictly additive safety, not a behavior change for clean chunks.
+
+### Examine-cap: `_MAX_EXAMINED = 8`
+
+The anchor-selection loop previously had no bound on candidates *examined*, only on candidates *accepted* (`_ANCHOR_TARGET = 5`) — so a strict gate model that keeps rejecting traverses the *entire* fused candidate pool, which is not actually capped at this ADR's stated "20" above: BM25's and vector's independent top-20 lists are fused via `fuse_rankings()` with no truncation, so when overlap between the two is low (measured: 0-1 chunk out of 20+20 for several products), the true pool is closer to 40. Observed: 40 gate calls for a single product under `qwen2.5:7b`'s stricter judgment. `_MAX_EXAMINED = 8` bounds this per product, trading thoroughness (a product can end up with fewer than 5 anchors, even 0) for a predictable latency ceiling.
+
+### Per-product gating parallelized
+
+The 4+ products are independent of each other; `select_evidence()`'s loop over them is now a `ThreadPoolExecutor`-backed concurrent dispatch (`_select_for_product()` extracted as the per-product worker, returning its own local results to avoid shared mutable state). Each gate call is I/O-bound (waiting on the local Ollama HTTP request), so threads give real wall-clock parallelism despite the GIL. Measured 2.4x-7.3x speedup across multiple trials on 6-core/12-thread CPU-only hardware, depending on call-content variance.
+
+### Latency: the corrected number, and why the first projection was wrong
+
+Combining the three levers above against a single live Ação 1 assessment: 68 min (pre-fix, `qwen2.5:7b` with no cap/no parallelism/cleaning-enabled) → 20.6 min (post-fix). A genuine 3.3x improvement, but **not** the ~2 minute figure originally projected from isolated per-call timing. That projection was built on a measurement artifact: every "warm call" benchmark during development reused the *exact same* `(system, user)` prompt pair repeatedly (e.g., timing 3 consecutive calls with identical input), which Ollama appears to serve from a cached prefix state (~4s). Real gate calls never repeat identical content — different chunk text and different `evidence_intent`/concepts every time — so they never get that cache hit. Re-measured with varied content (the realistic case): 10-37s per call, averaging ~17-27s, consistent with the live run's actual 1233.7s ÷ 46 calls ≈ 26.8s/call. Ruled out as alternative explanations before reaching this conclusion: `num_ctx` allocation size (tested 4096 vs 32768, no improvement), and CPU thermal throttling (polled clock speed during a sustained 10-call burst with identical content, stayed at base 2000MHz throughout).
+
+Extrapolated to 46 actions at the corrected rate: ~15.8 hours — roughly 10-16x over the project's interactive-use latency target, even with all three levers applied. See ADR-0051 for the resulting scope decision.
+
+### Smaller-model alternative tested and rejected: `LiquidAI/LFM2.5-350M`
+
+Pulled directly from HuggingFace (`hf.co/LiquidAI/LFM2.5-350M-GGUF`, 354M params, confirmed Portuguese support, 3-5s/call — would have resolved the latency problem outright if viable). Tested against the same 5 known-outcome cases, with and without few-shot examples added back to the prompt: answered `RELEVANT: yes` to all 5 in both trials, including the 3 cases that should have been rejected — a blanket-accept failure, not a borderline one. Ruled out as a genuine capability ceiling at this size for this task, not a fixable prompt-format issue (the few-shot trial, including an explicit worked "no" example, produced no change at all). Removed from the local Ollama install.
+
 ## Considered options
 
 - **Gate the already-capped top-5 only** — rejected: makes the gate a confirm/reject layer on top of Branch 1's ranking rather than a genuine improvement; a relevant chunk ranked 6th-20th by RRF would never get evaluated.
