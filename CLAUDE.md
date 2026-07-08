@@ -1,4 +1,5 @@
 # CLAUDE.md — PPP Maturity Check System
+SDLKNLSK\S/.;,SKLV B;LKSFG;LKSNDG
 
 This file provides persistent context for Claude Code sessions.
 Update it whenever significant decisions are made or status changes.
