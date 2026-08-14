@@ -32,24 +32,28 @@ class OllamaClient:
         # value explicitly; this default only suits Mistral-family models.
         self._num_ctx = num_ctx
         self._timeout = timeout
+        self.model_label = model
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict | None = None) -> str:
         url = f"{self._base_url}/api/chat"
-        payload = json.dumps(
-            {
-                "model": self._model,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user},
-                ],
-                "options": {
-                    "temperature": 0,
-                    "num_ctx": self._num_ctx,
-                    "num_predict": self._num_predict,
-                },
-                "stream": False,
-            }
-        ).encode()
+        body: dict = {
+            "model": self._model,
+            "messages": [
+                {"role": "system", "content": system},
+                {"role": "user", "content": user},
+            ],
+            "options": {
+                "temperature": 0,
+                "num_ctx": self._num_ctx,
+                "num_predict": self._num_predict,
+            },
+            "stream": False,
+        }
+        if schema is not None:
+            # Grammar-constrained structured output (ADR-0053) — Ollama takes
+            # the JSON schema directly as the top-level `format` field.
+            body["format"] = schema
+        payload = json.dumps(body).encode()
 
         req = urllib.request.Request(
             url,
@@ -58,5 +62,5 @@ class OllamaClient:
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=self._timeout) as resp:
-            body = json.loads(resp.read().decode())
-        return body["message"]["content"]
+            response_body = json.loads(resp.read().decode())
+        return response_body["message"]["content"]

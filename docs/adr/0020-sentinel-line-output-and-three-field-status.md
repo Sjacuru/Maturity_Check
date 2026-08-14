@@ -1,5 +1,10 @@
 # Sentinel-line LLM output format and three-field evaluation status
 
+**Status:** superseded by ADR-0053 for the output-format decision (free-text
+sentinel → grammar-constrained JSON). The three-field status model
+(`no_evidence_found` / `uncertainty_flag` / `parse_failed`) and its meanings
+are unchanged and still governed by this ADR.
+
 Module 4 instructs the LLM to end every response with a two-line sentinel block:
 
 ```

@@ -8,7 +8,9 @@ from retrieval.interfaces.contracts import RetrievedChunk
 from evaluation._config import get_llm_client, get_model, get_provider
 from evaluation.interfaces.contracts import EvaluationResult, RejectedChunk
 from evaluation.parsing.response import parse_llm_response
+from evaluation.progress import report
 from evaluation.prompt.builder import build_system_prompt, build_user_prompt
+from evaluation.schemas import SCORER_SCHEMA
 
 logger = logging.getLogger(__name__)
 
@@ -95,8 +97,12 @@ def evaluate(
             no_evidence_found=True,
         )
 
+    report(
+        "construindo_prompt",
+        f"Montando prompt de avaliação da Ação {acao_id} ({len(chunks)} evidências).",
+    )
     system_prompt = build_system_prompt(acao_id)
-    user_prompt = build_user_prompt(chunks)
+    user_prompt = build_user_prompt(chunks, acao_id=acao_id)
     evidence_char_count = sum(len(c.text) for c in chunks)
 
     logger.info(
@@ -116,14 +122,39 @@ def evaluate(
             process_number,
         )
 
-    raw = client.complete(system_prompt, user_prompt)
+    report(
+        "chamando_llm",
+        f"Chamando avaliador (Ação {acao_id}) — {provider}/{model}...",
+        "waiting",
+    )
+    raw = client.complete(system_prompt, user_prompt, schema=SCORER_SCHEMA)
+    # Prefer the client's own reporting of what actually served the call —
+    # matters when client is a FallbackLLMClient (ADR-0054) that may have
+    # served this specific call from its secondary provider.
+    actual_provider = getattr(client, "last_provider_used", None) or provider
+    actual_model = getattr(client, "last_model_used", None) or model
+
+    report("validando_resposta", f"Resposta recebida ({actual_provider}) — validando formato.")
     parsed = parse_llm_response(raw)
+    if parsed.parse_failed:
+        report(
+            "validando_resposta",
+            f"Resposta da Ação {acao_id} não pôde ser interpretada — marcada como falha de parsing.",
+            "error",
+        )
+    else:
+        report(
+            "validando_resposta",
+            f"Ação {acao_id} avaliada — score {parsed.proposed_score}"
+            f"{' (incerteza sinalizada)' if parsed.uncertainty_flag else ''}.",
+            "success",
+        )
 
     return EvaluationResult(
         acao_id=acao_id,
         process_number=process_number,
-        provider=provider,
-        model=model,
+        provider=actual_provider,
+        model=actual_model,
         retrieved_chunks=chunks,
         rejected_chunks=rejected_chunks,
         evidence_char_count=evidence_char_count,

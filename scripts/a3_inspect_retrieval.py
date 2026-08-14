@@ -52,7 +52,7 @@ def print_chunks(label: str, process_number: str) -> None:
         print(f"\n  [{step.upper()}]  {len(step_chunks)} chunk(s)")
         for c in step_chunks:
             score_info = f"  bm25={c.bm25_score:.4f}" if c.bm25_score is not None else ""
-            print(f"    chunk_index={c.chunk_index}  file={c.filename}  p={c.page_number}{score_info}  product={c.expected_product_id}")
+            print(f"    chunk_index={c.chunk_index}  file={c.filename}  p={c.page_number}{score_info}  product={c.expected_product_ids}")
             excerpt = c.text[:200].replace("\n", " ")
             print(f"    TEXT: {excerpt!r}")
 

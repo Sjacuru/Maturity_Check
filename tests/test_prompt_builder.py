@@ -15,7 +15,7 @@ def _chunk(**kwargs) -> RetrievedChunk:
         source_type="text",
         text="Texto de exemplo.",
         cascade_step="bm25",
-        expected_product_id="1a",
+        expected_product_ids=["1a"],
         bm25_score=3.5,
         rank=1,
     )
@@ -48,15 +48,16 @@ def test_system_prompt_contains_illustrative_framing():
     assert "independente do setor ou domínio" in prompt
 
 
-def test_system_prompt_contains_sentinel_keywords():
+def test_system_prompt_contains_json_field_names():
     prompt = build_system_prompt(1)
-    assert "SCORE:" in prompt
-    assert "UNCERTAINTY:" in prompt
+    assert '"reasoning"' in prompt
+    assert '"score"' in prompt
+    assert '"uncertainty"' in prompt
 
 
 def test_system_prompt_contains_uncertainty_criterion():
     prompt = build_system_prompt(1)
-    assert "UNCERTAINTY: yes" in prompt
+    assert '"uncertainty": true' in prompt
 
 
 def test_system_prompt_contains_produtos_esperados():
@@ -74,7 +75,7 @@ def test_system_prompt_deterministic():
 # --- User prompt ordering ---
 
 def test_user_prompt_filename_match_before_bm25():
-    fm = _chunk(cascade_step="filename_match", filename="A.pdf", page_number=1, bm25_score=None, rank=None, expected_product_id=None, text="filename text here")
+    fm = _chunk(cascade_step="filename_match", filename="A.pdf", page_number=1, bm25_score=None, rank=None, expected_product_ids=[], text="filename text here")
     bm = _chunk(cascade_step="bm25", filename="A.pdf", page_number=1, bm25_score=5.0, rank=1, text="bm25 text here")
     prompt = build_user_prompt([bm, fm])
     assert prompt.index("filename text here") < prompt.index("bm25 text here")
@@ -88,8 +89,8 @@ def test_user_prompt_bm25_score_desc_order():
 
 
 def test_user_prompt_non_bm25_filename_asc():
-    b_chunk = _chunk(cascade_step="filename_match", filename="B.pdf", bm25_score=None, rank=None, expected_product_id=None, text="B file")
-    a_chunk = _chunk(cascade_step="filename_match", filename="A.pdf", bm25_score=None, rank=None, expected_product_id=None, text="A file")
+    b_chunk = _chunk(cascade_step="filename_match", filename="B.pdf", bm25_score=None, rank=None, expected_product_ids=[], text="B file")
+    a_chunk = _chunk(cascade_step="filename_match", filename="A.pdf", bm25_score=None, rank=None, expected_product_ids=[], text="A file")
     prompt = build_user_prompt([b_chunk, a_chunk])
     assert prompt.index("A file") < prompt.index("B file")
 
@@ -116,10 +117,15 @@ def test_user_prompt_contains_summary_line():
 
 
 def test_user_prompt_cascade_order_all_steps():
-    regex_c = _chunk(cascade_step="regex", filename="A.pdf", bm25_score=None, rank=None, expected_product_id=None, text="regex text")
+    # Chunks without expected_product_id (document-focused steps) are grouped
+    # under "Documentos Focais" and appear before per-product blocks.
+    # Within that section, cascade priority is filename < variant < regex.
+    # bm25 chunk has expected_product_id="1a" so it appears in its product block,
+    # always after the ungrouped section — regardless of cascade priority.
+    regex_c = _chunk(cascade_step="regex", filename="A.pdf", bm25_score=None, rank=None, expected_product_ids=[], text="regex text")
     bm_c = _chunk(cascade_step="bm25", bm25_score=8.0, rank=1, text="bm25 text")
-    variant_c = _chunk(cascade_step="variant_match", filename="A.pdf", bm25_score=None, rank=None, expected_product_id=None, text="variant text")
-    filename_c = _chunk(cascade_step="filename_match", filename="A.pdf", bm25_score=None, rank=None, expected_product_id=None, text="filename text")
+    variant_c = _chunk(cascade_step="variant_match", filename="A.pdf", bm25_score=None, rank=None, expected_product_ids=[], text="variant text")
+    filename_c = _chunk(cascade_step="filename_match", filename="A.pdf", bm25_score=None, rank=None, expected_product_ids=[], text="filename text")
     prompt = build_user_prompt([regex_c, bm_c, variant_c, filename_c])
     positions = {
         "filename": prompt.index("filename text"),
@@ -127,4 +133,7 @@ def test_user_prompt_cascade_order_all_steps():
         "bm25": prompt.index("bm25 text"),
         "regex": prompt.index("regex text"),
     }
-    assert positions["filename"] < positions["variant"] < positions["bm25"] < positions["regex"]
+    # Within ungrouped section: filename < variant < regex (cascade priority)
+    assert positions["filename"] < positions["variant"] < positions["regex"]
+    # Product block always after ungrouped section
+    assert positions["regex"] < positions["bm25"]

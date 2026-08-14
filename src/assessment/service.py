@@ -9,12 +9,14 @@ from pathlib import Path
 
 from evaluation import evaluate, select_evidence, EvaluationResult, RejectedChunk
 from evaluation._config import get_gate_llm_client, get_llm_client
+from evaluation.progress import set_reporter
 from extraction import extract_document
 from ingestion import get_ipmp_store
 from retrieval import index, invalidate_vector_index, retrieve_hybrid_candidates_for_acao
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.query.document import retrieve_document_focused
 
+from assessment import progress
 from assessment._config import get_db_path
 
 logger = logging.getLogger(__name__)
@@ -27,10 +29,27 @@ class AssessmentService:
         process_number: str,
         document_paths: list[Path],
     ) -> tuple[list[EvaluationResult], list[dict[str, str]]]:
+        progress.start_run(process_number)
+        set_reporter(progress.make_reporter(process_number))
+        try:
+            return self._run_assessment(process_number, document_paths)
+        except Exception as exc:
+            progress.emit(process_number, "erro", f"Falha na avaliação: {exc}", "error")
+            raise
+        finally:
+            set_reporter(None)
+
+    def _run_assessment(
+        self,
+        process_number: str,
+        document_paths: list[Path],
+    ) -> tuple[list[EvaluationResult], list[dict[str, str]]]:
         get_llm_client()  # raises RuntimeError if configure_llm() was not called
         get_gate_llm_client()  # raises RuntimeError if configure_gate_llm() was not called
 
         db_path = get_db_path()
+
+        progress.emit(process_number, "verificando_arquivos", "Verificando arquivos enviados...")
 
         documents: list[dict[str, str]] = []
         if not document_paths:
@@ -39,10 +58,23 @@ class AssessmentService:
                     f"No document_paths provided and no indexed chunks exist for "
                     f"process_number '{process_number}'. Upload source documents to proceed."
                 )
+            progress.emit(
+                process_number, "documentos_disponiveis",
+                "Nenhum arquivo novo — reaproveitando documentos já indexados.",
+            )
         else:
             for path in document_paths:
+                progress.emit(
+                    process_number, "identificando_documentos_processados",
+                    f"Verificando se {path.name} já foi processado...",
+                )
                 disposition = _process_file(db_path, process_number, path)
                 documents.append({"filename": path.name, "disposition": disposition})
+                label = {"reused": "já processado, reaproveitado", "new": "novo, indexado agora",
+                          "replaced": "alterado, reindexado"}.get(disposition, disposition)
+                progress.emit(
+                    process_number, "documentos_disponiveis", f"{path.name}: {label}.", "success"
+                )
 
         store = get_ipmp_store()
         results: list[EvaluationResult] = []
@@ -52,6 +84,10 @@ class AssessmentService:
             _persist_evaluation_result(db_path, result)
             results.append(result)
 
+        progress.emit(
+            process_number, "concluido",
+            f"Avaliação concluída — {len(results)} Ação(ões) processada(s).", "success",
+        )
         return results, documents
 
 
@@ -67,10 +103,23 @@ def _retrieve_and_select(
 
     Regex (Step D) was removed in ADR-0052 — see cascade.py for reasoning.
     """
+    progress.emit(
+        process_number, "recuperando_evidencias",
+        f"Ação {acao_id}: buscando documento focal reconhecido...",
+    )
     doc_result = retrieve_document_focused(acao_id, process_number)
     if doc_result is not None:
+        progress.emit(
+            process_number, "selecionando_rota",
+            f"Ação {acao_id}: documento focal encontrado — usando correspondência "
+            "direta (sem gate de relevância).",
+        )
         return doc_result, []
 
+    progress.emit(
+        process_number, "selecionando_rota",
+        f"Ação {acao_id}: sem documento focal — usando busca BM25 + vetorial com gate.",
+    )
     candidates = retrieve_hybrid_candidates_for_acao(acao_id, process_number)
     selection = select_evidence(acao_id, process_number, candidates)
     return selection.accepted, selection.rejected

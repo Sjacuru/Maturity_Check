@@ -38,7 +38,7 @@ def _row_to_chunk(row: tuple) -> RetrievedChunk:
         source_type=row[7],
         text=row[8],
         cascade_step="bm25",
-        expected_product_id=None,
+        expected_product_ids=[],
         bm25_score=None,
         rank=None,
     )

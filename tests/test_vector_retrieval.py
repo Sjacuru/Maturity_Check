@@ -241,7 +241,7 @@ def test_search_returns_vector_fallback_chunks(db_path):
         assert isinstance(r, RetrievedChunk)
         assert r.retrieval_mode == "vector_fallback"
         assert r.cascade_step == "vector"
-        assert r.expected_product_id is None
+        assert r.expected_product_ids == []
         assert r.bm25_score is None
         assert r.rank is None
         assert r.process_number == "P001"
@@ -328,7 +328,7 @@ def _make_lexical_chunk(process_number: str = "P001") -> RetrievedChunk:
         source_type="text",
         text="Estudo de viabilidade técnica.",
         cascade_step="bm25",
-        expected_product_id="1a",
+        expected_product_ids=["1a"],
         bm25_score=-1.5,
         rank=1,
     )

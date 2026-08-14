@@ -15,7 +15,7 @@ _CHUNK = dict(
     source_type="text",
     text="Texto de exemplo.",
     cascade_step="bm25",
-    expected_product_id="1a",
+    expected_product_ids=["1a"],
     bm25_score=3.5,
     rank=1,
 )

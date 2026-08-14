@@ -11,21 +11,28 @@ _EXAMPLES_FRAMING = (
     "independente do setor ou domínio."
 )
 
+_PRODUCT_BLOCK_INSTRUCTION = (
+    "As evidências abaixo estão organizadas por Produto Esperado. "
+    "Use exclusivamente as evidências do bloco correspondente para avaliar cada produto. "
+    "Se as evidências de um bloco forem insuficientes para concluir o atendimento, "
+    "registre explicitamente essa limitação no raciocínio."
+)
+
 _SCORING_INSTRUCTION = """\
-Com base exclusivamente nas evidências fornecidas acima, avalie o processo e produza sua resposta em dois blocos:
+Com base exclusivamente nas evidências fornecidas acima, avalie o processo e \
+responda com um objeto JSON contendo os campos "reasoning", "score" e "uncertainty".
 
-1. **Raciocínio** (texto livre em português): explique quais Produtos Esperados foram ou não evidenciados e por quê.
+No campo "reasoning" (texto livre em português): explique quais Produtos \
+Esperados foram ou não evidenciados e por quê.
 
-Regras de avaliação:
+Regras de avaliação para o campo "score":
 - Pontue 3 quando todos os Produtos Esperados (1a, 1b, 1c, 1d) estiverem claramente evidenciados.
 - Pontue 1 quando alguns, mas não todos, os Produtos Esperados estiverem evidenciados.
 - Pontue 0 quando nenhum Produto Esperado estiver evidenciado.
 - Trate texto com ruído de OCR (caracteres ilegíveis ou garbled) como evidência não confiável; não pontue positivamente com base apenas em texto OCR ilegível.
-- Emita UNCERTAINTY: yes quando as evidências não permitirem avaliação segura de um ou mais Produtos Esperados (1a, 1b, 1c, 1d).
 
-2. **Bloco sentinela** (obrigatório, últimas duas linhas, sem texto após):
-SCORE: <0, 1 ou 3>
-UNCERTAINTY: <yes ou no>\
+Regra para o campo "uncertainty":
+- Defina "uncertainty": true quando as evidências não permitirem avaliação segura de um ou mais Produtos Esperados (1a, 1b, 1c, 1d).\
 """
 
 
@@ -78,26 +85,74 @@ def _sort_key(chunk: RetrievedChunk):
     return (step, 0.0, 0, chunk.chunk_index, chunk.filename, chunk.page_number)
 
 
-def build_user_prompt(chunks: list[RetrievedChunk]) -> str:
-    ordered = sorted(
-        chunks,
-        key=lambda c: (
-            _CASCADE_ORDER[c.cascade_step],
-            -(c.bm25_score or 0.0) if c.cascade_step == "bm25" else 0.0,
-            (c.rank if c.rank is not None else 0) if c.cascade_step == "bm25" else 0,
-            c.filename if c.cascade_step != "bm25" else "",
-            c.page_number if c.cascade_step != "bm25" else 0,
-            c.chunk_index,
-        ),
-    )
+def _render_chunk(chunk: RetrievedChunk) -> str:
+    return f"[Arquivo: {chunk.filename} | Página: {chunk.page_number}]\n{chunk.text}"
 
-    blocks: list[str] = []
-    for chunk in ordered:
-        header = f"[Arquivo: {chunk.filename} | Página: {chunk.page_number}]"
-        blocks.append(f"{header}\n{chunk.text}")
 
-    total_chars = sum(len(c.text) for c in ordered)
-    summary = f"--- {len(ordered)} trecho(s) recuperado(s), {total_chars} caracteres ---"
+def build_user_prompt(chunks: list[RetrievedChunk], acao_id: int = 1) -> str:
+    store = get_ipmp_store()
+    acao = store.acoes.get(acao_id)
 
-    parts = blocks + [summary]
+    # Build ordered product list from IPMP store, skipping the parent product
+    # whose id equals str(acao_id) — e.g. "1" for Ação 1 (container, not scored).
+    product_order: list[str] = []
+    product_texts: dict[str, str] = {}
+    if acao:
+        parent_id = str(acao_id)
+        for p in acao.produtos_esperados:
+            if p.id != parent_id:
+                product_order.append(p.id)
+                product_texts[p.id] = p.texto
+
+    # Separate chunks with no product attribution (document-focused steps)
+    # from chunks tied to a specific expected product.
+    ungrouped: list[RetrievedChunk] = []
+    grouped: dict[str, list[RetrievedChunk]] = {pid: [] for pid in product_order}
+    overflow: dict[str, list[RetrievedChunk]] = {}  # product ids not in IPMP order
+
+    for chunk in chunks:
+        pids = chunk.expected_product_ids
+        if not pids:
+            ungrouped.append(chunk)
+        else:
+            for pid in pids:
+                if pid in grouped:
+                    grouped[pid].append(chunk)
+                else:
+                    overflow.setdefault(pid, []).append(chunk)
+
+    parts: list[str] = [_PRODUCT_BLOCK_INSTRUCTION]
+    total_chunks = 0
+
+    # Document-focused chunks first (filename_match, variant_match, regex),
+    # sorted by cascade priority then filename/page for determinism.
+    if ungrouped:
+        ungrouped_sorted = sorted(ungrouped, key=_sort_key)
+        parts.append("## Documentos Focais")
+        for chunk in ungrouped_sorted:
+            parts.append(_render_chunk(chunk))
+            total_chunks += 1
+
+    # One block per expected product in IPMP order (1a → 1b → 1c → 1d).
+    for pid in product_order:
+        product_chunks = sorted(grouped.get(pid, []), key=_sort_key)
+        if not product_chunks:
+            continue
+        title = product_texts.get(pid, pid)
+        parts.append(f"## Evidências para Produto {pid} — {title}")
+        for chunk in product_chunks:
+            parts.append(_render_chunk(chunk))
+            total_chunks += 1
+
+    # Any product ids not in the IPMP store (forward-compatible).
+    for pid in sorted(overflow):
+        product_chunks = sorted(overflow[pid], key=_sort_key)
+        parts.append(f"## Evidências para Produto {pid}")
+        for chunk in product_chunks:
+            parts.append(_render_chunk(chunk))
+            total_chunks += 1
+
+    total_chars = sum(len(c.text) for c in chunks)
+    parts.append(f"--- {total_chunks} trecho(s) recuperado(s), {total_chars} caracteres ---")
+
     return "\n\n".join(parts)

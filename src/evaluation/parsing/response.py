@@ -1,12 +1,7 @@
 from __future__ import annotations
 
-import re
+import json
 from dataclasses import dataclass
-
-_SENTINEL_RE = re.compile(
-    r"^SCORE:\s*([0-9]+)\s*\nUNCERTAINTY:\s*(yes|no)\s*$",
-    re.IGNORECASE | re.MULTILINE,
-)
 
 _VALID_SCORES = {0, 1, 3}
 
@@ -20,46 +15,52 @@ class ParsedResponse:
     parse_failed: bool
 
 
+def _failed(raw: str) -> ParsedResponse:
+    return ParsedResponse(
+        raw_llm_response=raw,
+        reasoning=None,
+        proposed_score=None,
+        uncertainty_flag=False,
+        parse_failed=True,
+    )
+
+
 def parse_llm_response(raw: str) -> ParsedResponse:
-    stripped = raw.rstrip()
-    match = _SENTINEL_RE.search(stripped)
+    """Parse the scorer's structured JSON response (ADR-0053).
 
-    if not match:
-        return ParsedResponse(
-            raw_llm_response=raw,
-            reasoning=None,
-            proposed_score=None,
-            uncertainty_flag=False,
-            parse_failed=True,
-        )
+    Expects an object with "reasoning" (string), "score" (integer, one of
+    0/1/3), and "uncertainty" (boolean) — the shape enforced by
+    evaluation.schemas.SCORER_SCHEMA when the provider supports
+    grammar-constrained output. Still validated defensively here: a provider
+    without structured-output support, or one that degrades to a looser JSON
+    mode, is not guaranteed to honour the schema.
+    """
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return _failed(raw)
 
-    # Sentinel must be at the very end of the (stripped) response
-    if match.end() != len(stripped):
-        return ParsedResponse(
-            raw_llm_response=raw,
-            reasoning=None,
-            proposed_score=None,
-            uncertainty_flag=False,
-            parse_failed=True,
-        )
+    if not isinstance(data, dict):
+        return _failed(raw)
 
-    score_raw = int(match.group(1))
-    if score_raw not in _VALID_SCORES:
-        return ParsedResponse(
-            raw_llm_response=raw,
-            reasoning=None,
-            proposed_score=None,
-            uncertainty_flag=False,
-            parse_failed=True,
-        )
+    score = data.get("score")
+    uncertainty = data.get("uncertainty")
+    reasoning = data.get("reasoning")
 
-    uncertainty_flag = match.group(2).lower() == "yes"
-    reasoning = stripped[: match.start()].rstrip() or None
+    # bool is a subclass of int in Python — isinstance(True, int) is True and
+    # True == 1, so an accidental boolean in the score field must be rejected
+    # explicitly rather than silently accepted as score=1.
+    if isinstance(score, bool) or not isinstance(score, int) or score not in _VALID_SCORES:
+        return _failed(raw)
+    if not isinstance(uncertainty, bool):
+        return _failed(raw)
+    if not isinstance(reasoning, str):
+        return _failed(raw)
 
     return ParsedResponse(
         raw_llm_response=raw,
-        reasoning=reasoning,
-        proposed_score=score_raw,
-        uncertainty_flag=uncertainty_flag,
+        reasoning=reasoning.strip() or None,
+        proposed_score=score,
+        uncertainty_flag=uncertainty,
         parse_failed=False,
     )

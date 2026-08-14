@@ -151,7 +151,7 @@ def search_vector(
             source_type=h["source_type"],
             text=h["text"],
             cascade_step="vector",
-            expected_product_id=None,
+            expected_product_ids=[],
             bm25_score=None,
             rank=None,
             retrieval_mode="vector_fallback",

@@ -47,7 +47,7 @@ def make_vector_chunk(**kwargs) -> RetrievedChunk:
         source_type="text",
         text="conteúdo relevante encontrado apenas por similaridade semântica",
         cascade_step="vector",
-        expected_product_id=None,
+        expected_product_ids=[],
         bm25_score=None,
         rank=None,
         retrieval_mode="vector_fallback",
@@ -90,7 +90,7 @@ def test_vector_only_match_is_selected_when_not_found_by_bm25(db):
     assert len(matches) == 1
     assert matches[0].cascade_step == "vector"
     assert matches[0].bm25_score is None
-    assert matches[0].expected_product_id is not None  # attributed to whichever product claimed it
+    assert matches[0].expected_product_ids  # attributed to whichever product claimed it
 
 
 def test_rio_hints_does_not_trigger_extra_vector_calls(db):
@@ -121,7 +121,7 @@ def test_ipmp_product_lane_wins_over_rio_hints_on_conflict(db):
         if r.filename == "doc.pdf" and r.page_number == 1 and r.chunk_index == 0
     ]
     assert len(matches) == 1
-    assert matches[0].expected_product_id != "rio_hints"
+    assert "rio_hints" not in matches[0].expected_product_ids
 
 
 def test_unknown_acao_returns_empty(db):

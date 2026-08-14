@@ -1,15 +1,9 @@
 from __future__ import annotations
 
 _INSTRUCTIONS = """\
-Responda SEMPRE em português, mesmo que o trecho contenha termos em outro idioma.
-Sua resposta deve conter APENAS uma das duas linhas abaixo, nada mais — sem \
-explicações, resumos ou texto adicional:
-
-RELEVANT: yes
-
-ou
-
-RELEVANT: no\
+Considere o trecho em português, mesmo que contenha termos em outro idioma. \
+Preencha o campo "relevant" do objeto JSON de resposta com true (relevante) \
+ou false (não relevante). Nenhum outro campo é esperado.\
 """
 
 

@@ -102,7 +102,7 @@ def test_search_regex_deduplicates_multi_pattern_hits(db):
 def test_search_regex_expected_product_id_is_none(db):
     index("P001", [make_chunk(text=_LEI_11079)])
     results = search_regex(1, "P001")
-    assert all(r.expected_product_id is None for r in results)
+    assert all(r.expected_product_ids == [] for r in results)
 
 
 def test_search_regex_bm25_score_and_rank_are_none(db):

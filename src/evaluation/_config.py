@@ -47,6 +47,26 @@ def configure_llm(
     _model = model
 
 
+def configure_llm_client(client: LLMClient, provider: str, model: str) -> None:
+    """Register an already-constructed LLMClient directly (ADR-0054) — for
+    composed clients (e.g. FallbackLLMClient wrapping a primary + secondary
+    provider) that configure_llm()'s provider-string dispatch can't express.
+    provider/model are the labels recorded at configure time; evaluate()
+    prefers the client's own last_provider_used/last_model_used when present
+    (set per call by clients like FallbackLLMClient that can serve a given
+    call from more than one underlying provider)."""
+    global _client, _provider, _model
+    _client = client
+    _provider = provider
+    _model = model
+
+
+def configure_gate_llm_client(client: LLMClient) -> None:
+    """Gate counterpart to configure_llm_client() — see its docstring."""
+    global _gate_client
+    _gate_client = client
+
+
 def get_llm_client() -> LLMClient:
     if _client is None:
         raise RuntimeError(

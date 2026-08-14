@@ -149,7 +149,7 @@ def test_search_bm25_deduplicates_multi_product_hits(db):
 def test_search_bm25_assigns_expected_product_id(db):
     index("P001", [make_chunk(text="projeto viabilidade")])
     results = search_bm25({"1a": '"projeto"'}, "P001")
-    assert results[0].expected_product_id == "1a"
+    assert results[0].expected_product_ids == ["1a"]
 
 
 def test_search_bm25_caps_at_max_chunks_per_acao(db):

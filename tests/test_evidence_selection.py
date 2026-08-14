@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from ingestion.retrieval_profile import (
@@ -31,7 +33,7 @@ def make_chunk(**kwargs) -> RetrievedChunk:
         source_type="text",
         text="texto padrão",
         cascade_step="bm25",
-        expected_product_id="1a",
+        expected_product_ids=["1a"],
         bm25_score=-5.0,
         rank=1,
     )
@@ -43,9 +45,13 @@ class StubGateClient:
         self._responder = responder
         self.calls: list[tuple[str, str]] = []
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict | None = None) -> str:
         self.calls.append((system, user))
         return self._responder(system, user)
+
+
+_RELEVANT_YES = json.dumps({"relevant": True})
+_RELEVANT_NO = json.dumps({"relevant": False})
 
 
 @pytest.fixture(autouse=True)
@@ -84,7 +90,7 @@ def test_relevant_chunk_is_accepted_as_anchor(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     chunk = make_chunk()
     result = select_evidence(1, "P001", {"1a": [(0.05, chunk)]})
@@ -98,7 +104,7 @@ def test_irrelevant_chunk_is_rejected(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: no")
+    _set_gate(lambda system, user: _RELEVANT_NO)
 
     chunk = make_chunk()
     result = select_evidence(1, "P001", {"1a": [(0.05, chunk)]})
@@ -129,7 +135,7 @@ def test_anchor_target_caps_at_five(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     # Use distinct texts so the semantic-dedup step does not collapse them
     # (this test is about the anchor-target cap, not near-duplicate removal).
@@ -150,7 +156,7 @@ def test_max_examined_caps_gate_calls_when_model_keeps_rejecting(monkeypatch):
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
     _no_neighbors(monkeypatch)
 
-    stub = StubGateClient(lambda system, user: "RELEVANT: no")
+    stub = StubGateClient(lambda system, user: _RELEVANT_NO)
     eval_cfg._gate_client = stub
 
     chunks = [
@@ -171,7 +177,7 @@ def test_relevant_anchor_triggers_neighbor_expansion(monkeypatch):
     prev_chunk = make_chunk(page_number=1, chunk_index=0, text="anterior")
     next_chunk = make_chunk(page_number=1, chunk_index=2, text="seguinte")
     monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (prev_chunk, next_chunk))
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     anchor = make_chunk(page_number=1, chunk_index=1, text="ancora")
     result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
@@ -193,8 +199,8 @@ def test_rejected_neighbor_is_recorded(monkeypatch):
     def responder(system, user):
         calls["n"] += 1
         if calls["n"] == 1:
-            return "RELEVANT: yes"
-        return "RELEVANT: no"
+            return _RELEVANT_YES
+        return _RELEVANT_NO
 
     _set_gate(responder)
 
@@ -219,7 +225,7 @@ def test_expansion_target_caps_at_five_per_product(monkeypatch):
         return prev, nxt
 
     monkeypatch.setattr(es, "fetch_neighbor_chunks", fake_neighbors)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     # Texts are distinct enough that semantic dedup does not collapse them
     # (this test is about the expansion-target cap, not near-duplicate removal).
@@ -273,7 +279,7 @@ def test_chunk_accepted_by_two_products_is_deduplicated(monkeypatch):
 
     monkeypatch.setattr(_rp, "_store", _two_product_profile())
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     shared_chunk = make_chunk(page_number=3, chunk_index=0, text="conteudo compartilhado")
     result = select_evidence(
@@ -287,7 +293,7 @@ def test_chunk_accepted_by_two_products_is_deduplicated(monkeypatch):
 
     matches = [c for c in result.accepted if c.page_number == 3 and c.chunk_index == 0]
     assert len(matches) == 1
-    assert matches[0].expected_product_id == "1a"  # higher-scoring product wins
+    assert matches[0].expected_product_ids == ["1a", "1c"]  # both products merged
 
 
 def test_anchor_wins_over_expansion_for_same_physical_chunk(monkeypatch):
@@ -305,7 +311,7 @@ def test_anchor_wins_over_expansion_for_same_physical_chunk(monkeypatch):
         return None, None
 
     monkeypatch.setattr(es, "fetch_neighbor_chunks", fake_neighbors)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     c_anchor = make_chunk(page_number=5, chunk_index=0, text="ancora de 1c")
     result = select_evidence(
@@ -319,7 +325,9 @@ def test_anchor_wins_over_expansion_for_same_physical_chunk(monkeypatch):
 
     matches = [c for c in result.accepted if c.page_number == 5 and c.chunk_index == 1]
     assert len(matches) == 1
-    assert matches[0].expected_product_id == "1a"
+    # anchor (1a) wins over expansion; expansion's product (1c) is merged in
+    assert "1a" in matches[0].expected_product_ids
+    assert "1c" in matches[0].expected_product_ids
 
 
 def test_deduplicate_across_products_prefers_higher_score():
@@ -451,7 +459,7 @@ def test_select_evidence_passes_retrieval_signal_concepts_to_gate(monkeypatch):
 
     def responder(system, user):
         captured.append(system)
-        return "RELEVANT: yes"
+        return _RELEVANT_YES
 
     _set_gate(responder)
 
@@ -476,7 +484,7 @@ def test_select_evidence_strips_noise_before_gating(monkeypatch):
 
     def responder(system, user):
         captured_user_prompts.append(user)
-        return "RELEVANT: yes"
+        return _RELEVANT_YES
 
     _set_gate(responder)
 
@@ -581,7 +589,7 @@ def test_prefilter_reduces_gate_calls_for_near_duplicate_candidates(monkeypatch)
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
     _no_neighbors(monkeypatch)
 
-    stub = StubGateClient(lambda system, user: "RELEVANT: yes")
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
     eval_cfg._gate_client = stub
 
     c1 = make_chunk(page_number=14, text=_LONG_VIABILITY_TEXT)
@@ -599,7 +607,7 @@ def test_dedup_semantic_applied_in_select_evidence(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     c1 = make_chunk(page_number=10, text=_LONG_VIABILITY_TEXT)
     c2 = make_chunk(page_number=20, text=_LONG_VIABILITY_TEXT)
@@ -755,7 +763,7 @@ def test_accepted_chunk_carries_matched_concepts(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_concepts("1a"))
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: yes")
+    _set_gate(lambda system, user: _RELEVANT_YES)
 
     chunk = make_chunk(text="há viabilidade econômico-financeira do projeto com CAPEX estimado.")
     result = select_evidence(1, "P001", {"1a": [(0.9, chunk)]})
@@ -771,7 +779,7 @@ def test_rejected_chunk_carries_matched_concepts(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_concepts("1a"))
     _no_neighbors(monkeypatch)
-    _set_gate(lambda system, user: "RELEVANT: no")
+    _set_gate(lambda system, user: _RELEVANT_NO)
 
     chunk = make_chunk(text="há viabilidade econômico-financeira do projeto.")
     result = select_evidence(1, "P001", {"1a": [(0.9, chunk)]})

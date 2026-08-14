@@ -68,7 +68,7 @@ def search_regex(
             source_type=row[7],
             text=row[8],
             cascade_step="regex",
-            expected_product_id=None,
+            expected_product_ids=[],
             bm25_score=None,
             rank=None,
             retrieval_query=pattern,

@@ -82,6 +82,11 @@ temp/
 # LanceDB vector store (derived from SQLite path; never committed)
 lancedb/
 
+# Stray SQLite DB created if the server is ever started from inside frontend/
+# (relative "data/app.db" path resolves wrong from that cwd) — never committed,
+# this is debris, not project data.
+frontend/data/
+
 # Project data artifacts — ignore everything in data/ by default,
 # but track source-of-truth JSON artifacts in known subdirectories.
 # New directories (e.g. case_documents/, pdfs/) remain ignored automatically.

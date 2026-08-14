@@ -79,7 +79,7 @@ def _fused_candidates_for_product(
     ranked_keys = sorted(fused_scores, key=lambda key: fused_scores[key], reverse=True)
 
     return [
-        (fused_scores[key], by_key[key].model_copy(update={"expected_product_id": product.id}))
+        (fused_scores[key], by_key[key].model_copy(update={"expected_product_ids": [product.id]}))
         for key in ranked_keys
     ]
 

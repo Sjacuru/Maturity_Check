@@ -162,7 +162,7 @@ def test_document_match_expected_product_id_is_none(db):
     index("P001", [make_chunk(filename=_CANONICAL_FILENAME)])
     results = retrieve_document_focused(1, "P001")
     assert results is not None
-    assert all(r.expected_product_id is None for r in results)
+    assert all(r.expected_product_ids == [] for r in results)
 
 
 def test_document_match_bm25_score_and_rank_are_none(db):

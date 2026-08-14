@@ -15,7 +15,7 @@ VALID_BM25 = dict(
     source_type="text",
     text="Parceria Público-Privada para concessão de serviços de saneamento.",
     cascade_step="bm25",
-    expected_product_id="1a",
+    expected_product_ids=["1a"],
     bm25_score=4.72,
     rank=1,
 )
@@ -31,7 +31,7 @@ VALID_FILENAME_MATCH = dict(
     source_type="text",
     text="Estudo de Viabilidade Técnica, Econômica e Ambiental.",
     cascade_step="filename_match",
-    expected_product_id=None,
+    expected_product_ids=[],
     bm25_score=None,
     rank=None,
 )
@@ -42,7 +42,7 @@ VALID_FILENAME_MATCH = dict(
 def test_bm25_chunk_valid():
     chunk = RetrievedChunk(**VALID_BM25)
     assert chunk.cascade_step == "bm25"
-    assert chunk.expected_product_id == "1a"
+    assert chunk.expected_product_ids == ["1a"]
     assert chunk.bm25_score == pytest.approx(4.72)
     assert chunk.rank == 1
 
@@ -50,7 +50,7 @@ def test_bm25_chunk_valid():
 def test_filename_match_chunk_valid():
     chunk = RetrievedChunk(**VALID_FILENAME_MATCH)
     assert chunk.cascade_step == "filename_match"
-    assert chunk.expected_product_id is None
+    assert chunk.expected_product_ids == []
     assert chunk.bm25_score is None
     assert chunk.rank is None
 
@@ -64,12 +64,12 @@ def test_regex_chunk_valid():
     chunk = RetrievedChunk(**{
         **VALID_BM25,
         "cascade_step": "regex",
-        "expected_product_id": None,
+        "expected_product_ids": [],
         "bm25_score": None,
         "rank": None,
     })
     assert chunk.cascade_step == "regex"
-    assert chunk.expected_product_id is None
+    assert chunk.expected_product_ids == []
 
 
 # --- cascade_step validation ---
@@ -92,9 +92,9 @@ def test_bm25_score_none_accepted():
     assert chunk.rank is None
 
 
-def test_expected_product_id_none_accepted():
-    chunk = RetrievedChunk(**{**VALID_BM25, "expected_product_id": None})
-    assert chunk.expected_product_id is None
+def test_expected_product_ids_empty_accepted():
+    chunk = RetrievedChunk(**{**VALID_BM25, "expected_product_ids": []})
+    assert chunk.expected_product_ids == []
 
 
 # --- ocr_used is StrictBool ---
@@ -149,7 +149,7 @@ def test_model_dump_contains_all_fields():
     assert keys == {
         "process_number", "filename", "page_number", "chunk_index",
         "char_offset", "page_total", "ocr_used", "source_type", "text",
-        "cascade_step", "expected_product_id", "bm25_score", "rank",
+        "cascade_step", "expected_product_ids", "bm25_score", "rank",
         "retrieval_mode", "retrieval_query", "matched_concepts",
     }
 
@@ -170,7 +170,7 @@ def test_retrieval_mode_vector_fallback_accepted():
     chunk = RetrievedChunk(**{
         **VALID_BM25,
         "cascade_step": "vector",
-        "expected_product_id": None,
+        "expected_product_ids": [],
         "bm25_score": None,
         "rank": None,
         "retrieval_mode": "vector_fallback",
@@ -187,7 +187,7 @@ def test_vector_cascade_step_accepted():
     chunk = RetrievedChunk(**{
         **VALID_BM25,
         "cascade_step": "vector",
-        "expected_product_id": None,
+        "expected_product_ids": [],
         "bm25_score": None,
         "rank": None,
         "retrieval_mode": "vector_fallback",
@@ -200,7 +200,7 @@ def test_retrieval_mode_serializes_in_model_dump():
     chunk = RetrievedChunk(**{
         **VALID_BM25,
         "cascade_step": "vector",
-        "expected_product_id": None,
+        "expected_product_ids": [],
         "bm25_score": None,
         "rank": None,
         "retrieval_mode": "vector_fallback",

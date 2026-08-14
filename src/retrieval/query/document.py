@@ -133,7 +133,7 @@ def _fetch_all_chunks(
             source_type=row[7],
             text=row[8],
             cascade_step=cascade_step,  # type: ignore[arg-type]
-            expected_product_id=None,
+            expected_product_ids=[],
             bm25_score=None,
             rank=None,
             retrieval_query=filename,

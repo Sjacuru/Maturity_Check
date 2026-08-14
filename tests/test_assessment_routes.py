@@ -29,10 +29,12 @@ from retrieval.schema.ddl import init_db as retrieval_init_db
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 class StubLLMClient:
-    def __init__(self, response: str = "Evidência presente.\nSCORE: 3\nUNCERTAINTY: no"):
+    def __init__(
+        self, response: str = '{"reasoning": "Evidência presente.", "score": 3, "uncertainty": false}'
+    ):
         self._response = response
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict | None = None) -> str:
         return self._response
 
 

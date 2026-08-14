@@ -8,7 +8,9 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, UploadFile
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 
+from assessment import progress
 from assessment._config import get_db_path
 from assessment.api.schemas import ReviewSubmission
 from assessment.interfaces.contracts import ReviewOutcome
@@ -41,7 +43,15 @@ async def assess(
             dest.write_bytes(await upload.read())
             document_paths.append(dest)
 
-        results, documents = _service.run_assessment(process_number, document_paths)
+        # ADR-0055: run in a worker thread rather than blocking the event
+        # loop directly — an assessment can legitimately take several
+        # minutes (LLM calls, possibly through retry/fallback), and the
+        # progress-polling GET below must be servable concurrently while it
+        # runs. Still synchronous from the client's perspective: this
+        # request doesn't return until the assessment finishes.
+        results, documents = await run_in_threadpool(
+            _service.run_assessment, process_number, document_paths
+        )
 
     return {
         "process_number": process_number,
@@ -49,6 +59,20 @@ async def assess(
         "count": len(results),
         "documents": documents,
     }
+
+
+# ── GET /cases/{process_number}/assess/progress ──────────────────────────────
+
+@router.get("/cases/{process_number}/assess/progress")
+def get_assess_progress(process_number: str, since: int = Query(default=0)):
+    """Polling endpoint (ADR-0055) — short-lived, in-memory progress events
+    for the assessment currently running (if any) for this process_number.
+    Never includes prompt content or credentials, only short status
+    messages. `since` is the last `seq` the caller already has; the
+    response's events all have seq >= since."""
+    events = progress.get_events(process_number, since)
+    next_since = events[-1]["seq"] + 1 if events else since
+    return {"events": events, "next_since": next_since}
 
 
 def _check_no_review_outcomes(db_path: Path, process_number: str) -> None:

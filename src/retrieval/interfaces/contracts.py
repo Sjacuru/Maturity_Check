@@ -19,7 +19,7 @@ class RetrievedChunk(BaseModel):
     text: str
     # Retrieval metadata
     cascade_step: Literal["filename_match", "variant_match", "bm25", "regex", "vector"]
-    expected_product_id: str | None  # null on document-focused, regex, and vector paths
+    expected_product_ids: list[str] = []  # products this chunk was retrieved for; empty on document-focused, regex, vector paths; merged across products by _deduplicate_across_products
     bm25_score: float | None         # null on document-focused, regex, and vector paths
     rank: int | None                 # null on document-focused, regex, and vector paths
     retrieval_mode: Literal["lexical", "vector_fallback"] = "lexical"

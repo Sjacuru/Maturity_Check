@@ -34,8 +34,8 @@ from retrieval.schema.ddl import init_db as retrieval_init_db
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 class StubLLMClient:
-    def complete(self, system: str, user: str) -> str:
-        return "Evidência confirmada.\nSCORE: 3\nUNCERTAINTY: no"
+    def complete(self, system: str, user: str, schema: dict | None = None) -> str:
+        return '{"reasoning": "Evidência confirmada.", "score": 3, "uncertainty": false}'
 
 
 def _make_chunks(filename: str = "EVTEA.pdf", n: int = 2) -> list[Chunk]:
@@ -345,8 +345,8 @@ def test_raw_json_reflects_latest_evaluation_adr0025(client, db_path):
 
     # Force re-run with score-0 response
     class ZeroStub:
-        def complete(self, system, user):
-            return "Nenhuma evidência.\nSCORE: 0\nUNCERTAINTY: no"
+        def complete(self, system, user, schema=None):
+            return '{"reasoning": "Nenhuma evidência.", "score": 0, "uncertainty": false}'
 
     eval_cfg._client = ZeroStub()
     _assess(client, "P001", content=_fake_bytes_v2(), force=True)
@@ -366,8 +366,8 @@ def test_get_evaluation_returns_latest_after_force_rerun_adr0026(client, db_path
     before = client.get("/api/cases/P001/evaluations/1").json()
 
     class ZeroStub:
-        def complete(self, system, user):
-            return "Sem produto.\nSCORE: 0\nUNCERTAINTY: no"
+        def complete(self, system, user, schema=None):
+            return '{"reasoning": "Sem produto.", "score": 0, "uncertainty": false}'
 
     eval_cfg._client = ZeroStub()
     _assess(client, "P001", content=_fake_bytes_v2(), force=True)

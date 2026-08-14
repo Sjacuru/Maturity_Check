@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from evaluation import configure_llm, evaluate, EvaluationResult
@@ -10,9 +12,13 @@ class StubLLMClient:
         self._response = response
         self.call_count = 0
 
-    def complete(self, system: str, user: str) -> str:
+    def complete(self, system: str, user: str, schema: dict | None = None) -> str:
         self.call_count += 1
         return self._response
+
+
+def _json_response(reasoning: str, score, uncertainty: bool) -> str:
+    return json.dumps({"reasoning": reasoning, "score": score, "uncertainty": uncertainty})
 
 
 def _chunk(**kwargs) -> RetrievedChunk:
@@ -27,7 +33,7 @@ def _chunk(**kwargs) -> RetrievedChunk:
         source_type="text",
         text="O projeto visa construção de contorno rodoviário.",
         cascade_step="bm25",
-        expected_product_id="1a",
+        expected_product_ids=["1a"],
         bm25_score=3.5,
         rank=1,
     )
@@ -90,7 +96,7 @@ def test_evaluate_unknown_acao_id_raises():
 # --- Normal evaluation ---
 
 def test_normal_evaluation_score_3():
-    stub = StubLLMClient("Todos os produtos foram evidenciados.\nSCORE: 3\nUNCERTAINTY: no")
+    stub = StubLLMClient(_json_response("Todos os produtos foram evidenciados.", 3, False))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk()])
     assert result.proposed_score == 3
@@ -101,14 +107,14 @@ def test_normal_evaluation_score_3():
 
 
 def test_normal_evaluation_score_0():
-    stub = StubLLMClient("Nenhuma evidência encontrada.\nSCORE: 0\nUNCERTAINTY: no")
+    stub = StubLLMClient(_json_response("Nenhuma evidência encontrada.", 0, False))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk()])
     assert result.proposed_score == 0
 
 
 def test_normal_evaluation_uncertainty_flag():
-    stub = StubLLMClient("Evidência insuficiente.\nSCORE: 1\nUNCERTAINTY: yes")
+    stub = StubLLMClient(_json_response("Evidência insuficiente.", 1, True))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk()])
     assert result.uncertainty_flag is True
@@ -119,20 +125,20 @@ def test_normal_evaluation_uncertainty_flag():
 # --- Parse failure ---
 
 def test_parse_failed_response():
-    stub = StubLLMClient("Resposta malformada sem sentinel.")
+    stub = StubLLMClient("Resposta malformada, não é JSON.")
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk()])
     assert result.parse_failed is True
     assert result.proposed_score is None
     assert result.reasoning is None
-    assert result.raw_llm_response == "Resposta malformada sem sentinel."
+    assert result.raw_llm_response == "Resposta malformada, não é JSON."
     assert result.no_evidence_found is False
 
 
 # --- Metadata ---
 
 def test_provider_and_model_in_result():
-    stub = StubLLMClient("ok\nSCORE: 3\nUNCERTAINTY: no")
+    stub = StubLLMClient(_json_response("ok", 3, False))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk()])
     assert result.provider == "ollama"
@@ -141,7 +147,7 @@ def test_provider_and_model_in_result():
 
 def test_evidence_char_count_populated():
     text = "A" * 200
-    stub = StubLLMClient("ok\nSCORE: 1\nUNCERTAINTY: no")
+    stub = StubLLMClient(_json_response("ok", 1, False))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk(text=text)])
     assert result.evidence_char_count == 200
@@ -149,14 +155,14 @@ def test_evidence_char_count_populated():
 
 def test_retrieved_chunks_preserved_in_result():
     chunks = [_chunk(text="chunk one"), _chunk(text="chunk two", chunk_index=1)]
-    stub = StubLLMClient("ok\nSCORE: 3\nUNCERTAINTY: no")
+    stub = StubLLMClient(_json_response("ok", 3, False))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", chunks)
     assert len(result.retrieved_chunks) == 2
 
 
 def test_prompts_populated_in_result():
-    stub = StubLLMClient("ok\nSCORE: 3\nUNCERTAINTY: no")
+    stub = StubLLMClient(_json_response("ok", 3, False))
     _wire(stub)
     result = evaluate(1, "0023.001234/2024-01", [_chunk()])
     assert result.system_prompt is not None
