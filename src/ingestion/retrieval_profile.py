@@ -23,6 +23,8 @@ class PhraseQueryTerm(BaseModel):
     status: Literal["active", "experimental", "validated", "deprecated"] = "active"
     concept_ref: str | None = None
     sector_hint: str | None = None
+    shared_with_acao: list[int] = []
+    shared_with_acao_note: str | None = None
 
 
 class NearQueryTerm(BaseModel):
@@ -34,6 +36,8 @@ class NearQueryTerm(BaseModel):
     status: Literal["active", "experimental", "validated", "deprecated"] = "active"
     concept_ref: str | None = None
     sector_hint: str | None = None
+    shared_with_acao: list[int] = []
+    shared_with_acao_note: str | None = None
 
     @model_validator(mode="after")
     def _validate_tokens(self) -> NearQueryTerm:
