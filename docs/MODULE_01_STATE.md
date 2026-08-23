@@ -10,7 +10,7 @@
 
 | Q | Topic | Decision |
 |---|---|---|
-| Q1 | IPMP fields | Full schema: `acao_id`, `titulo`, `dimensao`, `por_que_importante`, `descricao_acao`, `o_que_esperar`, `produtos_esperados` (flat list `{id, texto}`), `momento_ideal`, `excecoes: list[str]`, `exemplos: list[{nivel, score, texto}]` |
+| Q1 | IPMP fields | Full schema: `acao_id`, `titulo`, `dimensao` (Literal, M5D: Estratégica/Econômica/Comercial/Financeira/Gerencial), `fase` (Literal: Inicial/Intermediária/Final), `ponto_transicao: bool`, `por_que_importante`, `descricao_acao`, `o_que_esperar`, `produtos_esperados` (flat list `{id, texto}`), `momento_ideal`, `excecoes: list[str]`, `exemplos: list[{nivel, score, texto}]`. `dimensao`/`fase`/`ponto_transicao` added 2026-08-21, sourced from IPMP Guide §2.2 and Figuras 3-5 — see CONTEXT.md |
 | Q2 | Storage format | JSON files, one per Ação, in `data/ipmp/` and `data/rio_manual/` |
 | Q3 | Loading mechanism | Pydantic validation + singleton pattern. Load once on first call, cache for process lifetime |
 | Q4 | Module boundary | Ingestion = data + structural normalization only. No retrieval semantics, no BM25, no query logic, no LLM awareness |
@@ -52,7 +52,9 @@ class ProdutoEsperado(BaseModel):
 class AcaoIPMP(BaseModel):
     acao_id: int
     titulo: str
-    dimensao: str
+    dimensao: Literal["Estratégica", "Econômica", "Comercial", "Financeira", "Gerencial"]
+    fase: Literal["Inicial", "Intermediária", "Final"]
+    ponto_transicao: bool
     por_que_importante: str
     descricao_acao: str
     o_que_esperar: str

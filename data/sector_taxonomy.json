@@ -1,0 +1,99 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "last_updated": "2026-08-21",
+    "scope": "Canonical reference list of Brazilian PPP/concession sector labels. Consulted by the synthetic retrieval-profile generation skill to tag provenance:\"synthetic\" Query Terms with a sector_hint. Extended deliberately only, by an explicit edit to this file — never invented ad hoc by the skill during a generation run."
+  },
+  "sectors": [
+    {
+      "key": "hospitalar",
+      "label": "Hospitais / Saúde",
+      "description": "Concessões e PPPs de unidades hospitalares e equipamentos de saúde.",
+      "source": "user"
+    },
+    {
+      "key": "estradas",
+      "label": "Estradas",
+      "description": "Infraestrutura viária em geral, fora do regime específico de pedágio federal.",
+      "source": "user"
+    },
+    {
+      "key": "iluminacao_publica",
+      "label": "Iluminação Pública",
+      "description": "Concessões de modernização, operação e manutenção de parques de iluminação pública municipal.",
+      "source": "user"
+    },
+    {
+      "key": "transporte_publico",
+      "label": "Transporte Público",
+      "description": "Concessões de sistemas de transporte coletivo urbano (ônibus, BRT, VLT, metrô).",
+      "source": "user"
+    },
+    {
+      "key": "obras_engenharia",
+      "label": "Obras de Engenharia",
+      "description": "Empreendimentos de engenharia civil em geral, quando não enquadrados em um setor mais específico desta lista.",
+      "source": "user"
+    },
+    {
+      "key": "parcerias_uso_infraestrutura",
+      "label": "Parcerias de Uso de Infraestrutura",
+      "description": "PPPs de direito de uso ou exploração de infraestrutura pública existente.",
+      "source": "user"
+    },
+    {
+      "key": "mobiliario_urbano",
+      "label": "Mobiliário Urbano",
+      "description": "Concessões de mobiliário urbano (abrigos, sinalização, equipamentos de logradouro). Setor do caso real de referência do projeto (SMG-040).",
+      "source": "user"
+    },
+    {
+      "key": "saneamento_basico",
+      "label": "Saneamento Básico",
+      "description": "Concessões de água e esgoto — uma das categorias de concessão municipal/estadual mais recorrentes no Brasil.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "rodovias_pedagio",
+      "label": "Rodovias / Pedágio",
+      "description": "Concessões rodoviárias federais ou estaduais com cobrança de pedágio (regime ANTT ou equivalente estadual) — distinto de \"estradas\" genérico.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "aeroportos",
+      "label": "Aeroportos",
+      "description": "Concessões de terminais e infraestrutura aeroportuária.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "portos",
+      "label": "Portos",
+      "description": "Concessões e arrendamentos de terminais portuários.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "unidades_prisionais",
+      "label": "Unidades Prisionais",
+      "description": "PPPs de construção e/ou cogestão de unidades prisionais — categoria brasileira bem documentada, distinta de PPPs de serviços gerais.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "residuos_solidos",
+      "label": "Resíduos Sólidos",
+      "description": "Concessões de coleta, tratamento e destinação de resíduos sólidos urbanos.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "habitacao_interesse_social",
+      "label": "Habitação de Interesse Social",
+      "description": "PPPs voltadas à provisão de habitação de interesse social.",
+      "source": "claude_consolidated_knowledge"
+    },
+    {
+      "key": "conectividade_fibra_optica",
+      "label": "Conectividade / Fibra Óptica Municipal",
+      "description": "Concessões de infraestrutura digital municipal (fibra óptica, conectividade) — categoria mais recente entre as PPPs brasileiras.",
+      "source": "claude_consolidated_knowledge"
+    }
+  ]
+}

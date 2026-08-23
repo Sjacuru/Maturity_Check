@@ -1,0 +1,54 @@
+{
+  "acao_id": 2,
+  "titulo": "Determine os objetivos específicos, resultados, disposições e necessidades existentes",
+  "dimensao": "Estratégica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "Esta ação aprofunda a lógica do planejamento iniciada na ação anterior, ao organizar o diagnóstico, os objetivos específicos e os resultados pretendidos de forma estruturada. Ela permite verificar se o projeto foi concebido com clareza de propósito e orientado para resultados concretos. Quando negligenciada, há o risco de se definir metas genéricas, como \"melhorar a mobilidade\" ou \"reduzir custos logísticos\", sem indicar exatamente o que será alcançado e como se verificará essa entrega. Sem essa estrutura, a justificativa do projeto se torna frágil e as decisões posteriores — como o modelo de contratação ou a escolha da alternativa — tendem a se apoiar em percepções subjetivas ou argumentos pouco verificáveis. Em estudos de viabilidade, por exemplo, poderiam ser propostos grandes investimentos viários sem qualquer estimativa de quanto tempo de deslocamento será economizado ou quais fluxos logísticos serão beneficiados. O resultado seria um projeto com baixa mensurabilidade, difícil de priorizar frente a outros, e vulnerável a questionamentos durante a execução. Por outro lado, quando bem elaborada, essa ação facilita a avaliação técnica e econômica do projeto, permite definir indicadores de desempenho mais precisos e dá suporte à seleção de soluções mais adequadas, alinhadas com os objetivos traçados desde o início.",
+  "descricao_acao": "Determinar objetivos específicos de nível estratégico que apoiem os objetivos estratégicos estabelecidos e que justifiquem o gasto de recursos públicos. Descrever um resultado para cada objetivo de forma que evidencie que o projeto resolverá os problemas encontrados. Descrever as disposições e necessidades existentes, ou seja, o diagnóstico do cenário sem projeto. Identificar a lacuna entre as disposições existentes e os objetivos, isto é, a diferença entre onde se está e onde se quer chegar. Identificar novos estudos que possam ser necessários.",
+  "o_que_esperar": "Descrição clara e interconectada dos objetivos específicos e dos resultados esperados para cada um, com um diagnóstico completo da situação presente e identificação das disposições e das necessidades existentes.",
+  "produtos_esperados": [
+    {
+      "id": "2",
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:"
+    },
+    {
+      "id": "2a",
+      "texto": "Definição de um conjunto de objetivos específicos, vinculados aos objetivos estratégicos da ação anterior, que justifiquem o gasto de recursos públicos."
+    },
+    {
+      "id": "2b",
+      "texto": "Descrição dos resultados esperados para cada objetivo específico definido, de forma a evidenciar que o projeto resolverá os problemas encontrados."
+    },
+    {
+      "id": "2c",
+      "texto": "Descrição detalhada da situação atual, ou seja, o diagnóstico do cenário sem o projeto, incluindo, mas não se limitando, a indicar: o funcionamento, manutenção e custos do serviço existente; a condição da infraestrutura existente; a demanda atual; o impacto sobre as partes interessadas, o meio ambiente e o desenvolvimento socioeconômico."
+    },
+    {
+      "id": "2d",
+      "texto": "Descrição das lacunas ou problemas que precisam ser abordados, identificando-se a diferença entre \"onde se está\" (disposições existentes) e \"onde se quer chegar\" (objetivos específicos)."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Recomenda-se que os objetivos específicos sejam definidos a partir da metodologia SMART, de forma a assegurar que eles sejam específicos, mensuráveis, atingíveis, relevantes e temporizáveis.",
+    "Ao realizar o diagnóstico do cenário existente, caso não existam disposições a analisar, devem ser apresentadas análises de serviços comparáveis."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Um projeto de ampliação do terminal de passageiros em um aeroporto regional teve como ponto de partida a formulação clara dos objetivos específicos no EVTEA. O estudo detalhou que a intervenção visou ampliar a capacidade de embarque e desembarque, reduzir o tempo de espera e melhorar a qualidade do serviço prestado. Esses objetivos foram definidos a partir da análise de dados sobre demanda reprimida, projeções de crescimento do fluxo de passageiros, padrões de qualidade da ANAC e necessidades operacionais do aeroporto. As metas incluíram, por exemplo, a redução do tempo médio de fila em horários de pico e a elevação do índice de conforto do terminal, com indicação quantitativa dos dados. O estudo também apresentou, de forma estruturada, o diagnóstico do cenário atual sem a intervenção, e evidenciou gargalos e riscos associados à inação."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto de ampliação aeroportuária, o EVTEA mencionou, de forma fundamentada, que o objetivo foi \"melhorar a infraestrutura de atendimento ao público\", trouxe grande parte dos indicadores de desempenho, estabeleceu metas mensuráveis e avaliou o cenário atual. Contudo, embora tenha apresentado dados consistentes de demanda e justificado a ampliação com base no aumento do número de voos, não sistematizou os resultados esperados nem deixou clara a forma de entrega ou monitoramento. Ainda assim, foi possível identificar uma tentativa razoavelmente fundamentada de estruturação dos objetivos específicos, ainda que com lacunas pontuais."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "O projeto propôs a ampliação do terminal de passageiros, mas o EVTEA limitou-se a descrever a execução da obra, sem qualquer definição de objetivos específicos, metas de desempenho ou resultados esperados. Não apresentou diagnóstico do cenário atual, nem dados sobre capacidade existente, padrões de qualidade ou gargalos operacionais. A justificativa da intervenção permaneceu genérica e baseada em impressões, sem evidências ou vínculos com objetivos públicos mensuráveis. A ausência de estruturação lógica entre problema, objetivos e resultados inviabilizou qualquer análise técnica fundamentada."
+    }
+  ]
+}

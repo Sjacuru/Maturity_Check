@@ -11,8 +11,14 @@ A system that evaluates Brazilian public procurement (PPP) case documents agains
 **Ação**: One of 46 numbered evaluation units in the IPMP framework, each representing a planning quality criterion to be assessed against case documents.
 _Avoid_: step, item, criterion, check, action (use the Portuguese term)
 
-**Dimensão**: One of 5 thematic groupings of Ações in the IPMP (Estratégica, Técnica, Financeira, Ambiental e Social, Jurídica e Regulatória).
-_Avoid_: category, dimension, area, group
+**Dimensão**: One of 5 analytical groupings of Ações in the M5D (Modelo de Cinco Dimensões) framework IPMP adapts from the British Five Case Model: Estratégica, Econômica, Comercial, Financeira, Gerencial. Source: IPMP Guide §2.2. Orthogonal to **Fase** — every Ação belongs to exactly one Dimensão and exactly one Fase.
+_Avoid_: category, dimension, area, group; the incorrect list (Técnica, Ambiental e Social, Jurídica e Regulatória) that appeared here before 2026-08-21 — never verified against the source PDF
+
+**Fase**: One of 3 sequential stages of the investment-structuring lifecycle that IPMP's 46 Ações are organized into: Fase Inicial (Ações 1-20, estudo das alternativas), Fase Intermediária (Ações 21-37, aprimoramento da alternativa escolhida), Fase Final (Ações 38-46, consulta pública, revisões e atualizações). Source: IPMP Guide §4, Figuras 3-5.
+_Avoid_: stage, step, phase (use the Portuguese term), sprint
+
+**Ponto de Transição**: A structural marker the IPMP Guide's own flowcharts (Figuras 3-5) place on 5 specific Ações (16, 37, 38, 45, 46) that sit at the boundary between two Fases — not a sixth Dimensão. Marks an approval/gating checkpoint, not a content theme.
+_Avoid_: transition dimension, sixth dimension, gate (unqualified)
 
 **Maturity Score**: The 0/1/3 integer assigned to an Ação after LLM evaluation against the IPMP rubric and scored examples, validated by the Auditor.
 _Avoid_: grade, rating, result, mark
@@ -70,8 +76,11 @@ _Avoid_: query artifact, query file, search config, retrieval config
 **Profile Maturity**: The confidence level of a Retrieval Profile, reflecting how extensively it has been grounded in real PPP case documents. Three levels: `seed` (canonical sources only, not yet trusted for production), `observed` (validated against at least one real case document), `mature` (validated across multiple cases and sectors). Stored as `profile_maturity` in the profile JSON.
 _Avoid_: profile version, profile quality, profile completeness
 
-**Term Status**: The current confidence level of an individual Query Term within a Retrieval Profile, based on accumulated empirical evidence from retrieval testing. Four values: `active` (in use, untested), `experimental` (tentatively added, pending validation), `validated` (confirmed to contribute useful recall), `deprecated` (empirically shown to be noise; retained for auditability). Distinct from `provenance`, which explains origin rather than confidence.
+**Term Status**: The current confidence level of an individual Query Term within a Retrieval Profile, based on accumulated empirical evidence from retrieval testing. Four values: `active` (in use, untested), `experimental` (tentatively added, pending validation), `validated` (confirmed to contribute useful recall), `deprecated` (empirically shown to be noise; retained for auditability). Distinct from **Provenance**, which explains origin rather than confidence.
 _Avoid_: term quality, term confidence, term flag
+
+**Provenance**: The origin classification of an individual Query Term, distinct from **Term Status** (confidence, not origin). Three values: `canonical` (derived directly from IPMP or Rio Manual source text), `real_world` (observed in an actual PPP case document during a Stage B population session), `synthetic` (derived from general domain knowledge of Brazilian PPP contracting practice, applied offline during profile generation, grounded in neither a specific case document nor the IPMP text itself).
+_Avoid_: source, origin, source type
 
 ### Module Concepts
 
@@ -84,7 +93,7 @@ _Avoid_: PDF parser, chunker, pipeline, ingestion (that term is taken)
 **Retrieval module**: The Python package (`src/retrieval/`) responsible for indexing Document Artifact chunks into SQLite and executing the retrieval cascade to produce evidence for a given Ação. Sub-packages: `indexing/`, `query/`, `schema/`, `interfaces/`. Public write-path entry: `index(process_number: str, chunks: list[Chunk])`. Public read-path entry: retrieval cascade execution returning `list[RetrievedChunk]`.
 _Avoid_: search module, BM25 module, query layer
 
-**RetrievedChunk**: The domain-level retrieval result returned by the retrieval cascade. Carries: full `Chunk` provenance (`process_number`, `filename`, `page_number`, `chunk_index`, `char_offset`, `page_total`, `ocr_used`, `source_type`), `text`, `cascade_step` (`"filename_match"` | `"variant_match"` | `"bm25"` | `"regex"`), `expected_product_id` (the Expected Product id that drove the query; null on document-focused and regex paths), `bm25_score` (null on document-focused and regex paths), `rank` (null on document-focused and regex paths), `retrieval_mode` (`"lexical"` | `"vector_fallback"`, default `"lexical"`) — records whether the chunk was produced by the lexical cascade or the vector fallback. Does not expose SQLite row IDs, FTS5 docids, or other storage internals.
+**RetrievedChunk**: The domain-level retrieval result returned by the retrieval cascade. Carries: full `Chunk` provenance (`process_number`, `filename`, `page_number`, `chunk_index`, `char_offset`, `page_total`, `ocr_used`, `source_type`), `text`, `cascade_step` (`"filename_match"` | `"variant_match"` | `"bm25"` | `"regex"` | `"vector"` — `"regex"` is a preserved-but-unused value since ADR-0052), `expected_product_ids` (list — the Expected Product ids this chunk was retrieved for; empty on document-focused, regex, and vector paths; merged across products by cross-product dedup), `bm25_score` (null on document-focused, regex, and vector paths), `rank` (null on document-focused, regex, and vector paths), `retrieval_mode` (`"lexical"` | `"vector_fallback"`, default `"lexical"` — the field and its values predate ADR-0049 and are not fully accurate to it: vector is no longer only used "as a fallback," it's fused with BM25 unconditionally, but the field itself was not renamed), `matched_concepts` (list — Retrieval Signal Concept keys whose Query Terms matched this chunk's text, populated deterministically post-gate; empty on ungated paths). Does not expose SQLite row IDs, FTS5 docids, or other storage internals.
 _Avoid_: search result, hit, match, ranked chunk
 
 **Retrieval semantics**: Any logic that interprets canonical domain structures for search purposes — BM25 query construction, acronym expansion, cascade execution, chunk ranking, vector similarity.
@@ -99,8 +108,11 @@ _Avoid_: evidence description, evaluation goal, retrieval objective
 **Retrieval Signal Concept**: A Layer B artifact in the Evidence Ontology — a conceptual bridge between an Evidence Intent and the observable language in real documents. Names a concept that, if present in a document, indicates the evidence is likely there. Never a query term. Example: "diagnóstico do estado atual do problema."
 _Avoid_: retrieval concept, search concept, evidence indicator
 
-**Query Term**: A Layer C artifact in the Evidence Ontology — the actual FTS5 input derived from a Retrieval Signal Concept. Carries: `encoding` (phrase or near), query text or tokens, `type` (A/B/C), `provenance` (real_world or canonical), `status`, and optional `concept_ref`. All query-facing string values are in Portuguese. One Retrieval Signal Concept may generate multiple Query Terms.
+**Query Term**: A Layer C artifact in the Evidence Ontology — the actual FTS5 input derived from a Retrieval Signal Concept. Carries: `encoding` (phrase or near), query text or tokens, `type` (A/B/C), **Provenance**, **Term Status**, optional `concept_ref`, and optional `sector_hint` (set only on `synthetic` Provenance terms, drawn from the **Sector Taxonomy**). All query-facing string values are in Portuguese. One Retrieval Signal Concept may generate multiple Query Terms.
 _Avoid_: anchor, search term, BM25 term, retrieval term
+
+**Sector Taxonomy**: The canonical reference list (`data/sector_taxonomy.json`) of Brazilian PPP/concession sector labels that the synthetic-generation skill draws from to set `sector_hint` on `synthetic` Provenance Query Terms. Extended only by a deliberate edit to the file — never invented ad hoc during a generation run.
+_Avoid_: sector list, sector enum, sector vocabulary
 
 **Evidence Logic Pattern**: A Layer D artifact in the Evidence Ontology — a description of the relational or causal structure that constitutes strong evidence for an Expected Product (e.g., Problema → Necessidade → Intervenção → Resultado). Never a query term; used only by future reranking agents and the LLM evaluation layer to assess evidence strength.
 _Avoid_: evidence pattern, scoring logic, evaluation rule
@@ -120,8 +132,8 @@ _Avoid_: confidence flag, model confidence, uncertainty score
 **Operational continuity**: The property of the ingestion module that allows the system to start and run even when individual source-of-truth artifacts have non-fatal Pydantic validation failures, provided fatal integrity errors are absent.
 _Avoid_: fault tolerance, resilience, degraded mode, graceful degradation
 
-**Retrieval cascade**: The ordered retrieval strategy for a given Ação. Steps A–D are lexical (deterministic): (A) exact document name match, (B) variant name match, (C) BM25 corpus-wide search, (D) regex additive search. Step E — dense vector search — executes only when A–D collectively return zero chunks (`retrieval_mode="vector_fallback"`). All steps belong entirely to the retrieval module. BM25+regex is the architecturally primary path; vector is a recovery mechanism for sparse lexical failure.
-_Avoid_: pipeline, search flow, fallback chain
+**Retrieval cascade**: The ordered retrieval strategy for a given Ação. Steps A–B are document-focused and deterministic: (A) exact document name match, (B) variant name match. Step C is hybrid: BM25 and dense vector search run unconditionally, once per letter-suffixed Expected Product, and are fused via per-product Reciprocal Rank Fusion (RRF, k=60) — vector is co-equal with BM25, not a fallback (ADR-0049, superseding the earlier "vector only on zero lexical results" model). `rio_hints` stays a separate BM25-only lane, structurally lower-priority than a product-attributed RRF match. Regex additive search (the former Step D) was removed from the cascade entirely (ADR-0052); `search_regex()` is preserved as a utility, unused in the live cascade. All steps belong entirely to the retrieval module.
+_Avoid_: pipeline, search flow, fallback chain, vector fallback (superseded terminology — see ADR-0049)
 
 **Assessment module**: The Python package (`src/assessment/`) responsible for orchestrating the end-to-end assessment workflow for one Case — accepting Document Artifacts via upload, storing them to disk, calling extraction, indexing, retrieval, and evaluation in sequence, and returning an `EvaluationResult`. Owns the application-service layer; FastAPI routes invoke it; a future CLI may invoke it directly. Does not own HTTP concerns, score persistence, or Auditor rendering. Per-document pipeline: Upload → Store → Extract → Index → Retrieve → Evaluate. (The ingestion module loads IPMP/Rio Manual framework data at startup; it is not a per-document step.)
 _Avoid_: pipeline runner, orchestration layer, workflow engine, ingestion (that term is taken by Module 1)
@@ -139,7 +151,8 @@ _Avoid_: manual override, correction, human correction
 
 ## Relationships
 
-- An **Ação** belongs to exactly one **Dimensão**
+- An **Ação** belongs to exactly one **Dimensão** and exactly one **Fase**
+- A small subset of Ações also carry the **Ponto de Transição** marker, at the boundary between two **Fases**
 - An **Ação** has one or more **Expected Products**, each identified by a canonical id
 - One **IPMP** source-of-truth artifact defines one **Ação's** rubric, scored examples, and expected products
 - One **Rio Manual** source-of-truth artifact provides retrieval context for the same **Ação**
@@ -164,6 +177,7 @@ _Avoid_: manual override, correction, human correction
 - Each **Evidence Ontology** entry contains one **Evidence Intent** (Layer A), one or more **Retrieval Signal Concepts** (Layer B), one or more **Query Terms** (Layer C), and zero or more **Evidence Logic Patterns** (Layer D)
 - The ingestion module exposes **Retrieval Profiles** via `get_retrieval_profile_store()` alongside `get_ipmp_store()` and `get_rio_manual_store()`
 - **Profile Maturity** advances from `seed` to `observed` only after at least one real PPP case document has been used in a population session (Stage B)
+- A Query Term with `synthetic` **Provenance** always starts at `experimental` **Term Status** — it is a hypothesis until promoted, never assembled into the active BM25 query by default
 
 ---
 

@@ -4,6 +4,7 @@ import json
 import logging
 import re
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
@@ -34,7 +35,9 @@ class ProdutoEsperado(BaseModel):
 class AcaoIPMP(BaseModel):
     acao_id: int
     titulo: str
-    dimensao: str
+    dimensao: Literal["Estratégica", "Econômica", "Comercial", "Financeira", "Gerencial"]
+    fase: Literal["Inicial", "Intermediária", "Final"]
+    ponto_transicao: bool
     por_que_importante: str
     descricao_acao: str
     o_que_esperar: str

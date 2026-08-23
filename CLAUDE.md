@@ -1,5 +1,5 @@
 # CLAUDE.md — PPP Maturity Check System
-SDLKNLSK\S/.;,SKLV B;LKSFG;LKSNDG
+
 
 This file provides persistent context for Claude Code sessions.
 Update it whenever significant decisions are made or status changes.
@@ -30,12 +30,20 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
    used as retrieval hints when searching case documents.
 3. **TCDF IN: dropped.**
 4. **Scoring: 0 / 1 / 3 per action** (46 actions, max = 138 total).
-5. **Retrieval: BM25 primary (SQLite FTS5), deterministic.**
-   Cascade per Ação: (1) exact Rio Manual document name match →
-   (2) BM25 augmented search (IPMP sub-items + Rio Manual names) →
-   (3) dense vector fallback. All three steps in scope for Ação 1.
+5. **Retrieval: BM25 (SQLite FTS5) + dense vector, deterministic.**
+   Cascade per Ação: (A) exact document name match → (B) variant name match →
+   (C) BM25 and vector fused via per-product Reciprocal Rank Fusion (RRF,
+   k=60) — vector is **co-equal and always-on**, not a fallback, since
+   ADR-0049 (superseded ADR-0033's "vector only on zero lexical results").
+   `rio_hints` stays a BM25-only lane. Regex additive search (former Step D)
+   was removed entirely (ADR-0052).
 6. **LLM: temperature=0, fixed prompt per action.** IPMP criteria + scored
    examples embedded in prompt. Human auditor validates every score.
+   Primary provider: a personal, self-hosted llama.cpp server (`gpt-oss-20b`,
+   GPU-backed) for both the scorer and the pre-scoring relevance gate
+   (ADR-0050), wrapped in a circuit-breaker fallback (ADR-0054) — Groq
+   (`openai/gpt-oss-20b`) for the scorer, local Ollama (`qwen2.5:7b`) for the
+   gate. See `main.py`'s `_bootstrap()`.
 7. **Reproducibility** is the core academic constraint (professor's requirement).
    BM25 (deterministic retrieval) + temperature=0 = same input → same score.
 8. **Phase 1 scope: Ação 1 only.**
@@ -69,7 +77,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (48 filled, next: 0049-)
+│   ├── adr/                     ← Architecture Decision Records (57 filled, next: 0058-)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -95,7 +103,9 @@ Maturity_Check/
 │   └── prompts/
 │       ├── 01_grill-me.md
 │       ├── 02_To-PRD.md
-│       └── 03_To_issues.md
+│       ├── 03_To_issues.md
+│       ├── 04_retrieval-profile-synthesis.md ← generates a  retrieval profile for a new Ação, no real document
+│       └── 05_retrieval-profile-validation.md ← validates/tunes a profile against a real case document
 ├── _archive/                    ← old design docs — DO NOT USE
 ├── tests/
 │   ├── test_chunk.py            ← Chunk model unit tests (13 tests)
@@ -166,16 +176,30 @@ Maturity_Check/
 ├── main.py                      ← runtime entry point: configure → init_db → create_app
 └── data/
     ├── ipmp/
-    │   └── acao_01.json         ← complete (Phase 1 scope)
+    │   ├── acao_01.json         ← complete (Phase 1 scope)
+    │   └── acao_02.json         ← complete (scaling test case, 2026-08-21)
     ├── rio_manual/
     │   └── acao_01.json         ← complete (schema v1.0, known gaps documented)
-    └── acronyms/
-        └── acronyms.json        ← complete
+    ├── acronyms/
+    │   └── acronyms.json        ← complete
+    ├── retrieval_profiles/
+    │   └── acao_01.json         ← profile_maturity: observed
+    └── sector_taxonomy.json     ← versioned reference list of PPP sector labels, added 2026-08-21
 ```
 
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-08-21 — scaling retrieval-profile population past Ação 1:**
+- New process `docs/prompts/04_retrieval-profile-synthesis.md` generates a `profile_maturity: "seed"` retrieval profile for an Ação with no real-document grounding — pure LLM reasoning over `data/ipmp/acao_NN.json` + `data/sector_taxonomy.json` (new, 15-sector versioned reference list). Deliberately a plain `docs/prompts/` file, not a `.claude/skills/` entry — `.claude/` is gitignored and would never leave this machine.
+- `provenance` on Query Terms gained a third value, `"synthetic"` (alongside `canonical`/`real_world`) — sector-pattern terms with no real document behind them. New `sector_hint` field (Query Term). Both default such terms to `status: "experimental"`, which `build_query_from_terms` already excludes from active BM25 — the safety mechanism is reused, not new.
+- `data/ipmp/acao_NN.json` schema gained `dimensao` (now a validated `Literal` — was free `str`, and the previous CONTEXT.md definition of the 5 values was **wrong**; corrected against the IPMP Guide §2.2: Estratégica/Econômica/Comercial/Financeira/Gerencial, not Estratégica/Técnica/Financeira/Ambiental e Social/Jurídica e Regulatória), `fase` (Inicial/Intermediária/Final, IPMP Guide §4/Figuras 3-5), `ponto_transicao` (bool — marks Ações 16/37/38/45/46, the phase-boundary approval gates in the IPMP's own flowcharts). `acao_01.json` and `acao_02.json` backfilled.
+- `data/ipmp/acao_02.json` created (Ação 2, Dimensão Estratégica, Fase Inicial) as the scaling test case per the user's plan — test the synthesis process on one new Ação before deciding whether to roll out to the remaining 44. Phase 1 scope (Strategic Decision #8, still "Ação 1 only") not yet formally revised — Ação 2 is a test case, not a scope change.
+- `05_retrieval-profile-validation.md` updated to reference `04` and to document `synthetic` as a third provenance value.
+- CONTEXT.md gained: Provenance (own entry, was undocumented), Fase, Ponto de Transição, Sector Taxonomy; Dimensão corrected.
+- ADR-0056 (synthetic seed retrieval-profile generation) and ADR-0057 (IPMP `fase`/`ponto_transicao`/`dimensao` correction) capture this session's decisions.
+- Not yet done: drafting a profile for Ação 2 itself (the process exists, hasn't been run yet); the retrieval-profile-automation design beyond seed generation (explicitly deferred by the user to a future dedicated grill-me).
 
 **Current state (2026-07-01):** Modules 1–7 COMPLETE. 388 tests (376 fast + 12 slow-marked — `pytest -m "not slow"` runs 376). Retrieval profile architecture (ADR-0047+0048) implemented and populated for Ação 1. Hybrid BM25+vector retrieval (ADR-0049) and the LLM relevance gate (ADR-0050) are both live, validated against the real corpus, and latency-tuned (ADR-0050's 2026-06-29 amendment + ADR-0051).
 
@@ -258,10 +282,10 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 | Language | Python 3.11 / Anaconda |
 | Web framework | FastAPI + uvicorn |
 | Structured DB | SQLite (WAL + FTS5 for BM25) |
-| Vector DB | LanceDB (fallback retrieval only) |
+| Vector DB | LanceDB (co-equal with BM25, always-on, fused via per-product RRF — ADR-0049) |
 | PDF extraction | `unstructured[pdf]` (layout-aware, OCR) |
 | Embeddings | sentence-transformers (local, fallback only) |
-| LLM evaluation | Ollama/Mistral (default, local) or Groq (cloud option) |
+| LLM evaluation | Personal llama.cpp server (`gpt-oss-20b`, GPU, primary for scorer + gate) — fallback to Groq (`openai/gpt-oss-20b`, scorer) / local Ollama (`qwen2.5:7b`, gate) via circuit breaker (ADR-0054) |
 | Frontend | Vue.js 3 (Phase 2) |
 
 ---
@@ -361,8 +385,8 @@ _Avoid_: rejected synonyms
 
 ### grill-me
 
-Prompt file: `docs/prompts/grill-me.md`.
-to-PRD skill: `docs/prompts/To-PRD.md`.
+Prompt file: `docs/prompts/01_grill-me.md`.
+to-PRD skill: `docs/prompts/02_To-PRD.md`.
 IPMP reference PDF: `docs/IPMP TCU2026 - Indicador_percepcao_maturidade.pdf`.
 
 Use before designing each new module to stress-test the plan against the domain model and documented decisions. Updates CONTEXT.md and ADRs inline as decisions crystallise — do not batch.

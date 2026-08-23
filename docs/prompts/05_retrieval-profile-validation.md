@@ -3,6 +3,8 @@
 Use this prompt when beginning a retrieval profile validation session for any Ação.
 Provide Claude with this file plus the relevant sections of `data/retrieval_profiles/acao_NN.json` and `data/ipmp/acao_NN.json`.
 
+If `data/retrieval_profiles/acao_NN.json` doesn't exist yet for the target Ação, run `04_retrieval-profile-synthesis.md` first to generate a seed profile — this process validates and tunes against a real case document; it does not create a profile from nothing.
+
 ---
 
 ## Context
@@ -100,7 +102,7 @@ Edit `data/retrieval_profiles/acao_NN.json`:
 **Profile schema key points:**
 - `encoding`: `"phrase"` for exact phrase, `"near"` for NEAR(token1 token2, distance)
 - `status`: `"active"` (included in queries), `"experimental"` (included but under observation), `"deprecated"` (excluded)
-- `provenance`: `"canonical"` (standard domain term), `"real_world"` (verbatim from observed documents)
+- `provenance`: `"canonical"` (standard domain term), `"real_world"` (verbatim from observed documents), `"synthetic"` (sector-pattern term from `04_retrieval-profile-synthesis.md`, no real document read — see `sector_hint`)
 - All string values must be in **Portuguese**
 - `concept_ref` links the term to a `retrieval_signal_concept.key`
 

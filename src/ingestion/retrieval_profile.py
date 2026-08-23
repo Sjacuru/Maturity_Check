@@ -19,9 +19,10 @@ class PhraseQueryTerm(BaseModel):
     encoding: Literal["phrase"]
     text: str
     type: Literal["A", "B", "C"]
-    provenance: Literal["real_world", "canonical"]
+    provenance: Literal["real_world", "canonical", "synthetic"]
     status: Literal["active", "experimental", "validated", "deprecated"] = "active"
     concept_ref: str | None = None
+    sector_hint: str | None = None
 
 
 class NearQueryTerm(BaseModel):
@@ -29,9 +30,10 @@ class NearQueryTerm(BaseModel):
     tokens: list[str]
     distance: int
     type: Literal["A", "B", "C"]
-    provenance: Literal["real_world", "canonical"]
+    provenance: Literal["real_world", "canonical", "synthetic"]
     status: Literal["active", "experimental", "validated", "deprecated"] = "active"
     concept_ref: str | None = None
+    sector_hint: str | None = None
 
     @model_validator(mode="after")
     def _validate_tokens(self) -> NearQueryTerm:
