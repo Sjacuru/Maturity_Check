@@ -36,6 +36,8 @@ This shapes word choice in Steps 2–3; it is not a filter that excludes any Dim
 
 For each Expected Product, draft one or more `retrieval_signal_concepts` — conceptual bridges between the Evidence Intent and language a real document would plausibly use. Derive these from the IPMP text plus general procurement domain knowledge (Stage A reasoning). No provenance tracking is needed at this layer (see "Scope note" below).
 
+**Don't under-count.** If an existing `observed`-maturity Ação profile (today, Ação 1) has ~4 concepts per product and a product you're drafting only naturally yields 2, look again before moving on — the IPMP text for that product usually names more than one checkable idea even when it reads as a single sentence (e.g. a "compare current state to objectives" product also implies "what specific problems does the gap point to," a distinct concept from the gap itself). A product genuinely being simpler than others is fine; arriving at fewer concepts because generation stopped early is the failure this note exists to catch.
+
 ---
 
 ## Step 3 — Draft Query Terms (Layer C) — the only layer that drives retrieval
@@ -44,6 +46,8 @@ Two tracks, both required:
 
 **Track 1 — canonical terms.** Phrase or NEAR() terms drawn directly from the IPMP's own wording for that product (`type: "A"`, `provenance: "canonical"`, `status: "active"`). These are safe by construction — they're the IPMP's own language.
 
+**Go deep on Track 1 — this is where "don't be too broad" does NOT apply.** A single phrase term per concept is under-generating. `data/retrieval_profiles/acao_01.json` shows what adequate depth looks like: its `existing_problem` concept alone (Ação 1, product 1a) carries about 15 terms — several phrase variants plus multiple `NEAR()` combinations exploring the same idea from different angles ("deficiência"+"infraestrutura", "capacidade"+"insuficiente", "serviço"+"ineficiente", and more), every one of them `provenance: "canonical"`, none requiring a real document. For each concept from Step 2, draft several `NEAR()` variants covering plausible synonyms and word orders a real document might use, not just a restatement of the IPMP sentence. A first pass of this process (Ação 2, 2026-08-23) generated only 1–2 terms per concept and produced roughly a third of Ação 1's per-product active-term count — this under-generation, not the sector caution below, was the actual cause. Track 1 depth is cheap: it costs nothing but generation effort, unlike Track 2 which trades off query precision.
+
 **Track 2 — synthetic sector terms.** For each Expected Product, judge whether cross-sector vocabulary variation is actually plausible for that specific product's evidence — not every product needs it (see "Don't force it" below). Where it is plausible:
 - Consult `data/sector_taxonomy.json`. Use its `key` values verbatim as `sector_hint`. Never invent a new sector label inline — if a genuinely new sector is needed, stop and propose adding it to `data/sector_taxonomy.json` first, as its own deliberate edit.
 - Select only the sectors where the term would plausibly appear in that product's evidence — not all 15.
@@ -51,7 +55,7 @@ Two tracks, both required:
 - **Prefer `NEAR()` over enumerating phrase variants.** If a concept has several plausible sector-specific phrasings (e.g., "postes de iluminação", "rede de iluminação pública", "sistema de iluminação"), encode it as one `NEAR()` term around the shared tokens rather than three separate `phrase` terms.
 - **Auto-demote colliding generic terms.** If a candidate term's dominant word already appears in 2+ other Query Terms within the same Ação, set `status: "experimental"` regardless of provenance — it's a collision risk for the BM25 OR query, not just a synthetic-vocabulary risk.
 
-**Don't force it.** A product whose Evidence Intent is procedural/structural (e.g., "describe the gap between current state and objectives") often doesn't vary by sector at all. Adding sector terms to it anyway is exactly the over-breadth this process must avoid — skip Track 2 for that product rather than padding it.
+**Don't force it — but only Track 2.** A product whose Evidence Intent is procedural/structural (e.g., "describe the gap between current state and objectives") often doesn't vary by sector at all. Adding sector terms to it anyway is exactly the over-breadth this process must avoid — skip Track 2 for that product rather than padding it. This caution is scoped to sector vocabulary specifically; it is not a license to also under-generate that product's Track 1 canonical terms. A structurally simple product still deserves the same paraphrase-variant depth as any other — it just won't have a Track 2 section.
 
 ---
 
@@ -73,7 +77,16 @@ Draft `evidence_logic_patterns` and, where relevant, `negative_evidence_patterns
 
 ---
 
-## Step 6 — Write the profile
+## Step 6 — Calibrate density against an existing profile
+
+Before writing anything, count concepts and active-status terms per product and compare against another `observed`-or-better-maturity profile (today, only `acao_01.json` qualifies). This is a floor check, not a target to hit exactly — Ação 1's `1a` is itself an outlier (41 terms, most Ações won't need that much), so compare against the more typical products (`1b`/`1c`/`1d`: 4 concepts, ~10 active terms each) rather than the outlier.
+
+- If a product you drafted has noticeably fewer concepts or active terms than that baseline, and you can't articulate a specific structural reason why (e.g. "this product only asks for one comparison, not a multi-part description"), that's the under-generation failure mode from this process's revision history (see Step 3) — go back to Steps 2–3 and deepen Track 1 before proceeding.
+- A real structural reason is a valid outcome, not a bug to fix. Write it down in your own reasoning so it's clear the shortfall was a judgment, not an oversight — this process has no field to record that reasoning in the JSON itself, so it lives in the session, not the artifact.
+
+---
+
+## Step 7 — Write the profile
 
 Target: `data/retrieval_profiles/acao_NN.json`.
 
@@ -87,7 +100,7 @@ Target: `data/retrieval_profiles/acao_NN.json`.
 
 ---
 
-## Step 7 — Self-validate
+## Step 8 — Self-validate
 
 Reload the file through the actual loader before declaring the profile done:
 
@@ -106,6 +119,7 @@ If this raises a validation error, fix the JSON before finishing — do not leav
 - [ ] `data/ipmp/acao_NN.json` read in full; no real case document opened at any point
 - [ ] Every Expected Product has an `evidence_intent` and at least one `retrieval_signal_concept`
 - [ ] Every product has at least one canonical (`provenance: "canonical"`) Query Term drawn from the IPMP's own wording
+- [ ] Concept and active-term counts per product checked against an existing `observed`-or-better profile (Step 6); any noticeable shortfall either fixed by deepening Track 1 or backed by a specific structural reason
 - [ ] Sector terms only added where plausibly relevant to that specific product — not blanket-applied
 - [ ] Every sector term uses a `sector_hint` key that exists in `data/sector_taxonomy.json`
 - [ ] Every `provenance: "synthetic"` term has `status: "experimental"`
