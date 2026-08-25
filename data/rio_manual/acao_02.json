@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "schema_version": "1.1",
+    "last_updated": "2026-08-24",
+    "sources": [
+      "Manual para Pré-Análise, Avaliação, Estruturação e Implementação de PPPs — Vol1 Pré-Análise (Prefeitura do Rio de Janeiro)"
+    ],
+    "scope": "Additive retrieval context for IPMP Ação 2. Grounded independently in Vol1 Anexo 2 (Template para o Relatório de Pré-Análise, subseção 'Necessidades Específicas do Projeto e Adequação da Solução Proposta - Viabilidade Econômica', p.19-20) -- NOT copied from acao_01.json, which is grounded in Vol1 Anexo 1 and Vol2 §3.1/§4 instead; those sections do not carry Ação 2 content. Vol2 §1 and §2.1-2.5 (Avaliação do Projeto; Viabilidade Técnica/Ambiental/Socioeconômica/Financeira/Legal) were read and rejected as sources: their 'Quadro X: para quem e por quê' boxes repeat near-identically across all five viability types (órgão promotor / Secretaria da Casa Civil / domain body) and carry no Ação-2-specific content. Vol2 §4 Quadro 9 (LC 105/2009 art.10 compliance checklist) was also read in full at the primary-source level (not just acao_01.json's paraphrase): art.10,III ('metas e resultados a serem atingidos') and art.10,IV ('efetividade dos indicadores de resultado') looked like a near-literal match to Ação 2b on first pass, but Quadro 9's own 'Ligação' column ties both incisos to contract/payment-mechanism design (formas e prazos de amortização do capital, indicadores vinculados ao montante da remuneração / ICDs) -- a Estruturação-phase, likely-different-Ação concern, not Ação 2's early objectives/results planning narrative. Excluded from every field below despite the surface phrasing similarity, to avoid a low-discriminative-value false match; documented here so this isn't re-investigated from scratch on a future pass. Only two of AcaoRioManual's fields have live retrieval effect today: document_names (filename/variant match, Steps A/B of the cascade) and bm25_search_hints (the rio_hints BM25-only lane in retrieval/query/hybrid.py, Ação-wide and not per-product -- IPMP product lanes always win conflicts with it per ADR-0049, so its only job is catching real-Manual vocabulary the per-product query terms miss, not per-product discrimination). law_references.regex_variants is dead code since ADR-0052 removed the regex cascade step. legal_phrases, local_planning_instruments, minimum_required_fields, process_context are documentary/reference-only with no current runtime effect -- left empty here rather than populated with content that isn't genuinely Ação 2's territory.",
+    "known_gaps": [
+      "Relatório Geral de Avaliação (Vol2) not included as a document_names entry -- no dedicated Ação-2-shaped section was found anywhere in Vol2's viability-study sections (§1, §2.1-2.5, §4). If a real Ação 2 case document later shows this content living there too, revisit.",
+      "Vol1 Anexo 2's neighboring 'Adequação a uma PPP' subsection (p.20, alternative-solution and PPP-model-fit analysis) was deliberately excluded from every field -- distinct evaluative concern from Ação 2's objectives/results/diagnosis/gap content, likely belongs to a different Ação (possibly Dimensão Comercial).",
+      "law_references, local_planning_instruments, minimum_required_fields, process_context left empty -- LC 105/2009 art.10's incisos map to legal-compliance-for-launch concerns (Ação 1's territory) or contract-structuring concerns (a later Ação), not to Ação 2's planning-logic evaluative object. Populating them with adjacent-but-wrong content would have been padding, not signal."
+    ]
+  },
+  "acao_id": 2,
+  "document_names": [
+    {
+      "role": "pre_analysis_report",
+      "canonical": "Relatório de Pré-Análise",
+      "variants": [
+        "Relatório de Pré-Análise de Projetos",
+        "Pré-Análise de Projetos",
+        "Relatório de Pré-Avaliação"
+      ],
+      "maps_to_ipmp": ["2a", "2b", "2c", "2d"],
+      "minimum_required": true,
+      "source_volume": "Vol1 Anexo 2",
+      "notes": "Subseção 'Necessidades Específicas do Projeto e Adequação da Solução Proposta - Viabilidade Econômica' (p.19-20) é a fonte direta de evidência para Ação 2: descrição das necessidades e principais benefícios (2a/2d), vínculo explícito com objetivos estratégicos ('O projeto está contemplado no plano estratégico ou se ajusta aos objetivos estratégicos?' -- 2a), indicadores de benefícios (2b). A subseção vizinha 'Adequação a uma PPP' (alternativas técnicas, adequação ao modelo de PPP) NÃO é evidência da Ação 2 -- não confundir."
+    }
+  ],
+  "law_references": [],
+  "local_planning_instruments": {
+    "description": "Nenhum instrumento de planejamento carioca tem valor discriminativo próprio para a Ação 2 além do vínculo com objetivos estratégicos, já capturado como termo compartilhado com a Ação 1 em data/retrieval_profiles/acao_02.json (produto 2a, termo 'objetivos estratégicos', shared_with_acao: [1]). Deixado vazio aqui para não duplicar um sinal que já vive na camada de query terms.",
+    "items": []
+  },
+  "legal_phrases": {
+    "description": "Frases extraídas do template do Relatório de Pré-Análise (Vol1 Anexo 2) -- não são frases legais em sentido estrito; o objeto avaliativo da Ação 2 é um exercício de lógica de planejamento, não uma checklist de conformidade legal (ver known_gaps sobre a exclusão do art.10 III/IV da LC 105/2009 apesar da semelhança superficial).",
+    "items": [
+      {
+        "phrase": "indicadores de benefícios",
+        "maps_to_ipmp": ["2b"],
+        "source": "Vol1 Anexo 2 -- Nota, Necessidades Específicas do Projeto (p.20)",
+        "notes": "Texto completo da nota dá exemplos setoriais concretos e reais (não sintéticos): 'demanda por transporte, número de usuários em um prédio público, número de casas abastecidas/beneficiadas no abastecimento de água, etc.'. Corrobora, a partir da fonte primária, os termos sintéticos transporte_publico e saneamento_basico já presentes em data/retrieval_profiles/acao_02.json (produto 2b, status experimental) -- vale considerar na promoção desses termos fora de experimental."
+      },
+      {
+        "phrase": "necessidade que o projeto visa atender",
+        "maps_to_ipmp": ["2a", "2d"],
+        "source": "Vol1 Anexo 2 -- Necessidades Específicas do Projeto",
+        "notes": "'Inclusão de uma descrição das necessidades que o projeto visa atender – principais benefícios.' Liga a necessidade (2d, motivada pela lacuna) ao benefício (2a/2b, a justificativa)."
+      }
+    ]
+  },
+  "minimum_required_fields": {
+    "description": "Não aplicável -- o checklist do Vol1 Anexo 1 (usado para a Ação 1) não contém itens específicos da Ação 2; a fonte da Ação 2 é o template narrativo do Vol1 Anexo 2, que não tem estrutura de checklist.",
+    "source": "não aplicável para esta Ação",
+    "items": []
+  },
+  "process_context": {
+    "description": "Nenhum rótulo de processo MI/PMI/MIP tem valor discriminativo distinto para a Ação 2 além do que já está em acao_01.json -- esses rótulos descrevem como um estudo foi obtido, não o que ele deve conter, logo não diferenciam entre Ações.",
+    "items": []
+  },
+  "bm25_search_hints": {
+    "primary_terms": [
+      "indicadores de benefícios",
+      "demanda por transporte",
+      "número de usuários",
+      "casas abastecidas",
+      "custos indiretos"
+    ],
+    "secondary_terms": [
+      "principais benefícios",
+      "necessidade que o projeto visa atender"
+    ],
+    "exact_match_names": [
+      "Relatório de Pré-Análise"
+    ]
+  }
+}
