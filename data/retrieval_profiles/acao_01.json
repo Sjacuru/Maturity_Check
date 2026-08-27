@@ -463,7 +463,8 @@
       "negative_evidence_patterns": [
         "Seções que descrevem apenas características técnicas da solução proposta sem explicar a razão de ser do projeto",
         "Seções de objetivos estratégicos que descrevem o que o projeto pretende alcançar, e não o problema atual que justifica a intervenção (evidência de produto 1c, não 1a)",
-        "Passagens que citam 'contrato vigente' apenas em referência às obrigações contratuais em curso, sem relação com vencimento ou gatilho de nova licitação"
+        "Passagens que citam 'contrato vigente' apenas em referência às obrigações contratuais em curso, sem relação com vencimento ou gatilho de nova licitação",
+        "Itens de matriz de responsabilidades ou riscos contratuais (danos a bens vinculados à concessão, encargos trabalhistas inadimplidos, risco regulatório) que atribuem responsabilidade por eventos entre as partes contratantes — descrevem alocação de risco, não diagnóstico de deficiência operacional ou capacidade insuficiente do serviço existente"
       ]
     },
     "1b": {
