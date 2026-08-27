@@ -154,6 +154,50 @@
           "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "objective_traceability"
+        },
+        {
+          "encoding": "phrase",
+          "text": "objetivo específico",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "specific_objectives"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["objetivo", "específico"],
+          "distance": 3,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "specific_objectives"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["objetivos", "específicos"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "specific_objectives"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["justificativa", "investimento"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_spending_justification"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["alocação", "recursos"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "public_spending_justification"
         }
       ],
       "evidence_logic_patterns": [
@@ -348,6 +392,48 @@
           "status": "experimental",
           "concept_ref": "expected_results",
           "sector_hint": "saneamento_basico"
+        },
+        {
+          "encoding": "phrase",
+          "text": "indicadores de benefícios",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "performance_indicators"
+        },
+        {
+          "encoding": "phrase",
+          "text": "metas de desempenho",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "performance_indicators"
+        },
+        {
+          "encoding": "phrase",
+          "text": "níveis de serviço",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "performance_indicators"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["indicadores", "qualidade"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "performance_indicators"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["metas", "quantitativas"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "performance_indicators"
         }
       ],
       "evidence_logic_patterns": [
@@ -551,6 +637,64 @@
           "status": "experimental",
           "concept_ref": "existing_service_condition",
           "sector_hint": "saneamento_basico"
+        },
+        {
+          "encoding": "phrase",
+          "text": "cenário atual",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "current_scenario_diagnosis"
+        },
+        {
+          "encoding": "phrase",
+          "text": "diagnóstico do sistema",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "current_scenario_diagnosis"
+        },
+        {
+          "encoding": "phrase",
+          "text": "caracterização da situação atual",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "current_scenario_diagnosis"
+        },
+        {
+          "encoding": "phrase",
+          "text": "capacidade instalada",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_service_condition"
+        },
+        {
+          "encoding": "phrase",
+          "text": "demanda existente",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "current_demand"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["custos", "operacionais"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_service_condition"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["condições", "operacionais"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "existing_service_condition"
         }
       ],
       "evidence_logic_patterns": [
@@ -673,6 +817,73 @@
           "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "problem_identification"
+        },
+        {
+          "encoding": "phrase",
+          "text": "gargalos operacionais",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "problem_identification"
+        },
+        {
+          "encoding": "phrase",
+          "text": "gargalos identificados",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "problem_identification"
+        },
+        {
+          "encoding": "phrase",
+          "text": "déficit de atendimento",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "gap_analysis"
+        },
+        {
+          "encoding": "phrase",
+          "text": "capacidade saturada",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "gap_analysis"
+        },
+        {
+          "encoding": "phrase",
+          "text": "demanda reprimida",
+          "type": "A",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "gap_analysis"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["problemas", "identificados"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "problem_identification"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["deficiências", "identificadas"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "problem_identification"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["diagnóstico", "necessidades"],
+          "distance": 5,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "need_justification"
         }
       ],
       "evidence_logic_patterns": [

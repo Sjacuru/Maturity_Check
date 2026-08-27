@@ -18,7 +18,9 @@ _PRODUCT_BLOCK_INSTRUCTION = (
     "registre explicitamente essa limitação no raciocínio."
 )
 
-_SCORING_INSTRUCTION = """\
+def _build_scoring_instruction(product_ids: list[str]) -> str:
+    products_label = f"({', '.join(product_ids)})" if product_ids else ""
+    return f"""\
 Com base exclusivamente nas evidências fornecidas acima, avalie o processo e \
 responda com um objeto JSON contendo os campos "reasoning", "score" e "uncertainty".
 
@@ -26,13 +28,13 @@ No campo "reasoning" (texto livre em português): explique quais Produtos \
 Esperados foram ou não evidenciados e por quê.
 
 Regras de avaliação para o campo "score":
-- Pontue 3 quando todos os Produtos Esperados (1a, 1b, 1c, 1d) estiverem claramente evidenciados.
+- Pontue 3 quando todos os Produtos Esperados {products_label} estiverem claramente evidenciados.
 - Pontue 1 quando alguns, mas não todos, os Produtos Esperados estiverem evidenciados.
 - Pontue 0 quando nenhum Produto Esperado estiver evidenciado.
 - Trate texto com ruído de OCR (caracteres ilegíveis ou garbled) como evidência não confiável; não pontue positivamente com base apenas em texto OCR ilegível.
 
 Regra para o campo "uncertainty":
-- Defina "uncertainty": true quando as evidências não permitirem avaliação segura de um ou mais Produtos Esperados (1a, 1b, 1c, 1d).\
+- Defina "uncertainty": true quando as evidências não permitirem avaliação segura de um ou mais Produtos Esperados {products_label}.\
 """
 
 
@@ -71,7 +73,10 @@ def build_system_prompt(acao_id: int) -> str:
             excecoes_lines.append(f"{i}. {exc}")
         sections.append("\n".join(excecoes_lines))
 
-    sections.append(f"## Instruções de pontuação\n\n{_SCORING_INSTRUCTION}")
+    parent_id = str(acao_id)
+    child_products = [p.id for p in acao.produtos_esperados if p.id != parent_id]
+    scoring_instruction = _build_scoring_instruction(child_products)
+    sections.append(f"## Instruções de pontuação\n\n{scoring_instruction}")
 
     return "\n\n---\n\n".join(sections)
 

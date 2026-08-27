@@ -26,6 +26,7 @@ from assessment._config import _reset as assessment_reset
 from assessment.api.app import create_app
 from assessment.service import AssessmentService, _compute_sha256
 from extraction import Chunk
+from ingestion import get_ipmp_store
 from retrieval import configure as retrieval_configure
 from retrieval._config import _reset as retrieval_reset
 from retrieval.schema.ddl import init_db as retrieval_init_db
@@ -354,8 +355,9 @@ def test_raw_json_reflects_latest_evaluation_adr0025(client, db_path):
     assert raw_v2 is not None
     data_v2 = json.loads(raw_v2)
 
-    # Exactly one row per (acao_id, process_number)
-    assert _row_count(db_path, "evaluation_results", "P001") == 1
+    # Exactly one row per (acao_id, process_number), total matching store actions
+    num_acoes = len(get_ipmp_store().acoes)
+    assert _row_count(db_path, "evaluation_results", "P001") == num_acoes
     # The stored data is from the latest run
     assert data_v2["proposed_score"] == 0
 
@@ -374,6 +376,6 @@ def test_get_evaluation_returns_latest_after_force_rerun_adr0026(client, db_path
     after = client.get("/api/cases/P001/evaluations/1").json()
 
     assert after["proposed_score"] == 0
-    # Confirm only one result remains
+    # Confirm results match loaded store actions (one per action)
     all_results = client.get("/api/cases/P001/evaluations").json()
-    assert len(all_results) == 1
+    assert len(all_results) == len(get_ipmp_store().acoes)
