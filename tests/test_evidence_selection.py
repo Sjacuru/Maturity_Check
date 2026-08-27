@@ -471,6 +471,97 @@ def test_select_evidence_passes_retrieval_signal_concepts_to_gate(monkeypatch):
     assert "Matriz de riscos e alocação de responsabilidades entre as partes" in captured[0]
 
 
+def test_select_evidence_passes_negative_evidence_patterns_to_gate(monkeypatch):
+    """negative_evidence_patterns (schema field since ADR-0047, wired into the
+    gate prompt 2026-08-27) must reach the gate for anchor examination — the
+    fix for tangentially-worded but off-topic candidates (e.g. a contract's
+    sanctions clauses accepted as Ação 2 2c's "situação atual" evidence)."""
+    import ingestion.retrieval_profile as _rp
+
+    monkeypatch.setattr(
+        _rp,
+        "_store",
+        RetrievalProfileStore(
+            acoes={
+                1: AcaoRetrievalProfile(
+                    acao_id=1,
+                    profile_maturity="seed",
+                    expected_products={
+                        "1c": ExpectedProductProfile(
+                            evidence_intent="Seção que define os objetivos estratégicos do projeto.",
+                            retrieval_signal_concepts=[],
+                            query_terms=[],
+                            negative_evidence_patterns=[
+                                "Cláusulas de sanções administrativas sem relação com o critério"
+                            ],
+                        )
+                    },
+                )
+            }
+        ),
+    )
+    _no_neighbors(monkeypatch)
+
+    captured = []
+
+    def responder(system, user):
+        captured.append(system)
+        return _RELEVANT_YES
+
+    _set_gate(responder)
+
+    chunk = make_chunk(text="processo administrativo sancionador")
+    select_evidence(1, "P001", {"1c": [(0.05, chunk)]})
+
+    assert "NÃO contam como evidência válida" in captured[0]
+    assert "Cláusulas de sanções administrativas sem relação com o critério" in captured[0]
+
+
+def test_expand_anchors_passes_negative_evidence_patterns_to_gate(monkeypatch):
+    """Same wiring must apply to neighbor-expansion gate calls, not just the
+    initial anchor examination — _expand_anchors has its own _gate_chunk call."""
+    import ingestion.retrieval_profile as _rp
+
+    monkeypatch.setattr(
+        _rp,
+        "_store",
+        RetrievalProfileStore(
+            acoes={
+                1: AcaoRetrievalProfile(
+                    acao_id=1,
+                    profile_maturity="seed",
+                    expected_products={
+                        "1a": ExpectedProductProfile(
+                            evidence_intent="evidência de X",
+                            retrieval_signal_concepts=[],
+                            query_terms=[],
+                            negative_evidence_patterns=["Padrão negativo de teste"],
+                        )
+                    },
+                )
+            }
+        ),
+    )
+
+    neighbor = make_chunk(page_number=1, chunk_index=0, text="vizinho")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (neighbor, None))
+
+    captured = []
+
+    def responder(system, user):
+        captured.append(system)
+        return _RELEVANT_YES
+
+    _set_gate(responder)
+
+    anchor = make_chunk(page_number=1, chunk_index=1, text="ancora")
+    select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+
+    # Second call is the expansion's gate call (first is the anchor's).
+    assert len(captured) == 2
+    assert "Padrão negativo de teste" in captured[1]
+
+
 def test_select_evidence_strips_noise_before_gating(monkeypatch):
     """The gate must never see raw header/footer noise, and the accepted
     chunk's stored text is always the deterministically-stripped version —

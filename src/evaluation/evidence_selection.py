@@ -290,11 +290,12 @@ def _select_for_product(
         "avaliando_relevancia",
         f"Produto {product_id}: avaliando até {len(examined_pool)} candidato(s)...",
     )
+    negative_patterns = profile_product.negative_evidence_patterns
     for score, chunk in examined_pool:
         if len(product_anchors) >= _ANCHOR_TARGET:
             break
         stripped_text = strip_extraction_noise(chunk.text)
-        verdict = _gate_chunk(stripped_text, evidence_intent, concepts)
+        verdict = _gate_chunk(stripped_text, evidence_intent, concepts, negative_patterns)
         matched = _attribute_concepts(stripped_text, profile_product)
         if not verdict.relevant:
             rejected.append(_to_rejected(chunk, product_id, matched))
@@ -375,6 +376,7 @@ def _expand_anchors(
     rejected: list[RejectedChunk],
     profile_product: ExpectedProductProfile | None = None,
 ) -> list[tuple[float, RetrievedChunk]]:
+    negative_patterns = profile_product.negative_evidence_patterns if profile_product else []
     product_expansions: list[tuple[float, RetrievedChunk]] = []
     for anchor_score, anchor in product_anchors:
         if len(product_expansions) >= _EXPANSION_TARGET:
@@ -386,7 +388,7 @@ def _expand_anchors(
             if len(product_expansions) >= _EXPANSION_TARGET:
                 break
             stripped_text = strip_extraction_noise(neighbor.text)
-            verdict = _gate_chunk(stripped_text, evidence_intent, concepts)
+            verdict = _gate_chunk(stripped_text, evidence_intent, concepts, negative_patterns)
             matched = (
                 _attribute_concepts(stripped_text, profile_product)
                 if profile_product else []
@@ -473,9 +475,14 @@ def _dedup_semantic(
     return kept
 
 
-def _gate_chunk(text: str, evidence_intent: str, concepts: list[str]) -> RelevanceVerdict:
+def _gate_chunk(
+    text: str,
+    evidence_intent: str,
+    concepts: list[str],
+    negative_patterns: list[str] | None = None,
+) -> RelevanceVerdict:
     client = get_gate_llm_client()
-    system = build_relevance_system_prompt(evidence_intent, concepts)
+    system = build_relevance_system_prompt(evidence_intent, concepts, negative_patterns)
     user = build_relevance_user_prompt(text)
     raw = client.complete(system, user, schema=GATE_SCHEMA)
     return parse_relevance_response(raw)

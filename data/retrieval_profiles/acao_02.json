@@ -703,7 +703,8 @@
         "Análise de impacto sobre partes interessadas, meio ambiente ou desenvolvimento socioeconômico"
       ],
       "negative_evidence_patterns": [
-        "Descrição do cenário atual limitada a aspectos técnicos, sem dados de demanda, custo de operação ou impacto sobre partes interessadas"
+        "Descrição do cenário atual limitada a aspectos técnicos, sem dados de demanda, custo de operação ou impacto sobre partes interessadas",
+        "Cláusulas contratuais de sanções administrativas, multas, processo sancionador, defesa e recursos da CONCESSIONÁRIA — regem a relação contratual, não descrevem o funcionamento, custos ou infraestrutura do serviço existente"
       ]
     },
     "2d": {
@@ -892,7 +893,8 @@
         "Menção explícita a problemas específicos decorrentes da lacuna identificada, não apenas à lacuna em si"
       ],
       "negative_evidence_patterns": [
-        "Menção genérica a 'necessidade de melhoria' sem comparação explícita entre situação atual e objetivos específicos"
+        "Menção genérica a 'necessidade de melhoria' sem comparação explícita entre situação atual e objetivos específicos",
+        "Matriz de riscos contratuais (risco de demanda, mudança de especificações, danos a bens vinculados, financiamento) com suas alocações e mitigações — descreve riscos da execução contratual, não a lacuna entre a situação atual e os objetivos específicos do projeto"
       ]
     }
   }
