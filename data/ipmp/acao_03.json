@@ -1,0 +1,45 @@
+{
+  "acao_id": 3,
+  "titulo": "Defina o escopo potencial",
+  "dimensao": "Estratégica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "Definir um escopo inicial claro evita desvios de entendimento entre os envolvidos e orienta corretamente o desenvolvimento das alternativas técnicas. Quando essa etapa é negligenciada, os estudos de viabilidade podem evoluir sem um norte bem estabelecido, resultando em soluções que não correspondem às necessidades reais ou que extrapolam o objeto pretendido, comprometendo o alinhamento com os objetivos estratégicos. É comum que, na ausência de um escopo preliminar delimitado, o estudo avance incluindo trechos ou intervenções que não foram previamente verificadas, o que pode gerar retrabalhos, conflito de expectativas entre entes federativos ou dificuldades futuras para obtenção de licenças e interesse do mercado. Por exemplo, um estudo pode prever variantes e vias marginais sem que essas tenham sido explicitamente consideradas como parte do projeto, criando discrepâncias entre o que se pretende entregar e o que foi efetivamente analisado. Quando bem definida, essa ação ajuda a dar transparência ao planejamento, direciona corretamente os estudos ambientais, orçamentários e de engenharia, e reduz o risco de disputas técnicas ou institucionais ao longo do ciclo do projeto.",
+  "descricao_acao": "Definir, em nível estratégico, um escopo inicial para o projeto, o qual será usado para desenvolver a ampla gama de opções na Ação 6.",
+  "o_que_esperar": "Descrição clara do escopo potencial, como primeiro esboço do projeto, que define em linhas gerais o que se pretende realizar para atender as necessidades identificadas, considerando diferentes níveis de ambição e os custos associados, dentro das limitações gerenciais e orçamentárias do setor público.",
+  "produtos_esperados": [
+    {
+      "id": "3",
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:"
+    }, 
+    {
+      "id": "3a",
+      "texto": "Definição preliminar do que o projeto fará concretamente para solucionar os problemas ou atender às demandas identificadas nas ações anteriores, de forma realista e alinhado com a capacidade de gestão do órgão e com os recursos financeiros disponíveis."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Recomenda-se que, para desenvolver esse escopo inicial, se reflita sobre as mudanças que se pretende que o projeto implemente, categorizando-as em:",
+    "Essenciais: mudanças que são absolutamente necessárias para que o projeto atenda às necessidades e alcance seus objetivos.",
+    "Desejáveis: mudanças que, embora não sejam estritamente necessárias, trariam benefícios significativos e agregariam valor ao projeto.",
+    "Opcionais: mudanças que poderiam ser incluídas no projeto, mas que são de menor prioridade/impacto.",
+    "A lista de potenciais escopos do projeto deve ser composta por possíveis iniciativas que respondam às necessidades identificadas na Ação 2."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em projeto de reabilitação de ponte urbana com alto fluxo de veículos, o estudo técnico apresentou um escopo potencial bem estruturado, compatível com a fase inicial da intervenção. Foram incluídos: a extensão total da ponte (vão e acessos), a largura projetada da plataforma, o tipo estrutural preliminar (vigas pré-moldadas em concreto), intervenções previstas em fundações e pilares, elementos de drenagem, dispositivos de contenção e segurança, além de adaptações para acessibilidade (calçadas com rampas e guarda-corpos adequados). O documento também antecipou alternativas construtivas, como substituição completa da superestrutura versus reforço localizado, e discutiu a viabilidade de execução em etapas para minimizar o impacto no tráfego urbano. Houve ainda uma descrição preliminar das interfaces com a malha viária existente e com redes de utilidades públicas (adutoras, cabos e dutos). Essa definição ampla e integrada permitiu analisar diferentes configurações possíveis, orientou os estudos seguintes e fundamentou a escolha da solução mais adequada, caracterizando atendimento integral à ação."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "O estudo técnico relacionado à recuperação de ponte urbana apresentou um escopo com falhas pontuais. Embora tenha constado menção fundamentada à necessidade de reforço estrutural, indicou o tipo de estrutura, as condições das fundações e a substituição do tabuleiro, com estimativa preliminar da extensão da ponte, não houve comentários sobre alternativas técnicas construtivas, nem sobre a necessidade de adequação da drenagem e da acessibilidade. Ainda que tenha indicado a intenção de intervenção, a ausência de um delineamento mais completo limitou o desenvolvimento de soluções viáveis e impediu uma análise comparativa adequada. Assim, a ação foi considerada parcialmente atendida."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Não foi identificado qualquer documentação ou estudo que definisse o escopo potencial da intervenção na ponte urbana. Não houve registros sobre a extensão da estrutura, o tipo de solução pretendida, os elementos a serem recuperados ou as condições da ponte existente. Também não foram mencionadas alternativas técnicas, estratégias de execução ou requisitos mínimos de segurança e acessibilidade. A ausência total desses elementos inviabilizou o planejamento técnico e impossibilitou a análise estruturada da intervenção, caracterizando o não atendimento da ação."
+    }
+  ]
+}

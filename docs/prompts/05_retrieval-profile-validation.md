@@ -5,11 +5,13 @@ Provide Claude with this file plus the relevant sections of `data/retrieval_prof
 
 If `data/retrieval_profiles/acao_NN.json` doesn't exist yet for the target Ação, run `04_retrieval-profile-synthesis.md` first to generate a seed profile — this process validates and tunes against a real case document; it does not create a profile from nothing.
 
+**Revision history:** substantially rewritten 2026-08-27 after validating Ação 2 against the real SMG-040 corpus and closing a long-open gate/GPU instability investigation. The previous version predated the LLM relevance gate (ADR-0050) and hybrid BM25+vector retrieval (ADR-0049) entirely — it described a pure-BM25 dedup pipeline that no longer exists and pointed at a script (`inspect_retrieval.py`) that has since been superseded. If you're reading an older cached copy of this file, re-fetch it.
+
 ---
 
 ## Context
 
-The PPP Maturity Check system uses a retrieval profile (`data/retrieval_profiles/acao_NN.json`) to build BM25 queries for each Expected Product (1a, 1b, 1c, 1d…). The profile contains curated phrase and NEAR() terms organized by retrieval signal concept. The goal of a validation session is to understand what the system is actually retrieving, identify noise and gaps, and iterate on the profile terms until the chunks sent to the evaluator are genuinely relevant to each product's evidence intent.
+The PPP Maturity Check system builds evidence for each Expected Product (1a, 1b, 1c, 1d…) in three stages: (1) a per-product BM25+vector hybrid search fused via RRF (`retrieval/query/cascade.py`, ADR-0049), (2) an LLM relevance gate that accepts/rejects each candidate and expands accepted anchors to their document neighbors (`evaluation/evidence_selection.py`, ADR-0050), (3) a final scoring call over whatever survived the gate. A validation session tunes the **retrieval profile** (`data/retrieval_profiles/acao_NN.json`) — Query Terms that drive stage 1, and `negative_evidence_patterns` that steer stage 2 — until the evidence reaching the scorer is genuinely relevant to each product's evidence intent. It ends by updating the profile's own status metadata (`profile_maturity`, per-term `status`) to reflect what was actually learned, not just the query text.
 
 ---
 
@@ -25,172 +27,103 @@ Read `data/ipmp/acao_NN.json` for the target Ação. For each expected product:
 ## Step 2 — Understand the current profile
 
 Read `data/retrieval_profiles/acao_NN.json`. For the target product (e.g., 1a):
-- What retrieval_signal_concepts are defined?
-- How many active vs experimental query_terms exist?
-- What is the evidence_intent for each product?
+- What `retrieval_signal_concepts` are defined?
+- How many `active` vs `experimental` query_terms exist per concept?
+- What is the `evidence_intent`? What `negative_evidence_patterns` already exist, if any?
 
 ---
 
-## Step 3 — Run the retrieval diagnostic
+## Step 3 — Build (or reuse) dedicated inspection scripts for this Ação
 
-```powershell
-cd "c:\Users\sanseri\Documents\Projetos\Maturity_Check"
-$env:PYTHONIOENCODING="utf-8"
-python inspect_retrieval.py
-```
+Create `scripts/a3_inspect_retrieval_acaoNN.py` and `scripts/a4_inspect_evaluation_acaoNN.py`, using the Ação 2 pair (`scripts/a3_inspect_retrieval_acao2.py`, `scripts/a4_inspect_evaluation_acao2.py`) as the structural template — **do not** copy the old Ação 1 scripts' pattern (`retrieve_for_acao` → `evaluate()` directly): those predate the gate and are kept unmodified on purpose as a record of the old architecture, not as something to imitate. The current-architecture pattern:
 
-This produces `retrieval_diagnostic.txt` with five sections:
+- `a3` (retrieval only): print the BM25/vector query per product, run Step A/B document-focused match, then `retrieve_hybrid_candidates_for_acao()` to see the RRF-fused candidate pool with scores — no gate involved yet.
+- `a4` (full pipeline): `import main` first (triggers real `_bootstrap()`, so LLM wiring matches production per ADR-0054), mirror `assessment.service._retrieve_and_select()` (Step A/B short-circuit, else Step C hybrid + `select_evidence()`), and print accepted vs. rejected per product — flag any rejected chunk with a non-empty `matched_concepts` as a possible gate false negative worth a closer look — then call `evaluate()` for the real final result.
 
-| Section | What it shows |
-|---|---|
-| QUERIES PER EXPECTED PRODUCT | Full FTS5 query string for each product + rio_hints |
-| RAW HITS — before any dedup | All chunks each query returns (up to SQL LIMIT=80), with cross-product overlap flagged |
-| CROSS-PRODUCT OVERLAP | Chunks matched by more than one product and which wins dedup |
-| AFTER STEP 1 — per-product top-5 | Which 5 chunks each product nominates, and which are dropped |
-| AFTER STEP 2 — cross-product dedup | Final 20 chunks sent to evaluator |
-| FULL TEXT | Complete text of every BM25 chunk in evaluator order |
-
-The diagnostic script is at the project root. If the process number or acao_id changes, update the `PROCESS_NUMBER` and `ACAO_ID` constants at the top.
+Run both against the real case document(s) already indexed for this Ação (or index one first if none exists yet).
 
 ---
 
-## Step 4 — Analyse the diagnostic output
+## Step 4 — Analyse retrieval (a3)
 
 **Questions to answer per product:**
 
-1. **Did the product get 5 chunks in the final top-20?**
-   - If fewer than 5: either query returned weak scores, or cross-product dedup took its candidates.
-   - Check STEP 1 — does the product nominate 5? If not, query coverage is thin.
-   - Check STEP 2 — do any of the 5 get claimed by another product?
-
-2. **Are the top-5 candidates substantively relevant?**
-   Common failure modes:
-   - **Header-only pages**: chunk text starts with "PREFEITURA DA CIDADE DO RIO DE JANEIRO Secretaria Municipal…" with no body content. This is a page header that was chunked together with a page that matches the query. The chunk itself has no evidence value.
-   - **Wrong section of the right document**: the query terms match contractual penalty/termination clauses instead of the justification study. E.g., "vencimento contratual" in Clause 38 (what happens when a contract is terminated) vs. in the ETP introduction (why a new contract is needed).
-   - **Concept contamination**: a term for one product (e.g., 1c's "objetivos estratégicos") appears in sections that belong to another product's evidence, inflating scores for the wrong product.
-
-3. **What is the BM25 score spread?**
-   - Scores of -17 to -19: strong, specific match.
-   - Scores of -9 to -13: moderate match, likely keyword co-occurrence.
-   - Scores below -5: weak, possibly header noise or incidental co-occurrence.
-   - A product whose best chunk score is below -10 probably has few specific phrase matches in the corpus.
-
-4. **Is the cross-product overlap large?**
-   - If many chunks appear under multiple products, the queries are too broad or use overlapping vocabulary.
-   - Overlap is not always bad: a chunk might genuinely contain evidence for two products (e.g., 1a and 1c).
+1. **Does the product get candidates at all, and from which lane?** Every `RetrievedChunk` carries `cascade_step` (`"bm25"`/`"vector"`) and `retrieval_mode` (`"lexical"`/`"vector_fallback"`). A product whose accepted evidence is *always* `cascade_step: "vector"` across several runs, never `"bm25"`, means its Query Terms are not the thing actually finding evidence — see Step 8, this changes what you can claim about Term Status.
+2. **Are the top candidates substantively relevant, or off-topic-but-lexically-matching?** Common failure modes: header-only chunks (chunking artifact, not a query problem — no profile fix applies); the right document's *wrong section* (e.g. a term like "vencimento" matching a contract-termination penalty clause instead of the needs-justification section); a term belonging to one product's vocabulary contaminating another product's results.
+3. **BM25 score spread**: roughly, below ‑10 is a weak/incidental match; ‑10 to ‑15 is moderate; above ‑15 is a strong, specific match. A product whose best score never clears ‑10 across the query terms available probably needs more Track 1 canonical phrasing (see `04`), not a structural fix.
 
 ---
 
-## Step 5 — Identify profile improvements
+## Step 5 — Analyse the gate (a4) — accept/reject, not just retrieval
 
-For each problem chunk, determine the cause:
+The candidate pool from Step 4 is not what the scorer sees — the gate (`select_evidence()`) filters it first. For each product, look at both sides:
 
-| Problem | Cause | Fix |
-|---|---|---|
-| Header-only pages retrieving | Query term matches body text on same page as repeated header | No fix needed at query level; this is a chunking limitation |
-| Contract penalty clauses retrieved for 1a | Terms like "vencimento", "encerramento" appear in both ETP justification and contract penalty clauses | Add negative_evidence_patterns; or narrow terms with NEAR() closer distance |
-| Another product's concepts dominating | rio_hints or 1b query is too broad, monopolising the top-20 | No action needed if per-product cap protects each product; verify cap is working |
-| Product gets 0 chunks | Either query returned 0 hits OR all candidates were claimed by cross-product dedup | Check raw hits first; if 0, add broader terms; if claimed, narrow other products' queries |
-| Good chunk not making top-5 per product | Correct chunk scores below the 5th-best | Either the chunk has weak BM25 score (term too rare or too common) or better candidates genuinely ranked higher |
+- **Rejected candidates with a non-empty `matched_concepts`**: the deterministic concept-attribution pass (`_attribute_concepts`) found query-term vocabulary in the text, but the LLM gate still said no. This is either a correct rejection (the vocabulary appears, but not in the sense the criterion needs — the exact pattern this session's `negative_evidence_patterns` work targets) or a genuine gate false negative. Read the actual chunk text before assuming either.
+- **Accepted candidates**: does the reasoning (available via a direct gate call, or from a live run's stored result) actually reference the criterion, or does it hedge and flip-flop between "However / But / So I think it's relevant"? A candidate whose acceptance reasoning reads as genuinely torn is a signal worth acting on even if this particular run accepted it correctly — see Step 7.
 
 ---
 
-## Step 6 — Edit the profile
+## Step 6 — Distinguish a genuine content gap from a retrieval defect
 
-Edit `data/retrieval_profiles/acao_NN.json`:
-
-**Profile schema key points:**
-- `encoding`: `"phrase"` for exact phrase, `"near"` for NEAR(token1 token2, distance)
-- `status`: `"active"` (included in queries), `"experimental"` (included but under observation), `"deprecated"` (excluded)
-- `provenance`: `"canonical"` (standard domain term), `"real_world"` (verbatim from observed documents), `"synthetic"` (sector-pattern term from `04_retrieval-profile-synthesis.md`, no real document read — see `sector_hint`)
-- All string values must be in **Portuguese**
-- `concept_ref` links the term to a `retrieval_signal_concept.key`
-
-**Common edits:**
-- Add a new phrase term: add to `query_terms` with `encoding: "phrase"`, `text: "nova frase"`, `status: "experimental"`
-- Demote a noisy term: change `status` from `"active"` to `"experimental"` (still runs) or `"deprecated"` (excluded)
-- Add a NEAR() term: use `encoding: "near"`, `tokens: ["token1", "token2"]`, `distance: 5`
-- Tighten a NEAR() distance: reduce from 5 to 3 for more precise matching
-
-**After editing**, the server singleton must be restarted to reload the profile. The singleton loads once on first access and caches for the server's lifetime.
+Before tuning anything, rule out the cheapest wrong conclusion: assuming weak/no retrieval for a product means the query is broken, when the case document may simply not contain that content. Run an independent full-corpus `SQL LIKE` search (no BM25, no RRF, no gate) for the product's expected vocabulary directly against `chunks.text` in `data/app.db`. If it comes back empty, that's a genuine document gap (Ação 2's 2a/2b against SMG-040, 2026-08-26, was exactly this — the case document has no EVTEA-style objectives section at all) — document it in `_meta` or a session note and move on. Do **not** keep adding query terms or negative patterns to chase a product that has nothing to find in the one document available; that just adds untested surface area. This isn't closeable by profile work — it needs a different case document, or an accepted gap.
 
 ---
 
-## Step 7 — Restart server and re-run
+## Step 7 — Tune `negative_evidence_patterns` — and check it's worth doing before you do it
 
-```powershell
-# Stop the uvicorn server (Ctrl+C if interactive, or kill process)
-# Restart:
-cd "c:\Users\sanseri\Documents\Projetos\Maturity_Check"
-$env:PYTHONIOENCODING="utf-8"
-$env:GROQ_API_KEY="<your key>"
-python main.py
-```
+When a candidate is rejected inconsistently (accepted on some runs, rejected on others) or accepted when it shouldn't be, first determine **why** before writing a fix:
 
-Re-run the assessment with the same files. Use `force=true` if you want to ensure a clean slate (wipes chunks + fingerprints + evaluations). Use `force=false` (default) if the chunks are already indexed correctly and you only changed the profile — the system will reuse existing chunks and re-run only the retrieval + evaluation.
-
-```python
-import requests
-files = [
-    ('files', ('doc1.pdf', open('path/to/doc1.pdf', 'rb'), 'application/pdf')),
-]
-r = requests.post('http://localhost:8000/api/cases/<process_number>/assess?force=true', files=files)
-print(r.json())
-```
-
-Then re-run the diagnostic and compare Step 4 vs Step 5 to measure improvement.
+1. **Read the actual gate reasoning**, not just the verdict. Capture `reasoning_content` on a few calls (direct HTTP to the primary LLM, `cache_prompt` left at default) rather than relying on the wrapped client, which doesn't expose it.
+2. **Isolate infrastructure noise from content ambiguity.** Run the same prompt sequentially and under 2-way/4-way concurrency, *with itself* (homogeneous) — if it's rock-stable there, but flips only when run concurrently *with the other real products' prompts* (heterogeneous, matching `select_evidence()`'s actual `ThreadPoolExecutor` shape), that's the discriminator: pure GPU/kernel non-determinism reproduces under any concurrency; genuine content ambiguity typically only surfaces under the heterogeneous condition, because it takes a small numeric perturbation to tip an already-close decision. (Background: no deterministic-kernel flag exists in the current llama.cpp build — PR #16016 is unmerged/draft — and `cache_prompt: false`, a maintainer-suggested workaround, only partially helps and isn't reliable alone.)
+3. **If the flip recurs across several calls on the same exact phrase**, that's content ambiguity, not noise — write a `negative_evidence_patterns` entry naming the specific confusion (e.g., "this describes contractual risk allocation, not an operational-deficiency diagnosis"), in the same register as the product's existing patterns.
+4. **Before applying it, run the scalability check** (explicit project rule, 2026-08-27): would this fix help only this one Ação, or is it hard to reproduce for the other Ações? If either is true, discard it — a prompt correction that only pays off once isn't worth the maintenance surface. If the same confound has already shown up elsewhere (risk-allocation/responsibility-matrix boilerplate colliding with a "diagnosis of current state" criterion has now recurred 3 times across 2 different Ações in one session), that's evidence it's a structural domain confound worth fixing wherever it appears, not a one-off.
+5. **Validate before *and* after** at matched sample size — a battery of 10 isolated sequential calls, then the same battery of ≥10 under real heterogeneous concurrency (see Step 3 of this list); compare accept/reject counts directly, not by feel. n=10 is enough to spot a clear signal; treat anything close (e.g. 2/40 vs 1/40) as inconclusive, not confirmed, unless you have the sample size to back it.
 
 ---
 
-## Step 8 — Evaluate chunk quality against IPMP criteria
+## Step 8 — Update Term Status with evidence, not intent
 
-After confirming the right chunks are being retrieved, run a full evaluation and inspect the result:
+Every Query Term sits at `active` ("in use, untested"), `experimental` (excluded from BM25 until promoted), `validated` (confirmed to contribute useful recall), or `deprecated` (proven noise, kept for audit). Promoting/demoting is a status-metadata edit with real consequences for `experimental`↔`active` and `active`↔`deprecated` (both change what's actually searched — `build_query_from_terms` only includes `active`/`validated`), but not for `active`↔`validated` (cosmetic only, both already searched).
 
-```python
-import requests
-r = requests.get('http://localhost:8000/api/cases/<process_number>/evaluations/1')
-d = r.json()
-print(d['proposed_score'], d['uncertainty_flag'])
-print(d['reasoning'])
-for c in d['retrieved_chunks']:
-    print(c['expected_product_id'], c['cascade_step'], c['bm25_score'], c['text'][:200])
-```
-
-A chunk is "good" for the evaluator if:
-- Its text directly addresses the evidence intent of its product (what the IPMP says that product should prove)
-- It comes from the correct section of the document (ETP intro for 1a, economic study for 1b, risk matrix for 1c, legal instruments for 1d)
-- The LLM reasoning references it explicitly
-
-A chunk is "bad" (noise) if:
-- The LLM reasoning ignores it entirely
-- It contains only page headers or table-of-contents entries
-- It matches the query keywords but from a different semantic context (contractual penalty clauses vs. project justification)
+Do this check with a real batch of runs, not a single one — a term that happened to fire once isn't validated:
+- **For an `experimental` term**: pull the actual accepted-evidence chunk text (`RetrievedChunk.text`) across a batch of ≥5–10 runs and grep for the literal phrase/tokens. If it's genuinely present in real accepted content, promote to `active` — that's empirical grounding, even though the term itself wasn't the one that found the chunk (it was excluded from the query). If it never appears, leave it — absence isn't proof of noise, just no evidence yet.
+- **For an `active` term that a `negative_evidence_pattern` now specifically excludes** (i.e., the term reliably pulls in candidates the gate then has to reject) — that's a real signal the term is net-negative for this product; demote to `deprecated`, don't delete it (the field exists specifically so the reasoning stays auditable).
+- Per Step 4's `cascade_step` check: if a whole product's accepted evidence across a batch never shows `cascade_step: "bm25"`, don't promote any of that product's `active`/`experimental` BM25 terms to `validated` yet regardless of how good the aggregate outcome looks — the aggregate improvement may be coming from the vector lane, not the terms you're evaluating. This is exactly the trap Ação 2's Component 3 batch fell into: real, measured score improvement, but the accepted evidence itself showed zero BM25 attribution across 10/10 runs.
 
 ---
 
-## Deduplication mechanics (reference)
+## Step 9 — Advance `profile_maturity`
 
-The BM25 pipeline has three caps applied in sequence:
+Per CONTEXT.md's own definition, `profile_maturity` advances `seed` → `observed` the first time a real case document has actually been used in a population/validation session — which is exactly what Steps 3–8 above are. **Do this explicitly; it does not happen automatically and is easy to forget** (Ação 2 sat at `seed` for a full session after real-document validation had already happened, until caught in a later review). `observed` → `mature` needs validation across multiple cases/sectors, not just one — don't advance past `observed` on a single case document.
 
-1. **SQL LIMIT per query** = `MAX_CHUNKS_PER_ACAO × 4` = 80. Each product's SQL query returns at most 80 rows.
+---
 
-2. **Per-product cap** (`_PER_PRODUCT_TARGET = 5`): After collecting all raw hits, each product independently selects its top 5 by BM25 score. A chunk ranked 6th or lower for a product is dropped at this stage even if it would be the best chunk overall. Maximum pool entering cross-product dedup = `n_products × 5`.
+## Step 10 — Statistical confirmation, not a single run
 
-3. **Cross-product dedup** (`_merge()`): If the same physical chunk appears in multiple products' top-5 selections, only one copy survives — the one with the best (most negative) BM25 score. The "winning" product gets the attribution. A product can lose chunks here if another product matched the same chunk with a better score.
+A single before/after run proves nothing given the gate's own non-determinism (Step 7). Run a live battery (≥10 sequential calls through the real `/assess` API, not scratchpad-only function calls) before a change and the same battery after, and compare distributions directly: `score` distribution, `no_evidence_found` rate, `retrieved`/`rejected` counts, `uncertainty_flag` rate. Treat a difference as confirmed only if it holds at this sample size — see Step 7.5 for the same caution applied to a single candidate.
 
-4. **Global cap** (`MAX_CHUNKS_PER_ACAO = 20`): The post-dedup pool is sorted by score and truncated to 20. Weak-scoring products (e.g., rio_hints with scores around -4 when 1d's floor is -9.7) may be cut here.
+---
 
-Final attribution note: a chunk appearing in multiple products' RAW query results is NOT necessarily a sign of a problem. It only matters when it appears in multiple products' post-cap top-5 selections, which forces a cross-product competition.
+## Deduplication and evidence-selection mechanics (reference, current as of ADR-0050)
+
+1. **RRF-fused candidate pool** (`retrieve_hybrid_candidates_for_acao`, ADR-0049): BM25 and vector rankings fused per product via Reciprocal Rank Fusion (k=60) — vector is co-equal and always-on, not a fallback.
+2. **Pre-gate near-duplicate filter** (`_prefilter_near_duplicates`, threshold 0.92): drops near-identical candidates before spending a gate call on them.
+3. **Gate + anchor selection** (`_select_for_product`): examines up to `_MAX_EXAMINED = 8` ranked candidates per product, keeps up to `_ANCHOR_TARGET = 5` accepted ones as anchors. Each candidate is gated against `evidence_intent` + `retrieval_signal_concepts` + `negative_evidence_patterns` (all three, scoped strictly to this Ação/product — no shared/canonical list).
+4. **Neighbor expansion** (`_expand_anchors`): for each accepted anchor, its immediate document neighbors are fetched and gated too, up to `_EXPANSION_TARGET = 5` accepted expansions per product.
+5. **Cross-product dedup + budget trim + semantic dedup**: the same physical chunk accepted by multiple products collapses to one copy with merged `expected_product_ids`; expansions are trimmed first (weakest-scoring product first) if the combined evidence exceeds the character budget; a final semantic-similarity pass (threshold 0.70) drops near-duplicate text across the whole accepted set.
+
+The public `EvaluationResult`/`RetrievedChunk` model has no field distinguishing "anchor" from "expansion" — that distinction only exists transiently inside `select_evidence()`'s private helpers; if you need it for diagnostics, instrument the function directly rather than trying to infer it from the API response.
 
 ---
 
 ## Validation session checklist
 
-- [ ] Profile loaded correctly (check server logs for "Loaded 1/1 retrieval profile files")
-- [ ] `retrieval_diagnostic.txt` shows non-empty queries for all products
-- [ ] Each product gets ≥ 3 chunks in the final top-20
-- [ ] At least 1 chunk per product has score below -10 (strong match)
-- [ ] The FULL TEXT section shows substantive content, not just headers
-- [ ] No cross-product dedup is causing a product to lose all its candidates
-- [ ] LLM reasoning references at least 1 specific chunk per scored product
-- [ ] Proposed score and uncertainty_flag match expected outcome from ground truth
+- [ ] Dedicated `a3`/`a4` inspection scripts exist for this Ação (Step 3), following the current-architecture pattern, not the pre-gate Ação 1 template
+- [ ] Retrieval analysed per product: candidate presence, lane (`cascade_step`), score spread, off-topic-but-matching cases (Step 4)
+- [ ] Gate accept/reject analysed per product, not just retrieval (Step 5)
+- [ ] Any product with weak/no evidence checked against a full-corpus `SQL LIKE` search before being treated as a query defect (Step 6)
+- [ ] Any `negative_evidence_patterns` addition passed the scalability check before being applied (Step 7.4) — and was validated at matched sample size before/after (Step 7.5), with infra noise ruled out first (Step 7.2) if the symptom was a flip under concurrency
+- [ ] Term Status reviewed with actual batch evidence, not left at its generation-time default (Step 8) — check `cascade_step` attribution before promoting any BM25 term to `validated`
+- [ ] `profile_maturity` advanced if this session used a real case document and the field was still at `seed` (Step 9)
+- [ ] Improvement claims backed by a ≥10-run live battery before vs. after, not a single run (Step 10)
+- [ ] Proposed score and uncertainty_flag reviewed against expected outcome / ground truth where available

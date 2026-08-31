@@ -378,7 +378,7 @@
           "text": "contrato vigente",
           "type": "B",
           "provenance": "canonical",
-          "status": "experimental",
+          "status": "deprecated",
           "concept_ref": "trigger_event"
         },
         {
@@ -601,7 +601,7 @@
           "text": "premissas básicas",
           "type": "B",
           "provenance": "real_world",
-          "status": "experimental",
+          "status": "active",
           "concept_ref": "economic_viability_study"
         },
         {

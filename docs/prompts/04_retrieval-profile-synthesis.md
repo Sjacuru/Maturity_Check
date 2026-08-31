@@ -12,7 +12,7 @@ Provide Claude with this file and the target `acao_id`. `data/ipmp/acao_NN.json`
 
 ## Why this exists
 
-`data/retrieval_profiles/` only has `acao_01.json`, built by hand against a real case (SMG-040). Scaling to 46 Ações by repeating that manual, per-case process for every one is exactly what the project decided not to do (see CONTEXT.md — Profile Maturity, Provenance). This process produces a `profile_maturity: "seed"` profile instead: safe to generate ahead of any real document, because every term it adds under `provenance: "synthetic"` starts at `status: "experimental"` and is therefore excluded from the active BM25 query until a human (or a later `05` validation session) promotes it. A seed profile is a hypothesis, not a certified retrieval configuration.
+`data/retrieval_profiles/` only has a few acao_NN, built by hand against a real case (SMG-040). Scaling to 46 Ações by repeating that manual, per-case process for every one is exactly what the project decided not to do (see CONTEXT.md — Profile Maturity, Provenance). This process produces a `profile_maturity: "seed"` profile instead: safe to generate ahead of any real document, because every term it adds under `provenance: "synthetic"` starts at `status: "experimental"` and is therefore excluded from the active BM25 query until a human (or a later `05` validation session) promotes it. A seed profile is a hypothesis, not a certified retrieval configuration.
 
 ---
 
