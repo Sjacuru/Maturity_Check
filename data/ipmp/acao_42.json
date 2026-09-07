@@ -1,0 +1,54 @@
+{
+  "acao_id": 42,
+  "titulo": "Documente todo o processo de ajustes aos documentos da licitação e seus efeitos",
+  "dimensao": "Comercial",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A Ação 42 busca garantir que os ajustes promovidos após a consulta pública ou diante de fatos supervenientes estejam formalmente documentados nos materiais de contratação. Essa documentação deve registrar de forma transparente as alterações realizadas, suas justificativas e o tratamento dado às contribuições recebidas, conferindo rastreabilidade ao processo decisório. Essa ação é importante porque promove transparência, qualifica a governança da contratação e protege a equipe técnica contra questionamentos futuros. Ajustes realizados sem registro podem ser interpretados como decisões unilaterais ou arbitrárias, ainda que tenham fundamento técnico. Por outro lado, a documentação clara das mudanças — por exemplo, na matriz de riscos, no critério de julgamento das propostas ou nos termos contratuais — permite reconstruir a lógica das decisões e demonstra que o projeto evoluiu de forma coerente e responsiva às manifestações recebidas. Além disso, essa documentação pode evidenciar correções relevantes. É possível que, durante a consulta pública, tenham sido identificadas falhas em estudos anteriores, como a ausência de cláusulas de performance contratual ou exigências excessivamente restritivas para os licitantes. Quando tais fragilidades são corrigidas e o processo é formalmente registrado, o projeto ganha robustez técnica e legitimidade institucional. A ausência desse registro não apenas fragiliza o processo sob o ponto de vista do controle, como pode dificultar o aprendizado institucional. Sem histórico das mudanças promovidas, perde-se a oportunidade de consolidar boas práticas e de ajustar procedimentos em projetos similares. Em síntese, essa ação reforça o compromisso com a integridade do processo licitatório e assegura que a contratação se apoie em uma base documental sólida, coerente com as expectativas públicas e com as boas práticas de governança.",
+  "descricao_acao": "Documentar, se for o caso, o processo de ajustes realizados nos documentos de contratação em decorrência de contribuições externas, fatos supervenientes ou falhas identificadas nos produtos anteriores. A documentação deve abordar: alterações no procedimento de contratação (cronograma, critérios de julgamento, exigências documentais etc.); modificações no planejamento da licitação e suas respectivas justificativas; estratégias adotadas para avaliação das propostas e consolidação dos resultados; mecanismos de controle de qualidade e aprovação final do processo; alterações nos termos contratuais, com destaque para impactos financeiros e justificativas; resposta às contribuições oriundas de consulta pública (quando realizada), com justificativa para acatamento ou rejeição das sugestões.",
+  "o_que_esperar": "Revisão final e formal dos documentos licitatórios, com atenção para os casos com contribuições advindas da consulta ou audiência pública e/ou manifestações prévias dos órgãos de controle. Explicação fundamentada sempre que ajustes tenham se mostrado necessários, evidenciando o impacto e, quando não houver necessidade de alterações, registrar formalmente essa conclusão no processo, garantindo a rastreabilidade e transparência do processo decisório.",
+  "produtos_esperados": [
+    {
+      "id": "42",
+      "texto": "Documento de consolidação de ajustes e revisão da documentação licitatória, contendo:",
+      "scored": false
+    },
+    {
+      "id": "42a",
+      "texto": "Descrição das alterações realizadas e motivação técnica;"
+    },
+    {
+      "id": "42b",
+      "texto": "Registro das contribuições externas recebidas e justificativa para sua aceitação ou rejeição;"
+    },
+    {
+      "id": "42c",
+      "texto": "Análise dos efeitos das alterações na modelagem, cronograma e custo da contratação;"
+    },
+    {
+      "id": "42d",
+      "texto": "Versão final dos documentos com destaque para as seções revisadas."
+    }
+  ],
+  "momento_ideal": "Após a conclusão da fase de planejamento e da consulta pública (quando aplicável), antes da publicação final do edital.",
+  "excecoes": [
+    "Se existirem falhas ou omissões anteriores em ações da dimensão comercial, a não realização da revisão compromete a maturidade do projeto e esta ação deve ser considerada não atendida ou parcialmente atendida, conforme o grau de correção realizado."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação do VLT urbano, após a realização da audiência pública prevista na Ação 38, foram identificadas diversas contribuições relevantes por parte do mercado e da sociedade, como sugestões de ajustes na matriz de riscos, simplificação de critérios de qualificação técnica e maior detalhamento dos indicadores de desempenho. Essas contribuições foram sistematizadas em relatório específico e incorporadas a um documento técnico de consolidação de ajustes. Nele, ficaram descritas todas as modificações efetuadas nos documentos licitatórios, as justificativas técnicas para o acatamento ou a rejeição de cada sugestão, os impactos nos prazos e eventuais alterações no custo estimado da contratação. A versão final do edital e da minuta contratual foi disponibilizada com destaques nas seções alteradas, assegurando rastreabilidade e transparência ao processo. Esse procedimento reforçou a integridade da licitação e demonstrou a capacidade institucional de resposta qualificada às manifestações externas."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No caso do VLT urbano, foram realizadas alterações nos documentos licitatórios após a audiência pública, incluindo ajustes pontuais em cláusulas contratuais e pequenas mudanças no cronograma, o que gerou ganhos qualitativos observáveis na versão final dos instrumentos. Entretanto, não foi elaborado documento consolidado de ajustes, nem houve sistematização formal das sugestões recebidas ou das razões para seu acatamento ou rejeição. As mudanças constaram apenas como anotações internas nos documentos revisados, sem explicitar os critérios utilizados ou os impactos decorrentes. Embora tenham ocorrido melhorias consideráveis nos materiais de contratação, a ausência de documentação estruturada comprometeu a rastreabilidade do processo e limitou a capacidade de prestação de contas sobre as decisões tomadas, o que enfraqueceu a transparência do procedimento e, consequentemente, impediu que a ação fosse considerada totalmente atendida."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No projeto do VLT, apesar da realização de consulta pública e da identificação de fragilidades nos critérios de julgamento e na alocação de riscos, nenhum ajuste foi formalmente documentado. Os documentos da licitação foram publicados na mesma versão anterior, sem atualizar as cláusulas criticadas nem registrar análise técnica das contribuições recebidas. Não se localizou justificativa para a manutenção da modelagem contratual original, tampouco evidência de avaliação sobre os riscos ou impactos das críticas apresentadas. A ausência completa de documentação dos ajustes — mesmo diante de manifestações relevantes — indicou o não atendimento da ação."
+    }
+  ]
+}

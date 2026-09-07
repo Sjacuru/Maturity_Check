@@ -1,0 +1,50 @@
+{
+  "acao_id": 17,
+  "titulo": "Reconsidere a Dimensão Estratégica inicial e reconfirme a necessidade estratégica",
+  "dimensao": "Estratégica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A revisão da dimensão estratégica após a consolidação preliminar das demais análises permite verificar se os objetivos iniciais do projeto continuam válidos diante das informações técnicas produzidas ao longo do estudo. Essa etapa evita que o planejamento siga adiante com premissas ultrapassadas, alternativas obsoletas ou estratégias desalinhadas com o contexto atualizado. Quando essa revisão não é realizada, corre-se o risco de consolidar soluções que já não fazem mais sentido à luz dos dados econômicos, financeiros, ambientais ou operacionais apurados posteriormente. Por exemplo, poderia deixar de ocorrer a introdução da duplicação de um dado segmento rodoviário, descartado anteriormente por critérios técnicos, mesmo com o novo contexto trazendo uma realidade distinta em termos de demanda. Se essa manutenção ou não adaptação for desacompanhada de uma justificativa clara e fundamentada, pode-se gerar percepções de deturpação estratégica ou de decisões pautadas por fatores subjetivos ou políticos alheios à lógica do planejamento técnico. Trata-se, portanto, de um momento para ajustar o rumo do planejamento, com base em evidências já produzidas, e garantir que a estratégia do projeto permaneça coerente, justificada e documentada. Quando bem executada, essa ação reforça a lógica de planejamento iterativo, dá maior visibilidade às decisões críticas e aumenta as chances de o empreendimento atender, de fato, às necessidades públicas que motivaram sua concepção.",
+  "descricao_acao": "Revisar a dimensão estratégica a partir dos resultados das Ações 1 a 4, em comparação com o desenvolvimento das outras quatro dimensões e de eventuais alterações de contexto e necessidades estratégicas.",
+  "o_que_esperar": "Revisão formal e documentada da dimensão estratégica inicial, que revalida a necessidade do projeto com base em informações mais recentes e no avanço do planejamento nas outras dimensões.",
+  "produtos_esperados": [
+    {
+      "id": "17",
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar), ou documento revisional anterior a aprovação final do estudo de viabilidade, que contenha:",
+      "scored": false
+    },
+    {
+      "id": "17a",
+      "texto": "Alterações no contexto estratégico do projeto, incluindo, mas não se limitando a mudanças nas políticas públicas, no ambiente socioeconômico ou no surgimento de novas necessidades que impactam a justificativa do projeto."
+    },
+    {
+      "id": "17b",
+      "texto": "Razões bem fundamentadas que justificam essas alterações."
+    },
+    {
+      "id": "17c",
+      "texto": "Conclusão fundamentada de que não houve qualquer modificação no cenário estratégico, a partir das ações realizadas após a primeira avaliação, reiterando-se as convicções inicialmente estabelecidas."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Recomenda-se que qualquer alteração no contexto estratégico seja fundamentada expressamente no próprio estudo de viabilidade para garantir que o processo seja transparente e que possa ser revisado e questionado externamente, quando necessário."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Durante a fase de aprofundamento dos estudos para a implantação de um ramal ferroviário de integração logística interestadual, foram incorporados dados atualizados sobre fluxo de carga, competitividade intermodal e planos logísticos estaduais. Com base nessas informações, a alternativa inicialmente proposta — que previa contorno por uma zona de expansão urbana — foi reavaliada e substituída por um traçado mais direto, com menor impacto fundiário e maior viabilidade operacional. A revisão foi formalizada em nota técnica e incorporada ao estudo de viabilidade, o que justificou a mudança com base em evidências técnicas atualizadas."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Nos estudos do ramal ferroviário, foram incorporadas novas informações relevantes, como desafios ambientais adicionais e alterações na malha de transporte estadual, o que evidenciou a atualização do diagnóstico estratégico. A justificativa para a manutenção da alternativa inicialmente proposta esteve presente em documentos técnicos, com argumentação alinhada aos novos elementos identificados. No entanto, essa justificativa não foi sistematizada em nota técnica ou documento específico que formalizasse a decisão de modo estruturado. Embora a base técnica e a lógica decisória tenham ficado claras, a ausência de consolidação formal comprometeu parcialmente a rastreabilidade do processo."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Durante a estruturação do projeto ferroviário, a alternativa inicialmente selecionada foi mantida sem qualquer reexame, mesmo após a identificação de conflitos logísticos com corredores existentes, aumento dos custos de desapropriação e surgimento de rotas mais eficientes. Não houve documento técnico que revisasse ou confirmasse a escolha à luz das novas evidências. A decisão permaneceu por inércia, sem embasamento atualizado, e contrariou os princípios de revisão estratégica fundamentada."
+    }
+  ]
+}

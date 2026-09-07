@@ -1,0 +1,54 @@
+{
+  "acao_id": 24,
+  "titulo": "Planeje a consulta e a apresentação dos fatores de interesse do mercado",
+  "dimensao": "Comercial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "A realização de audiência ou consulta pública nesta fase é mais do que uma formalidade: é uma oportunidade concreta de fortalecer o projeto. O diálogo com partes interessadas — como comunidades tradicionais, populações vulneráveis, moradores de áreas afetadas, empresas interessadas na contratação e entes locais — permite confrontar o planejamento com realidades que nem sempre aparecem nos estudos. Esse tipo de escuta qualificada ajuda a identificar lacunas, ajustar soluções, esclarecer expectativas e, sobretudo, construir legitimidade. Quando bem-feita, evita conflitos, retrabalhos e resistências futuras. Além disso, ouvir o mercado pode revelar falhas de atratividade, incertezas contratuais ou exigências desproporcionais que comprometem a competitividade e a segurança jurídica da licitação. Ignorar essa etapa pode fazer com que problemas previsíveis só venham à tona quando o processo já estiver em execução, com menor margem para correção. Mesmo quando não há obrigatoriedade legal, é esperado que a decisão de realizar ou não a consulta seja tecnicamente fundamentada, indicando os motivos, os riscos envolvidos e os critérios utilizados. Justificativas genéricas ou ausentes enfraquecem a rastreabilidade da decisão e dificultam a prestação de contas. Ao contrário, quando a escuta é bem estruturada, ela qualifica o planejamento, amplia a previsibilidade da execução, reforça o compromisso com o planejamento participativo, reduz incertezas relevantes e amplia a qualidade técnica, institucional e social do projeto, fortalecendo o vínculo entre gestão pública e sociedade.",
+  "descricao_acao": "Planejar o engajamento das partes interessadas por meio de consulta ou audiência pública, definindo sua necessidade, formato, conteúdo e estratégias de mobilização. A ação exige a elaboração de documento que fundamente a realização (ou a dispensa) da consulta/audiência pública, indicando: os objetivos da escuta; o público-alvo e o alcance territorial; os documentos e dados que serão disponibilizados; a forma de recebimento e sistematização das contribuições; eventual justificativa técnica e formal, nos casos em que a consulta pública não for realizada.",
+  "o_que_esperar": "Formalização, em documento técnico, do planejamento da participação cidadã e do mercado no processo de contratação. Descrição clara do formato, conteúdo, estratégias de mobilização e público-alvo da consulta (presencial, eletrônica ou híbrida). Justificativa técnica para a eventual dispensa da consulta pública, quando considerada desnecessária. Garantia de previsibilidade e legitimidade ao processo, por meio da inclusão estruturada da participação das partes interessadas.",
+  "produtos_esperados": [
+    {
+      "id": "24",
+      "texto": "Documento técnico de planejamento da consulta pública contendo:",
+      "scored": false
+    },
+    {
+      "id": "24a",
+      "texto": "Justificativa da realização ou da dispensa da consulta;"
+    },
+    {
+      "id": "24b",
+      "texto": "Definição do público-alvo e das estratégias de divulgação;"
+    },
+    {
+      "id": "24c",
+      "texto": "Especificação dos documentos que serão apresentados;"
+    },
+    {
+      "id": "24d",
+      "texto": "Metodologia para recebimento, tratamento e eventual incorporação das contribuições recebidas."
+    }
+  ],
+  "momento_ideal": "Fase final da etapa de planejamento da contratação, antes da publicação do edital e da formalização da contratação.",
+  "excecoes": [
+    "Embora o art. 21 da Lei nº 14.133/2021 atribua caráter facultativo à realização de audiência ou consulta pública, a decisão pela não realização deve estar devidamente motivada, considerando a complexidade, os impactos e a relevância social do empreendimento. A ausência de participação cidadã ou do mercado no processo de contratação sem justificativa formal será interpretada como não atendimento da ação."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação do sistema de esgotamento sanitário foi elaborado um plano técnico detalhado para a realização de consulta pública. O documento especificou o público-alvo — moradores das áreas afetadas, lideranças comunitárias, representantes do setor de saneamento e ONGs ambientais — e descreveu a estratégia de mobilização, que combinou divulgação em rádios locais, redes sociais e parceria com associações de bairro. Os documentos técnicos (anteprojeto, matriz de riscos e plano de execução) foram disponibilizados previamente no site da prefeitura. A consulta ocorreu em formato híbrido, contou com participação significativa e as contribuições foram sistematizadas em relatório próprio, o qual gerou ajustes no traçado da rede em áreas sensíveis e na previsão de ações mitigadoras. A decisão de realizar a consulta, sua metodologia e os resultados ficaram documentados formalmente."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, foi elaborado um documento com orientações específicas para a consulta pública, o qual incluiu justificativa consistente para sua realização e detalhou a metodologia de escuta. Contudo, o material não apresentou o aprofundamento necessário para caracterizar uma estratégia estruturada de mobilização social. Essa lacuna afetou pontualmente o atendimento da ação, embora o conteúdo básico tenha oferecido subsídios relevantes."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Para o sistema de esgotamento sanitário, não foi realizada qualquer consulta ou audiência pública, e não foi produzida justificativa técnica para a dispensa. O projeto impactaria diretamente bairros com histórico de vulnerabilidade social e áreas ambientalmente sensíveis; contudo, a ausência de escuta estruturada impediu a identificação de riscos sociais, percepções comunitárias e eventuais ajustes no planejamento. A não realização da consulta, somada à falta de documento formal que motivasse a decisão, comprometeu a aderência do projeto aos princípios de participação cidadã e transparência."
+    }
+  ]
+}

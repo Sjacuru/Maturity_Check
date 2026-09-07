@@ -100,7 +100,7 @@ def test_rio_hints_does_not_trigger_extra_vector_calls(db):
         retrieve_hybrid_for_acao(1, "P001")
 
     acao = get_ipmp_store().acoes[1]
-    n_products = sum(1 for p in acao.produtos_esperados if p.id[-1:].isalpha())
+    n_products = sum(1 for p in acao.produtos_esperados if p.scored)
     assert mock_vector.call_count == n_products
 
 

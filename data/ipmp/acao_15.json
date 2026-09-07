@@ -1,0 +1,64 @@
+{
+  "acao_id": 15,
+  "titulo": "Elabore uma estratégia e um plano inicial de gestão de riscos",
+  "dimensao": "Gerencial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "Refletir sobre os riscos ainda na fase de viabilidade qualifica o planejamento desde o início. Mesmo sem exigir o grau de detalhamento de uma matriz contratual definitiva, a construção de uma visão preliminar de riscos permite reconhecer fatores que podem comprometer a viabilidade do projeto e preparar, com antecedência, medidas de mitigação. Quando essa etapa é ignorada, o empreendimento pode avançar com uma percepção equivocada de segurança e um falso grau de maturidade. É comum, por exemplo, que estudos deixem de considerar riscos relacionados a processos de licenciamento ambiental, remoção de interferências ou desapropriações — temas que, se não previstos, tendem a gerar atrasos, conflitos e desequilíbrios na execução. Também são frequentes casos em que os riscos são tratados apenas em modelos genéricos, pouco aderentes ao objeto do projeto e à realidade institucional do ente executor, o que fragiliza a tomada de decisão e dificulta a correta alocação de responsabilidades. Uma boa análise preliminar de riscos fortalece a visão estratégica sobre o empreendimento, orienta a mobilização de recursos e oferece subsídios para uma gestão mais proativa. Além disso, ajuda a qualificar os próprios estudos de viabilidade, pois amplia o olhar sobre as vulnerabilidades do projeto e orienta com mais clareza os pontos que merecem atenção nas etapas seguintes. Ao final, o que se espera não é uma matriz definitiva, mas sim uma estrutura preliminar coerente com o estágio do projeto, que explicite os riscos já identificados, os agentes responsáveis por seu gerenciamento e os recursos ou estratégias que precisarão ser mobilizados para tratá-los de forma adequada.",
+  "descricao_acao": "Desenvolver uma minuta preliminar da matriz de risco indicando que os riscos do projeto foram identificados, junto com suas mitigações, e que existem recursos humanos que serão responsáveis por gerenciá-los.",
+  "o_que_esperar": "Plano inicial que identifique riscos potenciais, seus impactos e probabilidades, estratégias preliminares de mitigação e os responsáveis pelo gerenciamento de cada um, com vistas a preparar uma matriz de riscos mais objetiva e identificar tempestivamente as alternativas inviáveis para solução dos problemas identificados.",
+  "produtos_esperados": [
+    {
+      "id": "15",
+      "texto": "Documento (ou tabela) preliminar que identifique e descreva, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "15a",
+      "texto": "Riscos potenciais identificados até o momento, que podem impactar a contratação e a execução do projeto, como riscos ambientais, sociais, técnicos, financeiros e regulatórios, incluindo desafios de obtenção de licenças;"
+    },
+    {
+      "id": "15b",
+      "texto": "Avaliação inicial de cada risco em termos de impacto e probabilidade, utilizando uma classificação básica (alto, médio, baixo) para facilitar a priorização dos riscos;"
+    },
+    {
+      "id": "15c",
+      "texto": "Estratégias preliminares de mitigação para cada risco, indicando ações iniciais para reduzir a probabilidade ou o impacto dos riscos antes da fase de contratação;"
+    },
+    {
+      "id": "15d",
+      "texto": "Indicação de quais riscos podem precisar de análise mais detalhada e acompanhamento à medida que o projeto avança para a etapa de contratação e elaboração do contrato;"
+    },
+    {
+      "id": "15e",
+      "texto": "Delimitação simples dos riscos da contratante, da contratada e o risco compartilhado (para se ter uma visão global da magnitude dos problemas a serem enfrentados e confirmar se é possível ou não repassar esses riscos ao mercado, tornando o projeto viável ou inviável);"
+    },
+    {
+      "id": "15f",
+      "texto": "Responsáveis pelo gerenciamento de cada risco."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Ainda que não seja possível desenvolver uma estratégia completa de gestão de riscos neste estágio, será útil começar a refletir sobre os riscos potenciais e os recursos que serão colocados em prática para implementar a estratégia e o plano, em especial em relação a quem será o responsável pela gestão de cada risco e como se dará o monitoramento do gerenciamento deste.",
+    "Recomenda-se que esse planejamento se dê a partir dos riscos já identificados na ação 4.",
+    "Recomenda-se que conste e que se dê ênfase na gestão de riscos que envolvam os processos de licenciamento ambiental, de remoção de interferências e de desapropriação."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação de um sistema de drenagem urbana em área historicamente afetada por alagamentos, a equipe elaborou, ainda na fase de viabilidade, um plano preliminar de gestão de riscos. O documento identificou riscos como dificuldades na remoção de ocupações irregulares, atraso na obtenção de licenças ambientais, interferências com redes subterrâneas e flutuação no custo de materiais. Cada risco foi classificado por impacto e probabilidade, teve estratégia de mitigação definida e recebeu responsável institucional designado. A matriz também delimitou os riscos da contratante, da futura contratada e os riscos compartilhados. Essa estrutura permitiu antecipar vulnerabilidades e orientou ajustes técnicos e operacionais no planejamento."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, o estudo de viabilidade identificou de forma clara riscos relevantes à execução, incluindo a presença de moradias informais e restrições ambientais na área de intervenção. Esses riscos foram descritos com contextualização técnica e territorial adequada, e foram atribuídos responsáveis para seu acompanhamento. O estudo também apresentou registros de reuniões técnicas voltadas à antecipação de impactos. Contudo, a análise não foi estruturada em uma matriz formal de riscos nem foi associada a critérios de priorização. Ainda assim, a base existente forneceu insumos úteis à gestão e evidenciou esforço técnico concreto."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "O estudo de viabilidade para o sistema de drenagem urbana não fez qualquer menção à gestão de riscos, e não apresentou documento específico para tal fim. Nenhum fator crítico foi identificado, apesar da clara complexidade social, legal e ambiental da região. Questões como remoções, licenciamento ou conflitos com concessionárias de infraestrutura não foram sequer mencionadas. Essa omissão comprometeu a credibilidade do planejamento e aumentou a probabilidade de paralisações, judicializações e falhas de execução."
+    }
+  ]
+}

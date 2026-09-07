@@ -1,0 +1,50 @@
+{
+  "acao_id": 26,
+  "titulo": "Confirme as fontes de custeio do projeto",
+  "dimensao": "Financeira",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "A confirmação das fontes de custeio após a escolha da alternativa mais vantajosa é uma etapa crítica para garantir que o empreendimento tenha condições reais de execução. Se, na fase de viabilidade, o foco estava na estimativa de custos e identificação preliminar das possíveis fontes, agora é necessário verificar a suficiência, disponibilidade e aderência dessas fontes à realidade orçamentária e financeira da instituição executora. Essa ação é importante porque evita que projetos avancem para contratação sem lastro financeiro sólido, o que aumenta os riscos de paralisação, reprogramações e perda de eficiência na alocação de recursos públicos. Por exemplo, um empreendimento pode estar previsto no PPA ou na LOA, mas sem dotação compatível com o cronograma físico-financeiro, ou dependendo de fontes sujeitas a condicionantes não analisadas — como contrapartidas estaduais, recursos de emendas ou aportes externos com aprovação pendente. Além disso, essa revisão permite ajustar o planejamento à luz das definições mais recentes sobre a solução escolhida. Mudanças no escopo, no modelo de contratação ou nos prazos de execução podem demandar reformulações no arranjo financeiro. A ausência desse alinhamento compromete a credibilidade do projeto e dificulta a articulação com instâncias de decisão orçamentária e com o controle externo. Quando bem executada, essa ação assegura maior previsibilidade à execução, fortalece a governança financeira do empreendimento e evita que a escolha da melhor alternativa técnica se torne inviável por falta de sustentação orçamentária efetiva.",
+  "descricao_acao": "Revisar criticamente as fontes de custeio após a seleção da alternativa mais vantajosa. Confirmar a previsão, disponibilidade e acessibilidade dos recursos nos instrumentos de planejamento. Verificar a sustentabilidade orçamentária do projeto em sua totalidade, com foco na execução integral. Avaliar a suficiência financeira, previsibilidade dos repasses e compatibilidade com o Plano Anual de Contratações (PAC) do órgão.",
+  "o_que_esperar": "Validação das fontes de custeio com base na alternativa selecionada. Demonstração de que os recursos estão devidamente previstos no PPA, LDO, LOA e em outros documentos financeiros. Análise da compatibilidade com o Plano Anual de Contratações (PAC) e com os limites e requisitos da LRF. Inclusão de declarações formais emitidas pela área responsável (setor de orçamento ou finanças) atestando: a existência de recursos orçamentários; a compatibilidade com os limites e regras da LRF.",
+  "produtos_esperados": [
+    {
+      "id": "26a",
+      "texto": "Demonstração de compatibilidade com o PPA, LDO, LOA e o Plano Anual de Contratações (PCA)."
+    },
+    {
+      "id": "26b",
+      "texto": "Análise de riscos orçamentários e dependências externas."
+    },
+    {
+      "id": "26c",
+      "texto": "Demonstração da capacidade orçamentária e financeira, ano a ano, até a previsão final de término das obras."
+    },
+    {
+      "id": "26d",
+      "texto": "Declaração da existência de recursos orçamentários suficientes, emitida pela área competente."
+    }
+  ],
+  "momento_ideal": "Fase intermediária, logo após a seleção da alternativa mais vantajosa, e antes da modelagem contratual e da licitação.",
+  "excecoes": [
+    "Projetos de grande porte exigem análise mais aprofundada da viabilidade financeira e podem demandar atualização periódica dessas declarações.",
+    "Recomenda-se consolidar as informações em documento técnico específico, embora seja admissível que as evidências estejam dispersas em diferentes peças orçamentárias, desde que sejam claras, válidas e acessíveis."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de duplicação de uma rodovia federal, após a escolha da alternativa mais vantajosa, o órgão gestor realizou uma revisão estruturada das fontes de custeio e consolidou as informações em documento técnico específico. Foi apresentada demonstração formal de que os recursos necessários para a execução integral do empreendimento constaram do PPA, estiveram previstos na LDO e foram contemplados na LOA vigente, com previsão para os exercícios futuros, em consonância com o cronograma físico-financeiro da obra. Adicionalmente, o estudo evidenciou a compatibilidade dos desembolsos programados com o Plano Anual de Contratações do órgão, avaliou potenciais riscos orçamentários e mapeou dependências externas, como aportes de contrapartida estadual e possíveis emendas parlamentares. A documentação incluiu declaração formal emitida pela área de orçamento, a qual atestou a existência e suficiência dos recursos para todo o período previsto de execução."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, a equipe revisou as fontes de custeio da alternativa selecionada, e parte dos recursos necessários figurou nos instrumentos de planejamento, registrou-se no PPA e contou com previsão parcial na LDO. Entretanto, a inclusão do valor integral na LOA ainda dependia de ajustes ou suplementações futuras, e a consolidação das informações não foi formalizada em documento técnico abrangente. A análise apresentou a suficiência dos recursos apenas para o primeiro exercício, sem detalhar ano a ano todo o período de execução, o que ainda precisaria considerar o estoque de contratos vigentes no órgão e seus cronogramas de desembolso, além do histórico recente de disponibilização financeira prevista em LOAs anteriores para todas as obras desse mesmo órgão."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No projeto de duplicação da rodovia federal, a equipe não realizou revisão formal das fontes de custeio após a seleção da alternativa mais vantajosa. As informações relativas à previsão orçamentária permaneceram restritas às estimativas preliminares da fase anterior, sem validar a efetiva existência dos recursos nos instrumentos de planejamento vigentes — PPA, LDO ou LOA. Tampouco apresentou análise de suficiência dos recursos para todo o período de execução ou documentação emitida pela área de orçamento ou finanças do órgão responsável."
+    }
+  ]
+}

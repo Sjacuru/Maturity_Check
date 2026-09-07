@@ -1,0 +1,50 @@
+{
+  "acao_id": 43,
+  "titulo": "Confirme se o projeto possui capacidade de custeio",
+  "dimensao": "Financeira",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A Ação 43 trata da verificação final da capacidade de custeio e modelagem financeira do projeto, após eventuais ajustes promovidos na etapa de consulta pública, revisões e atualizações. É o momento de confirmar se, mesmo com as alterações decorrentes de audiência pública, revisões contratuais ou atualizações nos estudos, o projeto permanece financeiramente viável e executável dentro dos limites orçamentários disponíveis. Essa ação é importante porque, ao longo da maturação do projeto, podem ocorrer mudanças significativas — como readequações de escopo, inclusão de medidas mitigadoras ou alterações contratuais — que afetam diretamente o custo total. Ignorar essa verificação pode levar à contratação de um projeto cujas exigências financeiras já não são compatíveis com o orçamento inicialmente previsto, o que aumenta o risco de interrupções, aditivos ou até paralisações. Por exemplo, o aumento repentino do preço de insumos — como asfalto, concreto ou aço — pode elevar substancialmente o custo global. Mesmo que os quantitativos permaneçam estáveis, mudanças no mercado fornecedor, como o esgotamento de jazidas próximas ou o fechamento de plantas de beneficiamento, podem obrigar o transporte de materiais por distâncias maiores, onerando a execução. Também pode ocorrer que a revisão da matriz de riscos transfira ao poder público encargos originalmente atribuídos à contratada ou, ainda, novas contratações que ensejam concorrência de recursos dentro de um mesmo órgão ou entidade, aumentando a pressão sobre o seu orçamento. Essa ação reforça a conexão entre planejamento técnico e responsabilidade fiscal. Ela assegura que a contratação só ocorra com base em estimativas atualizadas, fontes de custeio compatíveis e segurança quanto à capacidade de execução financeira do empreendimento. Quando bem realizada, essa verificação protege o projeto contra desequilíbrios orçamentários e evita que compromissos sejam assumidos com base em premissas superadas, promovendo uma contratação mais estável, transparente e alinhada com a realidade financeira da Administração Pública. Por fim, essa ação, que é a revisão da dimensão financeira, é a oportunidade de se promover todos os ajustes, bem como de suprir todas as lacunas, identificados nas ações financeiras originais (10, 26, 27 e 28).",
+  "descricao_acao": "Confirmar se, após os ajustes no processo de contratação e na minuta contratual, o projeto continua passível de custeio e com previsão atualizada fidedigna do desembolso total.",
+  "o_que_esperar": "Revisão final da capacidade de custeio, do orçamento e do modelo financeiro, notadamente após ajustes decorrentes de fatores supervenientes (como consultas públicas, auditorias ou alterações contratuais). A análise deve confirmar que o modelo financeiro continua válido e compatível com os recursos disponíveis.",
+  "produtos_esperados": [
+    {
+      "id": "43",
+      "texto": "Documento de revisão financeira contendo:",
+      "scored": false
+    },
+    {
+      "id": "43a",
+      "texto": "Validação da capacidade de custeio após ajustes no projeto;"
+    },
+    {
+      "id": "43b",
+      "texto": "Avaliação de riscos residuais e impacto de alterações externas;"
+    },
+    {
+      "id": "43c",
+      "texto": "Minuta atualizada do plano de execução financeira."
+    }
+  ],
+  "momento_ideal": "Após a fase de ajustes e antes do lançamento do edital.",
+  "excecoes": [
+    "Se não houver inconsistências nas ações originais, deve ser elaborada justificativa técnica formal quanto à eventual não necessidade de revisão da dimensão financeira, considerando que todos os pontos foram devidamente atendidos durante o processo."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Na implantação de uma variante ferroviária, originalmente a Ação 27 foi considerada parcialmente atendida, pois o modelo financeiro deixou de contemplar os custos de desapropriação necessários à execução das obras. Da mesma forma, na Ação 28, não foi realizado o teste de capacidade de custeio. Entretanto, nesta etapa revisional, os custos de desapropriação foram incorporados ao orçamento e ao fluxo financeiro, e foi executado o teste de capacidade de custeio, levantando-se a necessidade de recursos ano a ano para a execução integral do empreendimento. Essas correções asseguraram a suficiência orçamentária e a sustentabilidade financeira do projeto, viabilizando a continuidade da contratação em bases sólidas e indicando o atendimento pleno da ação."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Na implantação da variante ferroviária, originalmente a Ação 27 foi considerada parcialmente atendida pela ausência de previsão dos custos de desapropriação no modelo financeiro, e a Ação 28 não contemplou o teste de capacidade de custeio. No momento da revisão, houve a inclusão dos custos de desapropriação no orçamento e na projeção financeira. Contudo, não foi realizado o teste de capacidade de custeio; assim, não houve avaliação detalhada da necessidade de recursos ano a ano, tampouco análise sobre a viabilidade de captação dos valores necessários para todo o período de execução. Dessa forma, apesar de parte das fragilidades ter sido corrigida, a ausência dessa verificação completa impediu o atendimento integral da ação."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Na implantação da variante ferroviária, originalmente tanto a Ação 27 quanto a Ação 28 apresentaram fragilidades relevantes: o modelo financeiro não contemplava os custos de desapropriação e não foi realizado o teste de capacidade de custeio. No processo revisional, nenhuma dessas ausências foi sanada — os custos de desapropriação permaneceram fora do orçamento e continuou inexistente o teste de capacidade de custeio. Assim, as deficiências identificadas nas ações originais da dimensão financeira não foram corrigidas ou revistas – tampouco houve justificativa técnica e fundamentada da decisão de não revisar ou corrigir –, caracterizando o não atendimento da ação revisional."
+    }
+  ]
+}

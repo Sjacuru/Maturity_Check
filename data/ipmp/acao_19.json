@@ -1,0 +1,58 @@
+{
+  "acao_id": 19,
+  "titulo": "Realize uma análise qualitativa dos riscos e benefícios públicos",
+  "dimensao": "Econômica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A avaliação qualitativa de riscos e benefícios complementa as análises econômico-sociais ao introduzir uma dimensão crítica e deliberativa no processo decisório. Trata-se de ponderar, de forma explícita, até que ponto vale a pena assumir determinados riscos para alcançar certos benefícios — ou quanto se está disposto a investir para mitigá-los. Essa reflexão, ainda que não quantificável com precisão, permite escolhas mais conscientes entre alternativas que envolvem trade-offs relevantes, sobretudo em contextos de incerteza elevada. Em outras palavras, essa etapa busca identificar e categorizar riscos e benefícios que não são facilmente monetizáveis, como alguns impactos sociais e ambientais intangíveis, riscos sistêmicos e desafios de implementação. Quando essa etapa é omitida, decisões podem ser tomadas com base em critérios excessivamente financeiros, ignorando aspectos de difícil quantificação, mas que impactam diretamente a viabilidade ou a aceitação do projeto. Por exemplo, pode-se descartar uma alternativa com custo de implantação um pouco maior, sem levar em conta que ela reduziria significativamente os riscos de atrasos no licenciamento ambiental, evitaria o reassentamento de comunidades vulneráveis ou exigiria menor interferência em redes de infraestrutura urbana. Nesse caso, o custo mais alto poderia ser compensado por um risco consideravelmente menor — mas, sem essa avaliação qualitativa, essa relação tende a passar despercebida. Essa ação também ajuda a tornar o processo mais transparente, pois explicita, de modo fundamentado, a parcela de critérios subjetivos que, de todo modo, influenciam a decisão. Quando bem aplicada, ela contribui para demonstrar a racionalidade por trás da escolha, reforça a consistência do estudo de viabilidade e permite que gestores e órgãos de controle compreendam os fundamentos das preferências adotadas dentro de uma faixa legítima de discricionaridade dos decisores.",
+  "descricao_acao": "Realizar uma avaliação qualitativa de riscos e benefícios para cada opção.",
+  "o_que_esperar": "Identificação e categorização de riscos que ainda não tenham sido capturados na Ação 18 ou que demandem avaliação qualitativa adicional, incluindo riscos sistêmicos e de implementação. Análise qualitativa dos benefícios públicos (especialmente aqueles de difícil monetização), com registro de evidências que sustentem a importância de cada benefício para o projeto.",
+  "produtos_esperados": [
+    {
+      "id": "19",
+      "texto": "Documento que contenha, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "19a",
+      "texto": "Análise qualitativa dos benefícios públicos para cada opção, descrevendo os impactos positivos não financeiros esperados."
+    },
+    {
+      "id": "19b",
+      "texto": "Análise qualitativa dos riscos públicos para cada opção, identificando os potenciais impactos negativos não financeiros e a probabilidade de ocorrência."
+    },
+    {
+      "id": "19c",
+      "texto": "Registro das decisões tomadas durante a análise, incluindo a fundamentação para as avaliações qualitativas atribuídas a cada opção."
+    },
+    {
+      "id": "19d",
+      "texto": "Integração da análise qualitativa à tabela de opções, apresentando as classificações de cada opção com base nos benefícios e riscos qualitativos avaliados."
+    }
+  ],
+  "momento_ideal": "Fase da Proposta Intermediária de Investimento, após a preparação da análise econômica quantitativa (Ação 18) e antes da seleção da Opção Mais Vantajosa (Ação 20).",
+  "excecoes": [
+    "Trata-se de uma avaliação de quanto se está disposto a pagar para obter determinado benefício ou reduzir determinado risco.",
+    "Considerar, nesta avaliação, os riscos envolvidos nos processos de licenciamento ambiental, de remoção de interferências e de desapropriação.",
+    "É fundamental manter a rastreabilidade de como cada risco foi identificado e classificado, bem como a transparência na avaliação dos benefícios qualitativos, para evitar subjetividades excessivas;",
+    "Sempre registrar as premissas e limitações da avaliação qualitativa (disponibilidade de dados, maturidade das informações etc.) e prever revisões constantes à medida que o projeto evolui.",
+    "A avaliação deve considerar a perspectiva de diferentes grupos de partes interessadas, incluindo a comunidade, usuários dos serviços e outras organizações relevantes."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um Programa Habitacional que visou à construção de unidades para a população de baixa renda, o EVTEA incluiu uma análise qualitativa detalhada dos riscos e benefícios para cada opção de localização e modelo de moradia. Para as alternativas de reassentamento, o estudo avaliou qualitativamente o risco de desintegração social e perda de laços comunitários, e propôs medidas como a construção de espaços de convivência e a manutenção de redes de apoio preexistentes. No aspecto dos benefícios, analisou o ganho qualitativo em dignidade, segurança e acesso a serviços públicos (saúde e educação) que não eram facilmente monetizáveis, mas representaram uma “disposição a pagar” social. Os riscos relacionados ao licenciamento ambiental, à remoção de interferências e aos processos de desapropriação foram exaustivamente discutidos e avaliados qualitativamente, demonstrando que a otimização desses fatores — mesmo com custo financeiro maior — traria valor público superior. As decisões ficaram registradas com fundamentação clara das avaliações qualitativas atribuídas a cada opção."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Para um Programa Habitacional de revitalização de conjuntos residenciais antigos, o EVTEA realizou uma análise qualitativa dos benefícios, destacou a melhoria da qualidade de vida e a redução da criminalidade nas áreas requalificadas. A avaliação dos riscos, centrada nas desapropriações, foi detalhada ao tratar dos atrasos na obra e das dificuldades com moradores, incluindo a percepção das partes interessadas e a “disposição a pagar” para mitigá-los. Contudo, embora o licenciamento ambiental tenha sido mencionado como item relevante, o estudo não apresentou avaliação qualitativa específica de como esses riscos poderiam impactar as opções ou a decisão final, nem abordou os impactos sociais intangíveis correspondentes."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um projeto de construção de conjunto habitacional em área de expansão urbana não incluiu qualquer análise qualitativa de riscos e benefícios. O EVTEA focou exclusivamente em aspectos técnicos e financeiros, apresentou custos de construção e cronogramas de entrega das unidades, mas omitiu avaliação sobre como o projeto impactaria a qualidade de vida dos futuros moradores, a coesão social da comunidade ou os riscos intangíveis associados à localização. Os riscos de licenciamento ambiental, remoção de interferências ou desapropriação foram tratados apenas pelos custos diretos, sem considerar as complexidades qualitativas e os impactos sociais ou ambientais que poderiam gerar. A ausência dessa análise qualitativa impediu uma compreensão holística dos impactos do projeto e comprometeu a justificativa de valor público."
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "acao_id": 13,
+  "titulo": "Identifique as partes interessadas, as ações de engajamento e o plano de gestão de mudanças",
+  "dimensao": "Gerencial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A identificação e o mapeamento das partes interessadas, ainda na fase de viabilidade, são fundamentais para evitar que o projeto avance descolado da realidade social, institucional ou operacional em que será implantado. Conhecer os atores impactados — e antecipar como e quando eles devem ser envolvidos — contribui não apenas para mitigar resistências e alinhar expectativas, mas também para garantir a elaboração de cronogramas realistas e compatíveis com a situação. Quando essa análise é negligenciada, o estudo pode desconsiderar restrições significativas ao avanço do projeto. Por exemplo, é comum que se estimem prazos inadequados para a obtenção de licenças ambientais, por desconhecimento da necessidade de consulta a comunidades tradicionais ou da complexidade dos trâmites administrativos. A mesma coisa se aplica à previsão de desapropriações ou reassentamentos, que frequentemente exigem articulação jurídica e social mais prolongada. Da mesma forma, a remoção de interferências, como redes de energia, dutos ou infraestruturas urbanas, pode envolver diversos entes e prazos de execução que, se não forem previstos, impactam diretamente a viabilidade do cronograma. Quando bem conduzida, essa ação fortalece o planejamento estratégico do projeto, reduz riscos de judicialização, facilita a articulação interinstitucional e oferece condições mais sólidas para o cumprimento dos prazos e compromissos estabelecidos.",
+  "descricao_acao": "Identificar as partes interessadas e o envolvimento destas (grupos vulneráveis, grupos beneficiados, grupos afetados etc.). Realizar o engajamento antecipado das partes interessadas e identificar riscos e oportunidades para diferentes grupos. Desenvolver um plano de gestão de mudanças, que mostrará: as mudanças que resultarão do projeto; os potenciais impactos/benefícios para as diferentes partes interessadas; como as partes interessadas estiveram e estarão envolvidas na compreensão e mitigação dos impactos e benefícios potenciais das mudanças; como as mudanças serão comunicadas, implementadas e gerenciadas.",
+  "o_que_esperar": "Plano inicial de engajamento das partes interessadas que identifique e envolva os grupos impactados pelo projeto, buscando entender seus interesses e preocupações. Plano inicial de gerenciamento das mudanças que poderão ocorrer com a implantação do projeto, descrevendo como serão tratadas as transformações que ele próprio irá gerar, de forma a minimizar impactos negativos e comunicar as mudanças de forma eficaz.",
+  "produtos_esperados": [
+    {
+      "id": "13",
+      "texto": "Documento preliminar que identifique e descreva, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "13a",
+      "texto": "Partes interessadas relevantes que poderão ser afetadas pelo projeto e seu nível de influência."
+    },
+    {
+      "id": "13b",
+      "texto": "Forma como essas partes serão envolvidas e comunicadas ao longo do ciclo de vida do projeto, incluindo métodos de comunicação (reuniões, consultas), frequência, prazos, principais tópicos a serem discutidos, responsabilidades por cada ação etc."
+    },
+    {
+      "id": "13c",
+      "texto": "Principais mudanças esperadas com o projeto envolvendo as partes interessadas, as possíveis resistências e as estratégias que poderão ser adotadas para mitigar riscos."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Destaca-se possíveis partes interessadas em projetos, como povos originários, comunidades quilombolas, famílias a serem reassentadas, proprietários de imóveis a serem desapropriados, sítios arqueológicos, responsáveis por áreas de preservação/conservação ambiental, entre outros."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação de uma rodovia em região amazônica, com presença de comunidades tradicionais e unidades de conservação, a equipe elaborou, ainda na fase de viabilidade, um mapeamento detalhado das partes interessadas. O estudo identificou povos indígenas em isolamento relativo, associações extrativistas, órgãos ambientais, concessionárias de energia e municípios afetados. Foram propostas ações específicas de engajamento, como consultas públicas em língua local, mediações com apoio de antropólogos e pactuação de medidas mitigadoras. Além disso, houve um plano preliminar de gestão de mudanças que abordou impactos esperados, riscos de deslocamento involuntário e estratégias de comunicação contínua com os grupos envolvidos. A integração com o cronograma e a definição de responsabilidades conferiram robustez à abordagem."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "O estudo da implantação da rodovia apresentou um mapeamento inicial das comunidades afetadas, identificou áreas sensíveis e grupos potencialmente vulneráveis e incluiu um cronograma específico de ações de engajamento, bem como um plano de gestão de mudanças que reconheceu potenciais impactos sociais e propôs medidas estruturadas de mitigação. Observou-se articulação entre o diagnóstico socioambiental e a estratégia de intervenção, fornecendo elementos úteis à gestão do processo. Entretanto, o plano careceu de definição clara dos métodos de consulta pública, da sistemática de retorno às comunidades consultadas e de mecanismos que assegurassem integração efetiva com a governança do projeto. Essas lacunas pontuais impediram o atendimento pleno da ação."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No estudo de viabilidade da rodovia, mesmo com clara inserção em território sensível — comunidades tradicionais, áreas de conservação e serviços urbanos a serem afetados —, a equipe não fez qualquer menção a partes interessadas. Não houve mapeamento de atores, ações de consulta ou planos de mitigação. A ausência completa de estratégias de engajamento ou de gestão das mudanças esperadas comprometeu a legitimidade do projeto e ampliou os riscos de judicialização, resistência social e bloqueios institucionais."
+    }
+  ]
+}

@@ -90,11 +90,13 @@ def retrieve_hybrid_candidates_for_acao(
 ) -> dict[str, list[tuple[float, RetrievedChunk]]]:
     """Per-Expected-Product RRF-fused candidates, wider than the per-product cap (ADR-0050).
 
-    For each letter-suffixed Expected Product, returns up to _CANDIDATE_POOL_SIZE
-    (fused_score, chunk) pairs sorted best-first — BEFORE the _PER_PRODUCT_TARGET
-    narrowing that retrieve_hybrid_for_acao() applies. This is the wider pool the
-    relevance gate (evidence_selection.select_evidence) classifies against, so a
-    genuinely relevant chunk ranked below 5 by RRF still gets a chance.
+    For each scored Expected Product (ProdutoEsperado.scored=True — excludes
+    non-scored section-header/container items), returns up to
+    _CANDIDATE_POOL_SIZE (fused_score, chunk) pairs sorted best-first — BEFORE
+    the _PER_PRODUCT_TARGET narrowing that retrieve_hybrid_for_acao() applies.
+    This is the wider pool the relevance gate (evidence_selection.select_evidence)
+    classifies against, so a genuinely relevant chunk ranked below 5 by RRF
+    still gets a chance.
 
     Returns {} when acao_id is not found in the IPMP store.
     """
@@ -107,7 +109,7 @@ def retrieve_hybrid_candidates_for_acao(
 
     candidates: dict[str, list[tuple[float, RetrievedChunk]]] = {}
     for product in acao.produtos_esperados:
-        if not product.id[-1:].isalpha():
+        if not product.scored:
             continue
         profile_product = (
             profile_acao.expected_products.get(product.id) if profile_acao else None
@@ -124,7 +126,7 @@ def retrieve_hybrid_for_acao(
 ) -> list[RetrievedChunk]:
     """Per-Expected-Product hybrid retrieval: BM25 + vector fused via RRF (ADR-0049).
 
-    For each letter-suffixed Expected Product (1a, 1b, ...): builds a BM25 query
+    For each scored Expected Product (1a, 1b, ...): builds a BM25 query
     (curated profile terms, falling back to build_bm25_query()) and a vector
     query (evidence_intent + retrieval_signal_concepts, falling back to the raw
     IPMP product text), retrieves up to _CANDIDATE_POOL_SIZE candidates from

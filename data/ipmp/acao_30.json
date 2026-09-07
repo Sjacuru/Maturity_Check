@@ -1,0 +1,54 @@
+{
+  "acao_id": 30,
+  "titulo": "Elabore uma seção sobre o envolvimento e designação de consultores",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "O envolvimento de consultores externos em projetos de infraestrutura pública é comum e, em muitos casos, necessário. No entanto, é fundamental que esse envolvimento esteja claramente documentado, com definição de escopo, prazos, custos e responsabilidades de cada consultoria contratada. Essa organização evita sobreposições, lacunas de atuação e desarticulação entre os diferentes prestadores de serviço que apoiam o planejamento e a futura execução. Essa ação é importante porque a ausência dessa consolidação pode gerar perda de conhecimento institucional, fragmentação de informações ou dificuldade para responsabilizar partes envolvidas por entregas técnicas mal executadas. Por exemplo, se a delimitação contratual entre dois consultores não está clara — um responsável por estudos ambientais e outro por desapropriações — pode haver omissões críticas ou falhas de coordenação com impactos diretos na obtenção de licenças, cronogramas ou custos do projeto. Além disso, o conhecimento sobre quais consultores estão envolvidos e como estão contratados permite ao gestor avaliar a consistência e a independência das análises produzidas, bem como o custo agregado das contratações auxiliares. Também permite estabelecer maior controle sobre o fluxo de entregas técnicas e a rastreabilidade das decisões tomadas com base nesses insumos. Quando bem estruturado, esse registro favorece a transparência, melhora o controle técnico e administrativo sobre os serviços de apoio contratados e fortalece a capacidade institucional de gerir projetos complexos com múltiplos atores.",
+  "descricao_acao": "Desenvolver e elaborar, a partir da opção escolhida, uma compreensão clara dos consultores que foram envolvidos e designados, suas funções, acordos contratuais e custos relacionados, juntamente com os riscos ou questões dos quais eles precisam estar cientes.",
+  "o_que_esperar": "Documento que detalhe os consultores envolvidos, suas áreas, funções, disposições contratuais e custos.",
+  "produtos_esperados": [
+    {
+      "id": "30",
+      "texto": "Documento que indique, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "30a",
+      "texto": "Necessidade, ou não, da contratação de consultores externos para apoio específico no projeto;"
+    },
+    {
+      "id": "30b",
+      "texto": "Área de especialização e a função específica que será desempenhada por cada um;"
+    },
+    {
+      "id": "30c",
+      "texto": "Disposições contratuais relevantes de cada acordo;"
+    },
+    {
+      "id": "30d",
+      "texto": "Estimativa de custos."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ao fazer isso, será possível ter uma melhor compreensão dos agentes envolvidos e seu custo-benefício."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Após a definição da alternativa técnica para o sistema de coleta e tratamento de esgoto em área metropolitana, foi elaborado um documento que consolidou as informações sobre os consultores contratados. O registro indicou a necessidade de apoio especializado nas áreas de engenharia sanitária, modelagem econômico-financeira e gestão social. Estiveram descritas as funções de cada consultoria, os marcos contratuais, prazos, escopos técnicos e estimativas de custo. O documento também indicou riscos associados à fragmentação de responsabilidades e estratégias para mitigar sobreposições ou lacunas de atuação. Essa organização conferiu clareza à gestão dos serviços auxiliares e permitiu rastrear decisões e entregas técnicas com segurança."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, foram identificados contratos ativos com consultorias nas áreas técnica e ambiental, com registros consistentes de vigência e da natureza dos serviços contratados. As contratações estiveram documentadas em relatórios e planilhas administrativas que, embora dispersas em poucos processos e sistemas, permitiram a identificação dos principais envolvidos e o acompanhamento das entregas em curso com relativa facilidade. Entretanto, não foi apresentado documento consolidado que reunisse escopos, custos e responsabilidades de forma estruturada e integrada. Essa ausência dificultou a rastreabilidade e a avaliação do grau de coordenação entre os prestadores de serviço."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Mesmo com a contratação de diversas consultorias para apoiar o projeto de esgotamento sanitário, não foi encontrado qualquer documento consolidando as informações sobre esses serviços. Os termos de referência não estiveram sistematizados, não houve clareza sobre os limites de atuação de cada consultor, nem houve registros de custos agregados ou riscos de sobreposição contratual. A ausência dessa organização comprometeu a transparência, dificultou o controle técnico e impediu a responsabilização adequada em caso de falhas nas entregas."
+    }
+  ]
+}

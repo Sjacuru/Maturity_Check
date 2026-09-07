@@ -1,0 +1,37 @@
+{
+  "acao_id": 39,
+  "titulo": "Atualize a Dimensão Estratégica, se necessário",
+  "dimensao": "Estratégica",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "Com a realização da consulta pública e o avanço das tratativas institucionais, é necessário revisar os aspectos estratégicos do projeto para verificar se ele ainda mantém coerência com os objetivos que justificaram sua concepção. Essa revisão permite confirmar se o empreendimento continua alinhado às prioridades públicas, às diretrizes setoriais e aos problemas que originalmente buscava solucionar. Essa ação é importante porque, ao longo da maturação de um projeto, podem surgir mudanças significativas de contexto — como alterações no território, em políticas públicas, em decisões de planejamento urbano ou mesmo nas expectativas das partes interessadas — que impactam diretamente a pertinência da solução adotada. Por exemplo, a audiência pública pode revelar que uma nova infraestrutura está sendo implantada na região e cumpre, parcial ou totalmente, a função prevista para o projeto em questão. Também pode ocorrer que novas prioridades orçamentárias ou decisões do ente federativo desloquem o foco para outras regiões ou intervenções. Além disso, fatos supervenientes oriundos de órgãos de controle, de pareceres técnicos ou de resoluções intergovernamentais podem apontar riscos estratégicos ou sobreposições que não haviam sido considerados inicialmente. Nesses casos, a revisão da dimensão estratégica permite corrigir desvios de foco, ajustar justificativas e, se necessário, redirecionar a intervenção antes da contratação. Ignorar esse processo de verificação pode resultar na contratação de um projeto que já não responde às necessidades reais da política pública, abrindo espaço para questionamentos futuros, revisões contratuais ou mesmo paralisações por perda de prioridade ou contestação do seu mérito. Quando bem aplicada, essa ação atua como uma checagem final de propósito e relevância, garantindo que o projeto que será executado ainda resolve o problema certo, da forma mais adequada e com o melhor uso dos recursos públicos.",
+  "descricao_acao": "Revisar a dimensão estratégica para avaliação de quaisquer mudanças que podem ter ocorrido em relação ao contexto estratégico e ao surgimento de necessidades adicionais, a partir da consulta pública ou de qualquer fato superveniente significativo que possa impactar o projeto.",
+  "o_que_esperar": "Documentação estratégica devidamente alterada, na medida da necessidade de atualização, que sirva de validação final da necessidade estratégica, assegurando que a justificativa fundamental do projeto permanece sólida e alinhada com o contexto estratégico atual antes de prosseguir para a fase de execução.",
+  "produtos_esperados": [
+    {
+      "id": "39",
+      "texto": "Documento estratégico original (estudo técnico, plano, tabela, orçamento, organograma, cronograma etc.) devidamente atualizado, a partir da necessidade percebida após consulta pública ou de fatos significativos supervenientes, tais como os provenientes dos órgãos de controles, mas não se limitando a eles."
+    }
+  ],
+  "momento_ideal": "Após a consulta ao mercado e antes da licitação.",
+  "excecoes": [
+    "Se não houver inconsistências nas ações originais, a revisão deve indicar tal fato formalmente."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de macrodrenagem e urbanização em área sujeita a inundações cíclicas, a equipe de gestão promoveu uma reavaliação estruturada da Dimensão Estratégica, motivada por contribuições recebidas em consulta pública que evidenciaram omissões na caracterização de comunidades afetadas, bem como por recomendações de órgãos de controle quanto à delimitação do problema público. Como resultado, a equipe atualizou as justificativas do projeto, ajustou o foco territorial da intervenção e reforçou o alinhamento com diretrizes nacionais de adaptação climática. Todas as alterações foram documentadas formalmente e compatibilizadas com os registros anteriores. A ação foi plenamente atendida."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, manifestações da sociedade civil e pareceres de órgãos ambientais resultaram na reavaliação formal da Dimensão Estratégica. A equipe técnica revisou a delimitação do problema, atualizou parcialmente as justificativas e reafirmou a solução escolhida com base em análises adicionais. As mudanças incorporadas demonstraram fundamentação técnica robusta e compatível com os novos elementos contextuais. Contudo, o documento revisado não explicitou de forma sistemática os critérios utilizados na priorização da solução adotada, o que comprometeu pontualmente a rastreabilidade da decisão. Assim, ainda que tenha apresentado resposta técnica consistente, a ação ficou apenas parcialmente atendida."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Ainda nesse projeto, apesar de recomendações de órgãos de controle e alertas de especialistas sobre alterações significativas no território e impactos sociais não previstos, a equipe não realizou qualquer reavaliação da Dimensão Estratégica. O diagnóstico do problema permaneceu inalterado, assim como a justificativa da intervenção e a alternativa priorizada, desconsiderando novas informações disponíveis. Não houve nota técnica, atualização de documentos ou compatibilização com instrumentos de planejamento. Por isso, a ação não foi atendida."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "acao_id": 21,
+  "titulo": "Revise a Avaliação de Impacto Ambiental e Social (AIAS), estudos técnicos e outros",
+  "dimensao": "Econômica",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Após a definição da opção mais vantajosa (OMV), o foco do planejamento deve se voltar ao aprofundamento das análises associadas à solução selecionada, garantindo que os impactos ambientais e sociais previstos anteriormente sejam gerenciados com realismo, consistência técnica e capacidade institucional. É nesse ponto que um Plano de Gestão Ambiental e Social (PGAS) passa a desempenhar papel central: trata-se de um instrumento que integra, organiza e detalha as medidas de mitigação e compensação, os riscos socioambientais mapeados e as responsabilidades pela sua gestão ao longo do ciclo do empreendimento. Essa ação é importante porque traduz, em termos operacionais, o que precisa ser feito para que os impactos negativos sejam controlados e os benefícios ambientais e sociais possam se materializar. Sem esse esforço estruturado, o projeto tende a repetir padrões genéricos de gestão, como a simples previsão de um Plano Básico Ambiental (PBA) posterior ao licenciamento, o que não oferece garantias de articulação entre riscos identificados e medidas gerenciais desde o início. Também se perde a oportunidade de antecipar efeitos econômicos e sociais mais amplos, especialmente sobre populações vulneráveis ou territórios periféricos, cujo impacto pode ser subestimado se considerado apenas sob a ótica do EIA/RIMA. A título de exemplo, diante da prévia identificação - no bojo da Ação 07- da necessidade de estudos aprofundados sobre o impacto na biodiversidade e nas comunidades indígenas, e da recomendação de se contratar especialistas em etnoecologia e fauna silvestre -, o gestor do projeto, pressionado por prazos e por um orçamento apertado, decide não dar prosseguimento à contratação desses especialistas. A revisão da AIAS na Ação 21 é, então, realizada apenas com a equipe interna, que não possui a expertise necessária para avaliar a fundo os riscos de desmatamento em áreas de floresta primária, o impacto na fauna migratória e a possível contaminação de rios por resíduos da construção, que são utilizados por comunidades tradicionais. Além disso, o Plano de Gestão Ambiental e Social (PGAS) para a OMV é elaborado com medidas mitigadoras genéricas, sem considerar as especificidades das espécies ameaçadas ou os protocolos de consulta culturalmente adequados às comunidades indígenas, que dependem diretamente desses recursos naturais para sua subsistência. Ao fim e ao cabo, essa ação requer que os estudos anteriores — como a Avaliação Integrada Ambiental e Social (AIAS) ou documentos equivalentes — sejam revisitados, com análise crítica sobre a coerência entre os impactos esperados, as medidas propostas e os critérios de decisão adotados. Trata-se de uma verificação que reforça o vínculo entre escolha estratégica e capacidade de implementação. Quando bem conduzida, ela reduz o risco de judicialização, fortalece e acelera o licenciamento e prepara o projeto para uma execução mais coordenada e resiliente às pressões externas.",
+  "descricao_acao": "Revisar os estudos detalhados sobre a AIAS e outros que foram realizados para a alternativa escolhida, conforme a Ação 7. Desenvolver um Plano de Gestão Ambiental e Social (PGAS) para a opção mais vantajosa.",
+  "o_que_esperar": "Revisão detalhada da Avaliação de Impacto Ambiental e Social (AIAS) e de outros estudos técnicos realizados para a alternativa escolhida. Consideração das conclusões da AIAS na seleção da Opção Mais Vantajosa (OMV). Desenvolvimento de um Plano de Gestão Ambiental e Social (PGAS) para a OMV. Verificação da conformidade da AIAS com os requisitos legais nacionais, subnacionais.",
+  "produtos_esperados": [
+    {
+      "id": "21",
+      "texto": "Seção atualizada do EVTEA (ou estudo técnico equivalente) contemplando:",
+      "scored": false
+    },
+    {
+      "id": "21a",
+      "texto": "Revisão dos estudos detalhados sobre a AIAS e outros que foram realizados para cada uma das opções pré-listadas, com destaque para as conclusões relevantes para a tomada de decisão."
+    },
+    {
+      "id": "21b",
+      "texto": "Descrição de como as conclusões da AIAS foram consideradas na seleção da Opção Mais Vantajosa."
+    },
+    {
+      "id": "21c",
+      "texto": "Plano de Gestão Ambiental e Social (PGAS) para a Opção Mais Vantajosa, que descreva: os principais riscos ambientais e sociais identificados para o projeto; medidas de mitigação para cada risco identificado; funções e responsabilidades para implementar e monitorar a implementação do plano."
+    },
+    {
+      "id": "21d",
+      "texto": "Confirmação da abrangência da análise da AIAS, incluindo considerações geográficas, grupos protegidos e análise de diferentes modelos de construção."
+    }
+  ],
+  "momento_ideal": "Fase final da Dimensão Econômica na Proposta Intermediária de Investimento, após a seleção preliminar da Opção Mais Vantajosa (Ação 20) e antes da transição para a Dimensão Comercial.",
+  "excecoes": [
+    "Um PGAS é um documento que descreve os principais riscos ambientais e sociais identificados para o projeto, medidas de mitigação para cada risco identificado e funções e responsabilidades para implementar e monitorar a implementação do plano.",
+    "Importante compreender que a elaboração do EIA/RIMA não deve ser confundida com a construção do PGAS, dado que este possui caráter mais amplo, com caráter gerencial e objetivo de avaliar efeitos econômicos (positivos e negativos) que o projeto acarreta para questões ambientais e sociais, incluindo as consequências para populações mais vulneráveis.",
+    "Nessa revisão é essencial que sejam analisados os impactos dos processos de licenciamento ambiental, de remoção de interferências e de desapropriação relacionados à opção escolhida.",
+    "A revisão da AIAS pode exigir investigações do local, coleta de dados técnicos e consulta aos beneficiários/usuários, incluindo grupos vulneráveis.",
+    "O desenvolvimento do PGAS deve ser específico para a Opção Mais Vantajosa.",
+    "É importante garantir que a AIAS e o PGAS cumpram quaisquer requisitos legais nacionais, subnacionais."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Para a construção de uma nova ferrovia de transporte de cargas, o EVTEA incluiu uma revisão abrangente da Avaliação de Impacto Ambiental e Social (AIAS) referente à opção mais vantajosa, que considerou o traçado com menor impacto em áreas sensíveis. O relatório de revisão da AIAS detalhou as considerações geográficas, avaliou impactos além da área de influência direta e incorporou uma análise crítica de custo-benefício para assegurar que resultados de políticas mais amplas (como o desenvolvimento regional equilibrado) fossem priorizados em relação a projetos focados apenas em áreas urbanizadas. Os impactos sobre grupos protegidos (povos indígenas e comunidades quilombolas) foram analisados minuciosamente, com propostas de mitigação específicas. Um Plano de Gestão Ambiental e Social (PGAS) detalhado foi desenvolvido para a opção escolhida, descreveu os principais riscos ambientais e sociais identificados, estabeleceu as medidas de mitigação para cada risco (com cronograma e responsáveis) e definiu funções e responsabilidades para implementar e monitorar o plano ao longo de todo o ciclo de vida da ferrovia."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Em um projeto de modernização de um trecho ferroviário existente, o EVTEA apresentou uma revisão dos estudos ambientais, mas focou principalmente na conformidade com o EIA/RIMA, deixando pontos a serem aprimorados no PGAS. A AIAS revisada abordou os impactos sobre a fauna e a flora local, e as medidas de mitigação foram propostas para esses aspectos. A análise dos impactos sociais trouxe a necessidade de comunicação com as comunidades vizinhas; entretanto, não aprofundou a avaliação de riscos para um dos grupos vulneráveis (comunidades tradicionais) nem revisitou a “disposição a pagar” para garantir benefícios sociais adicionais."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um estudo de viabilidade para a construção de um pátio de manobras ferroviário não incluiu qualquer revisão formal da AIAS após a seleção da opção mais vantajosa. Os estudos ambientais preliminares permaneceram genéricos, sem considerar as especificidades da opção escolhida, e não houve desenvolvimento de um PGAS. Não foram analisados os impactos dos processos de licenciamento ambiental, remoção de interferências ou desapropriação de forma integrada com a AIAS ou o PGAS. A documentação apresentada não demonstrou como os riscos e oportunidades ambientais e sociais específicos da opção selecionada seriam gerenciados, nem como as medidas de mitigação seriam implementadas, indicando uma lacuna crítica no planejamento."
+    }
+  ]
+}

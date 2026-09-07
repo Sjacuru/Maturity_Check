@@ -11,7 +11,7 @@ from pydantic import BaseModel, field_validator
 logger = logging.getLogger(__name__)
 
 _DATA_DIR = Path(__file__).parent.parent.parent / "data" / "ipmp"
-_ID_PATTERN = re.compile(r"^\d+[a-z]?$")
+_ID_PATTERN = re.compile(r"^\d+(\.\d+)?[a-z]?$")
 
 
 class Exemplo(BaseModel):
@@ -23,6 +23,9 @@ class Exemplo(BaseModel):
 class ProdutoEsperado(BaseModel):
     id: str
     texto: str
+    # False marks a non-scored section-header/container item (e.g. "40"
+    # alongside "40a".."40d") rather than an actual Produto Esperado.
+    scored: bool = True
 
     @field_validator("id")
     @classmethod
@@ -36,7 +39,13 @@ class AcaoIPMP(BaseModel):
     acao_id: int
     titulo: str
     dimensao: Literal["Estratégica", "Econômica", "Comercial", "Financeira", "Gerencial"]
-    fase: Literal["Inicial", "Intermediária", "Final"]
+    fase: Literal[
+        "Inicial",
+        "Intermediária",
+        "Final",
+        "Aprimoramento da alternativa escolhida",
+        "Consulta pública, Revisões e atualizações",
+    ]
     ponto_transicao: bool
     por_que_importante: str
     descricao_acao: str

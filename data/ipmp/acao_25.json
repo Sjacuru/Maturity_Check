@@ -1,0 +1,58 @@
+{
+  "acao_id": 25,
+  "titulo": "Elabore um planejamento para realização da licitação e interaja com BMDs (se aplicável)",
+  "dimensao": "Comercial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "A preparação da licitação exige um planejamento detalhado, que vá além da simples elaboração do edital. Trata-se de estruturar, com antecedência, todas as etapas do processo licitatório: quem conduz, o que deve ser feito, em que ordem, com quais documentos e sob quais riscos. Essa organização prévia evita improvisações, sobrecarga de instâncias administrativas e falhas procedimentais que podem atrasar ou até inviabilizar a contratação. Ignorar essa etapa ou tratá-la como mero checklist pode gerar inconsistências, retrabalho ou perda de prazos críticos. Por exemplo, a ausência de uma linha do tempo articulada com a agenda de aprovações internas — como análises jurídicas, pareceres técnicos ou revisões institucionais — pode comprometer a fluidez do processo. Também podem ocorrer falhas na definição de responsabilidades institucionais que gerem dúvidas sobre a tramitação dos documentos ou a execução de etapas sensíveis, como avaliação de propostas e homologação do resultado. Essa ação ainda permite antecipar e mitigar riscos objetivos da licitação, como impugnações, exigências mal formuladas ou descompassos entre os documentos do processo. Além disso, ajuda a integrar os diferentes núcleos envolvidos — jurídico, técnico, administrativo — promovendo uma visão comum e coordenada da contratação. Quando bem conduzido, esse planejamento fortalece a governança da licitação, garante maior previsibilidade ao cronograma e reduz o risco de falhas que comprometam o investimento público.",
+  "descricao_acao": "Elaborar um planejamento detalhado para a realização da licitação, descrevendo todas as etapas, agentes responsáveis, fluxos de decisão e documentos necessários, conforme a legislação pertinente. O planejamento deve incluir: cronograma completo (linha do tempo); definição de lideranças e executores do processo; mapeamento de competências institucionais envolvidas; identificação da documentação a ser elaborada, revisada e aprovada; forma de avaliação das propostas e responsáveis por essa etapa; previsão sobre exigência e avaliação de garantias; mapeamento de riscos objetivos do processo licitatório e medidas de mitigação; quando aplicável, previsão de interações com Bancos Multilaterais de Desenvolvimento (BMDs) e suas exigências procedimentais.",
+  "o_que_esperar": "Planejamento formalizado e executável da licitação, com definição clara dos procedimentos, responsáveis e prazos. Cobertura de todas as fases do certame: elaboração documental, publicação do edital, julgamento e homologação. Indicação dos fluxos decisórios, papéis institucionais e riscos operacionais, com cronograma correspondente. Inclusão de ajustes específicos, quando necessário, para atender exigências de instituições financiadoras. Mitigação de riscos relacionados a atrasos, retrabalho e contestações, reforçando a previsibilidade e segurança jurídica do processo.",
+  "produtos_esperados": [
+    {
+      "id": "25",
+      "texto": "Documento técnico de planejamento da licitação contendo:",
+      "scored": false
+    },
+    {
+      "id": "25a",
+      "texto": "Cronograma com marcos, responsáveis e prazos definidos;"
+    },
+    {
+      "id": "25b",
+      "texto": "Fluxograma com etapas do processo, órgãos ou unidades envolvidas e suas competências;"
+    },
+    {
+      "id": "25c",
+      "texto": "Identificação da documentação a ser elaborada, aprovada e publicada;"
+    },
+    {
+      "id": "25d",
+      "texto": "Plano de gerenciamento de riscos da licitação com medidas mitigadoras;"
+    },
+    {
+      "id": "25e",
+      "texto": "Quando aplicável, diretrizes específicas para interação com BMDs."
+    }
+  ],
+  "momento_ideal": "Fase final da etapa de planejamento, imediatamente antes da publicação do edital.",
+  "excecoes": [
+    "Órgãos com ritos licitatórios já formalizados e com elevado grau de padronização podem utilizar modelos institucionais consolidados, desde que o projeto em questão seja compatível com o fluxo padrão adotado e exista evidência de sua aplicação prática. Em contratações com financiamento externo, a ausência de integração com exigências de BMDs pode comprometer a viabilidade do processo."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto da ponte sobre o Rio São Francisco, a equipe elaborou um planejamento de licitação detalhado, contemplando todas as etapas procedimentais desde a elaboração dos documentos técnicos e jurídicos até a homologação do certame. O plano incluiu um cronograma com prazos realistas, definiu os responsáveis por cada etapa (área técnica, jurídica e administrativa), estabeleceu fluxograma de tramitação interna e mapeou a documentação necessária para cada fase. Houve também um plano de gerenciamento de riscos da licitação, com medidas preventivas para eventuais impugnações ou falhas documentais. Considerando o financiamento do BID, o planejamento indicou as etapas específicas de aprovação do banco, como análise ex-ante do edital e parecer sobre a matriz de riscos. Essa preparação permitiu integração eficiente entre o órgão executor e a instituição financiadora e assegurou regularidade e previsibilidade ao processo licitatório."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto da ponte, o planejamento da licitação incluiu cronograma com prazos definidos para as principais etapas e apresentou fluxograma com indicação de responsabilidades específicas. Embora não houvesse previsão de interações com o BID, tal medida não se mostrou necessária em virtude do modelo de contratação. O material identificou alguns riscos operacionais, tratados de forma compatível, mas não cobriu totalmente os pontos críticos do processo, exigindo complementações pontuais."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No caso da ponte sobre o Rio São Francisco, não se identificou qualquer documento de planejamento da licitação. O processo seguiu a tramitação institucional padrão, sem cronograma prévio, definição formal de responsabilidades ou estratégia para mitigação de riscos procedimentais. A ausência de um plano específico dificultou a coordenação entre as áreas envolvidas, gerou atrasos na obtenção de pareceres jurídicos e acarretou lacunas nos documentos publicados. Além disso, não houve menção às exigências do BID, embora o financiamento já estivesse previsto, o que levou a retrabalho e à necessidade de republicação do edital. A inexistência de planejamento comprometeu a governança do processo e gerou insegurança jurídica."
+    }
+  ]
+}

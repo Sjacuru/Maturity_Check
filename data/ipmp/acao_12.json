@@ -1,0 +1,58 @@
+{
+  "acao_id": 12,
+  "titulo": "Desenvolva um plano de projeto inicial e um plano de controle de qualidade e aprovações",
+  "dimensao": "Gerencial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A elaboração de um plano de projeto inicial, ainda na fase de viabilidade, proporciona uma visão estruturada do caminho a ser percorrido até a contratação e implementação do empreendimento. Ele contribui para que as etapas futuras não sejam conduzidas de forma improvisada ou fragmentada, mas sim orientadas por um cronograma de marcos principais, com previsão de recursos, responsabilidades definidas e pontos de controle organizados. Quando essa ação é negligenciada, é comum que haja indefinições quanto às próximas etapas, ausência de controle sobre prazos e dispersão de esforços entre áreas técnicas. Por exemplo, pode-se iniciar a preparação de um estudo ou projeto sem clareza sobre os procedimentos de validação ou os responsáveis pela aprovação dos produtos. Também podem ocorrer sobreposições, atrasos e retrabalhos causados por falta de sincronização entre a elaboração dos estudos técnicos e os trâmites institucionais necessários à contratação — incluindo processos de licenciamento ambiental, desapropriações e reassentamentos. A ausência desse alinhamento compromete a previsibilidade da implantação e aumenta o risco de paralisações. Quando bem tratada, essa ação permite estabelecer desde cedo os parâmetros mínimos de governança e gestão do ciclo do projeto, facilita o monitoramento de prazos e marcos críticos e promove maior previsibilidade e alinhamento entre os agentes envolvidos.",
+  "descricao_acao": "Produzir um plano de projeto inicial que crie consciência e compreensão internamente sobre quais serão os processos, cronogramas (incluindo marcos principais) e requisitos de recursos para o desenvolvimento da proposta e para a contratação e implementação do projeto (dentro do que for possível para o momento). Produzir um plano de controle de qualidade e aprovações, com a definição dos pontos de controle, prazos para aprovações e responsabilidade por elas.",
+  "o_que_esperar": "Cronograma inicial realista com os marcos principais do planejamento e da contratação do projeto, considerando prazos, tarefas, responsabilidades, recursos e controles.",
+  "produtos_esperados": [
+    {
+      "id": "12",
+      "texto": "Cronograma gerencial preliminar com indicação explícita, no mínimo, de:",
+      "scored": false
+    },
+    {
+      "id": "12a",
+      "texto": "Prazos realistas de: análise da documentação técnica e operacional (ex. estudos, projetos, relatórios etc.); tarefas a serem desenvolvidas ao longo do planejamento e contratação; andamento dos processos fundiários e ambientais."
+    },
+    {
+      "id": "12b",
+      "texto": "Etapas a serem desenvolvidas até a assinatura do contrato;"
+    },
+    {
+      "id": "12c",
+      "texto": "Atribuições de responsabilidades (nominal ou com indicação de cargos específicos);"
+    },
+    {
+      "id": "12d",
+      "texto": "Recursos necessários."
+    },
+    {
+      "id": "12e",
+      "texto": "Pontos de controles e aprovações;"
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Recomenda-se que esse cronograma seja alvo de constante atualização e monitoramento à medida que o projeto se desenvolve."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de modernização e ampliação de um terminal portuário público, foi apresentado, ainda na fase de viabilidade, um plano de projeto inicial detalhado. Esse plano contemplou a sequência lógica das ações necessárias até a contratação das obras e incluiu cronograma com prazos realistas para a conclusão dos estudos de batimetria, obtenção da licença prévia ambiental, elaboração, revisão e validação do projeto executivo, articulação com a autoridade portuária e definições relativas à concessão de área alfandegada. Também incluiu um plano de controle de qualidade que previu responsáveis por validações técnicas, fluxos de aprovação internos e externos e critérios objetivos de aceite. O documento demonstrou alinhamento entre a equipe técnica, os órgãos intervenientes e os marcos regulatórios aplicáveis, e conferiu robustez ao processo de estruturação."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "O projeto do terminal portuário apresentou documentação gerencial que contemplou um cronograma estruturado com marcos principais bem definidos, incluiu a contratação do projeto executivo, etapas de licenciamento ambiental e fases de mobilização. As datas indicadas mostraram alinhamento preliminar com as exigências normativas do setor portuário, e houve evidência de envolvimento institucional para articulação com a autoridade ambiental. No entanto, o plano não especificou os responsáveis por cada etapa nem os procedimentos adotados para controle de qualidade das entregas. Apesar dessa limitação, o material demonstrou planejamento técnico razoavelmente estruturado e com potencial de orientar a execução."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Na proposta de ampliação do terminal portuário, não foi identificado qualquer plano de projeto inicial. O estudo não apresentou cronograma, etapas intermediárias, responsáveis técnicos ou critérios de validação. Também não houve articulação prévia com órgãos reguladores do setor, nem previsão de trâmites junto à autoridade portuária. Essa ausência inviabilizou a coordenação entre os eixos técnico, legal e institucional, elevou significativamente os riscos de atraso, retrabalho e decisões mal fundamentadas ao longo da estruturação."
+    }
+  ]
+}

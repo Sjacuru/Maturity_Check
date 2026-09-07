@@ -1,0 +1,42 @@
+{
+  "acao_id": 16,
+  "titulo": "Forme uma comissão de Avaliação de Impacto Ambiental e Social",
+  "dimensao": "Gerencial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A definição da equipe responsável por conduzir os estudos e gerir os aspectos ambientais e sociais do projeto, ainda na fase de viabilidade, é fundamental para garantir que as análises sejam bem coordenadas, tecnicamente fundamentadas e compatíveis com o escopo e os riscos do empreendimento. Essa preparação prévia evita improvisações futuras e permite maior articulação entre os estudos técnicos, jurídicos e institucionais necessários, por exemplo, à obtenção de licenças, à execução de desapropriações e à condução de processos de reassentamento. Quando essa estrutura não é definida com antecedência, há risco de fragmentação de responsabilidades, sobreposição de funções ou ausência de controle sobre o conteúdo e os prazos dos estudos. Por exemplo, podem ocorrer atrasos na obtenção de licenças por falta de alinhamento entre a equipe que elabora os estudos e os órgãos licenciadores. Também é comum que medidas de mitigação propostas não sejam compatíveis com as capacidades institucionais da entidade executora, gerando compromissos que não podem ser cumpridos. Quando bem estabelecida, essa estrutura técnica garante maior fluidez ao licenciamento, promove a interlocução com comunidades afetadas e instituições competentes, e contribui para que o projeto avance com mais previsibilidade e segurança jurídica, especialmente em temas de alta sensibilidade socioambiental.",
+  "descricao_acao": "Contratar ou nomear os consultores que realizarão esses estudos para cada uma das opções selecionadas.",
+  "o_que_esperar": "Organograma simples que estabeleça a base organizacional inicial do projeto, especificamente no que tange aos aspectos ambientais e sociais do projeto, deixando claras as funções e responsabilidades de cada membro, e/ou resposta a questionamento do órgão de controle sobre a suficiência e adequação da estrutura de pessoal disponível nessas áreas.",
+  "produtos_esperados": [
+    {
+      "id": "16a",
+      "texto": "Organograma, em nível inicial, que estabeleça quais servidores/setores estarão envolvidos no projeto, nos aspectos sociais e ambientais, indicando as funções e as responsabilidades de cada um, e/ou"
+    },
+    {
+      "id": "16b",
+      "texto": "Resposta formal do órgão a questionamento do TCU sobre a suficiência e adequação da estrutura de pessoal disponível para gerenciar as áreas socioambientais do projeto."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Neste estágio, o projeto já dispõe de uma definição do escopo para a AIAS e quaisquer outros estudos que possam ser exigidos (promovido na Ação 7), bem como já foram elaborados os termos de referência para cada um deles.",
+    "Ao fazer isso, será possível verificar a capacidade de gestão do projeto e identificar eventual necessidade de designação de consultores específicos para essas áreas."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação de um sistema de transporte hidroviário interestadual, atravessando áreas ambientalmente sensíveis e comunidades ribeirinhas, a estrutura institucional para condução dos temas socioambientais foi estabelecida ainda na fase de viabilidade. O órgão executor contou com setores dedicados à gestão ambiental e social, com profissionais experientes, organograma claro e respaldo em normativas internas. A equipe conduziu processos de licenciamento similares, possuiu canais de interlocução formal com os órgãos ambientais e sociais e apresentou histórico de atuação coordenada em temas de reassentamento, compensações e mitigação de impactos. Essa estrutura conferiu legitimidade e capacidade operacional ao planejamento do projeto."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "O projeto de implantação do sistema de transporte hidroviário interestadual apresentou um organograma bem definido, com a indicação de um ponto focal para a área socioambiental e uma equipe técnica dedicada ao tema. As funções dos integrantes foram descritas de forma clara e coerente com as necessidades do projeto, e houve registros de interações formais com órgãos reguladores, o que demonstrou articulação institucional ativa. Contudo, o estudo não especificou os produtos esperados da atuação socioambiental em cada fase do empreendimento. Apesar dessa lacuna pontual, a estrutura apresentada se mostrou funcional e tecnicamente consistente."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Apesar da complexidade ambiental e social envolvida na implantação do sistema hidroviário, o projeto não apresentou estrutura institucional definida para lidar com essas dimensões. Não foram identificados profissionais responsáveis, canais de articulação com órgãos ambientais ou qualquer registro de organização voltada à gestão de impactos sociais. Mesmo que houvesse uma diretoria ou setor genérico no organograma da instituição, a ausência de capacidade técnica efetiva e de experiência prévia tornou a estrutura inadequada para as exigências do empreendimento. Por isso, considerou-se a ação como não atendida."
+    }
+  ]
+}

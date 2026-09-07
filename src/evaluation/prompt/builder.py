@@ -73,8 +73,7 @@ def build_system_prompt(acao_id: int) -> str:
             excecoes_lines.append(f"{i}. {exc}")
         sections.append("\n".join(excecoes_lines))
 
-    parent_id = str(acao_id)
-    child_products = [p.id for p in acao.produtos_esperados if p.id != parent_id]
+    child_products = [p.id for p in acao.produtos_esperados if p.scored]
     scoring_instruction = _build_scoring_instruction(child_products)
     sections.append(f"## Instruções de pontuação\n\n{scoring_instruction}")
 
@@ -98,14 +97,13 @@ def build_user_prompt(chunks: list[RetrievedChunk], acao_id: int = 1) -> str:
     store = get_ipmp_store()
     acao = store.acoes.get(acao_id)
 
-    # Build ordered product list from IPMP store, skipping the parent product
-    # whose id equals str(acao_id) — e.g. "1" for Ação 1 (container, not scored).
+    # Build ordered product list from IPMP store, skipping non-scored
+    # section-header/container items (e.g. "1" for Ação 1).
     product_order: list[str] = []
     product_texts: dict[str, str] = {}
     if acao:
-        parent_id = str(acao_id)
         for p in acao.produtos_esperados:
-            if p.id != parent_id:
+            if p.scored:
                 product_order.append(p.id)
                 product_texts[p.id] = p.texto
 

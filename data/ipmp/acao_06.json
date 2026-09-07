@@ -1,0 +1,57 @@
+{
+  "acao_id": 6,
+  "titulo": "Aplique a estrutura de opções",
+  "dimensao": "Econômica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A aplicação da estrutura de opções é crucial para garantir que a alternativa selecionada não seja apenas tecnicamente viável, mas também a mais vantajosa entre as disponíveis. Negligenciar essa etapa ou executá-la de forma superficial compromete a legitimidade da escolha e reduz a transparência do processo decisório. Em estudos de viabilidade, é comum que se apresentem apenas variações de um mesmo traçado ou solução já previamente concebida, sem explorar abordagens estratégicas distintas que poderiam atender ao mesmo problema com menor custo, menor impacto ou maior valor público. Por exemplo, poderia ser proposta a construção de um novo contorno viário, sem que se tenha comparado essa alternativa com o alargamento da via existente, o uso de soluções operacionais (como faixas reversíveis) ou a adoção de rotas logísticas já disponíveis. É também recorrente a ausência de comparação com o cenário de referência (sem intervenção), o que dificulta aferir os reais benefícios da obra. Quando bem elaborada, essa ação permite uma comparação estruturada entre as opções, com base em critérios como custo, risco, impacto socioambiental, capacidade de execução e resultados esperados. Isso favorece decisões mais consistentes e justificáveis. A transparência é essencial, especialmente ao justificar a exclusão de determinadas opções, registrando essa análise para fins de auditoria e tomada de decisão. A correta implementação da estrutura de opções, como um “filtro”, permite avançar progressivamente com as opções, desde o escopo até o financiamento, avaliando-as em relação aos Fatores Críticos de Sucesso previamente declarados. Isso evita o risco de adotar uma solução que pode não resolver os problemas que a Autoridade tenta solucionar, ou que pode não ser comercialmente viável ou não ter capacidade de ser custeada. Em última análise, ajuda a evitar que projetos nunca aconteçam.",
+  "descricao_acao": "Resumir o cenário atual, ou seja, o que aconteceria se um projeto não fosse implementado. Proceder com a análise de estrutura de opções (a avaliação deve envolver: escopo do projeto, soluções para a infraestrutura e prestação de serviços, existência de fornecedores, implementação e mobilização de recursos e financiamento). Analisar o custo-benefício de cada opção identificada, permitindo a comparação para escolha da opção mais vantajosa.",
+  "o_que_esperar": "Aplicação de uma abordagem sistemática (“Estrutura de Opções”) para gerar, comparar e refinar diferentes alternativas de solução para o projeto. Registro claro das vantagens, desvantagens, riscos e oportunidades de cada opção, incluindo o cenário “não fazer nada” (business as usual). Filtragem das opções inviáveis, resultando em uma lista curta de alternativas viáveis a serem aprofundadas.",
+  "produtos_esperados": [
+    {
+      "id": "6",
+      "texto": "Seção específica do EVTEA (ou documento equivalente) dedicada à análise das opções por meio de uma Análise de Custo-Benefício Preliminar (ACB preliminar - ou estudo técnico equivalente), contemplando:",
+      "scored": false
+    },
+    {
+      "id": "6a",
+      "texto": "Identificação das alternativas de escopo, solução técnica, forma de entrega, viabilidade econômico-financeira e modelo de financiamento;"
+    },
+    {
+      "id": "6b",
+      "texto": "Justificativa para as exclusões (opções descartadas) e para as inclusões (opções retidas);"
+    },
+    {
+      "id": "6c",
+      "texto": "Breve análise dos potenciais custos, benefícios e riscos de cada opção;"
+    },
+    {
+      "id": "6d",
+      "texto": "Conclusões sobre as opções a serem levadas para análise detalhada na fase seguinte."
+    }
+  ],
+  "momento_ideal": "Fase inicial do estudo de viabilidade, logo após a definição dos Fatores Críticos de Sucesso (Ação 05), para garantir que apenas as alternativas mais promissoras avancem para análises econômicas, comerciais e financeiras mais profundas.",
+  "excecoes": [
+    "Se não houver serviço ou disposição atual, deve-se avaliar os benefícios e problemas de não fazer nada como linha de base (isso será usado como uma base para comparar outras opções).",
+    "Não fique restrito a variações de soluções de engenharia para uma mesma opção, busque alternativas estratégicas diferentes para o problema.",
+    "Em projetos de alta complexidade, pode haver necessidade de revisitar com mais profundidade a Estrutura de Opções em etapas posteriores, caso surjam informações relevantes ou condições de mercado imprevistas;",
+    "É essencial manter transparência ao justificar porque determinadas opções foram excluídas, registrando essa análise para fins de auditoria e tomada de decisão."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de revitalização de uma bacia hidrográfica para irrigação, o EVTEA apresentou uma seção detalhada que aplicou a “Estrutura de Opções”. Foram identificadas e comparadas diversas alternativas, incluindo o cenário “não fazer nada” (manutenção da situação atual de degradação e baixa produtividade agrícola). As opções exploradas incluíram: a construção de uma nova barragem de grande porte (com avaliação de impactos socioambientais e custos elevados); a modernização do sistema de irrigação existente com uso de tecnologias mais eficientes (custos intermediários e benefícios ambientais); e a implementação de pequenas estruturas de captação de água com técnicas de agricultura de sequeiro (custos menores e menor impacto ambiental). Cada opção foi avaliada sistematicamente quanto ao escopo, soluções técnicas (incluindo diferentes tecnologias de irrigação), potenciais fornecedores, prazos de implementação e fontes de financiamento. As vantagens, desvantagens, riscos e oportunidades de cada alternativa foram registradas de forma clara, justificaram a eliminação de opções inviáveis e resultaram em uma lista curta das mais promissoras para análise aprofundada."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Para um projeto de construção de um canal de irrigação em uma nova área agrícola, o EVTEA apresentou algumas alternativas de traçado e capacidade do canal. Houve comparação entre o uso de canais a céu aberto e tubulações, bem como uma breve análise do cenário “não fazer nada”. No entanto, a análise não explorou amplamente outras dimensões da “Estrutura de Opções”, como diferentes modelos de gestão da água (pública, privada ou mista) ou inovações em técnicas de irrigação que poderiam otimizar o uso da água e reduzir custos operacionais a longo prazo. Embora tenha incluído uma análise de custos e benefícios para as opções apresentadas, a abordagem não foi tão abrangente quanto o esperado pela metodologia inspirada no Guia do M5D, e a justificativa para a exclusão de algumas alternativas não ficou totalmente documentada."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Em um projeto de ampliação de um perímetro irrigado, o EVTEA focou exclusivamente a melhoria da infraestrutura existente, propondo a instalação de bombas mais potentes e a substituição de parte da tubulação. O estudo não apresentou qualquer análise de alternativas estratégicas para o problema da escassez hídrica na região, como a diversificação das fontes de água, a implementação de sistemas de reuso ou a adoção de culturas menos intensivas em água. Não avaliou formalmente o cenário “não fazer nada” nem explorou opções envolvendo diferentes arranjos de fornecimento de água ou modelos de gestão. A análise se restringiu a uma única solução técnica, sem demonstrar que esta foi a mais vantajosa entre um leque amplo de possibilidades, o que indicou falha na aplicação da “Estrutura de Opções”."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "acao_id": 46,
+  "titulo": "Assine o contrato com o Licitante Vencedor",
+  "dimensao": "Comercial",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A Ação 46 marca o encerramento da fase de planejamento com a formalização contratual entre o Poder Público e o licitante vencedor. Trata-se do ato jurídico que concretiza o processo licitatório e materializa, em termos legais, todo o esforço realizado ao longo do ciclo de amadurecimento do projeto. Essa ação é importante porque representa a transição definitiva entre o planejamento e a execução. É nesse momento que os compromissos assumem forma legal e os instrumentos produzidos — cronogramas, orçamentos, matriz de riscos, planos de desapropriação e demais documentos estruturantes — passam a ter eficácia prática. No entanto, essa formalização deve ocorrer de forma tempestiva. A demora excessiva na assinatura do contrato e da ordem de serviço pode comprometer a validade das premissas utilizadas nas etapas anteriores, como as condições de mercado, os parâmetros econômicos e até a qualificação do licitante vencedor. Por exemplo, o atraso pode exigir a reavaliação de custos por variações de preços de materiais, a renegociação da matriz de riscos, ou até a revisão do escopo técnico da proposta, gerando retrabalho, insegurança jurídica e risco de frustração da contratação. Em casos mais graves, a morosidade pode inviabilizar a continuidade do processo, exigindo nova licitação e comprometendo o cronograma estratégico da política pública associada. Além disso, essa ação assegura que o contrato esteja em conformidade com os termos licitatórios e com os ajustes feitos ao longo do processo, garantindo aderência entre o que foi planejado e o que será executado. O registro formal desse ato também é indispensável para fins de controle, prestação de contas e acompanhamento posterior da execução contratual. Quando bem conduzida, a assinatura do contrato e a indispensável assinatura da ordem de serviço fecham o ciclo de planejamento de forma segura, transparente e oportuna, criando as condições institucionais e legais necessárias para que o projeto siga para a fase de entrega com solidez e previsibilidade.",
+  "descricao_acao": "Assinar o contrato com o licitante vencedor. Assinar a ordem para o início dos serviços contratados.",
+  "o_que_esperar": "Formalização contratual com o licitante vencedor. Assinatura da ordem de serviço.",
+  "produtos_esperados": [
+    {
+      "id": "46.1",
+      "texto": "Contrato tempestivamente assinado com o licitante vencedor."
+    },
+    {
+      "id": "46.2",
+      "texto": "Ordem de serviço devidamente assinada e emitida."
+    }
+  ],
+  "momento_ideal": "Após a realização da licitação.",
+  "excecoes": [
+    "Recomenda-se que a assinatura do contrato e da ordem de serviço se dê com o licitante vencedor de forma tempestiva, pois a morosidade neste procedimento pode acarretar a perda de validade das premissas que fundamentaram as etapas precedentes do projeto, tais como as condições de mercado, a viabilidade econômica e financeira da proposta, e até mesmo a qualificação do licitante vencedor, o que poderia ensejar revisões dos pontos com alterações significativas."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No processo de contratação do terminal hidroviário interestadual, o contrato foi assinado tempestivamente com o licitante vencedor, dentro do prazo legal estabelecido após a homologação da licitação. A assinatura respeitou todas as condições previstas no edital e nos demais documentos licitatórios, com a publicação do extrato no Diário Oficial e a disponibilização do instrumento completo para controle externo. O contrato refletiu fielmente os termos da proposta vencedora, a matriz de riscos ajustada, os prazos acordados e os critérios de medição e pagamento estabelecidos, sem necessidade de revisões adicionais. A formalização ocorreu de maneira transparente, encerrou a fase de planejamento e permitiu o início célere da execução contratual."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Na implantação do terminal hidroviário interestadual, o contrato com o licitante vencedor foi efetivamente assinado. Contudo, entre a assinatura do contrato e a emissão da ordem de serviço, houve um intervalo de 12 meses ou mais, o que justificou o início da obra com pleitos de reajustamento de preços. Avaliou-se como atendimento parcial porque o órgão trouxe justificativas para a demora na emissão da OS e o pleito pôde ser atendido sem prejudicar a execução contratual planejada."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "O processo licitatório para a implantação do terminal hidroviário foi concluído com homologação e adjudicação, mas o contrato não chegou a ser assinado. O ente responsável alegou necessidade de reavaliação do escopo diante de mudanças no planejamento estratégico, sem que houvesse formalização ou justificativa técnica consolidada para o cancelamento da contratação. Não houve registro de ato formal de desistência nem de reprogramação da contratação. A ausência da assinatura inviabilizou a continuidade do empreendimento dentro do cronograma previsto e frustrou o ciclo de amadurecimento do projeto."
+    }
+  ]
+}

@@ -10,7 +10,8 @@
   "produtos_esperados": [
     {
       "id": "1",
-      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:"
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:",
+      "scored": false
     },
     {
       "id": "1a",

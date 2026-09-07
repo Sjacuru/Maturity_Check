@@ -1,0 +1,49 @@
+{
+  "acao_id": 7,
+  "titulo": "Defina o escopo da Avaliação de Impacto Ambiental e Social, estudos técnicos e outros",
+  "dimensao": "Econômica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A identificação antecipada dos riscos e impactos socioambientais de cada alternativa analisada permite que o processo decisório considere desde cedo as implicações do projeto sobre o território, o meio ambiente e a população. Quando essa etapa é omitida ou feita de forma genérica, o estudo de viabilidade pode favorecer soluções que, embora tecnicamente vantajosas, sejam inviáveis do ponto de vista ambiental, jurídico ou social. Por exemplo, pode-se propor uma alternativa com menor custo de implantação, mas que atravessa áreas de preservação permanente, comunidades tradicionais ou zonas urbanas consolidadas, o que resultaria em forte resistência institucional, dificuldade de licenciamento ou custos elevados com desapropriações. Também é comum a ausência de Termos de Referência bem elaborados, o que compromete a consistência dos estudos futuros e reduz a previsibilidade do processo de licenciamento ambiental. Quando bem executada, essa ação permite ao gestor e à equipe técnica avaliar com mais precisão os desafios associados a cada opção, prever os estudos e autorizações necessárias, planejar medidas mitigadoras e, se for o caso, descartar alternativas insustentáveis antes que avancem para fases mais custosas do projeto.",
+  "descricao_acao": "Identificar e delimitar o escopo da Avaliação de Impacto Ambiental e Social para cada uma das opções que estão sendo levadas adiante (deve incluir uma compreensão preliminar dos potenciais riscos e impactos ambientais). Identificar quais estudos serão necessários para a avaliação (não envolve a realização efetiva dos estudos, mas a identificação dos que serão necessários).",
+  "o_que_esperar": "Definição clara do escopo necessário para a Avaliação de Impacto Ambiental e Social (AIAS) para as opções até então consideradas. Identificação dos estudos técnicos e outros necessários para complementar a Avaliação de Impacto Ambiental e Social (AIAS) e apoiar a tomada de decisão.",
+  "produtos_esperados": [
+    {
+      "id": "7",
+      "texto": "Seção específica do EVTEA ou documento técnico comparável que contenha:",
+      "scored": false
+    },
+    {
+      "id": "7a",
+      "texto": "Escopo acordado para a Avaliação de Impacto Ambiental e Social (AIAS) para cada opção adotada, incluindo uma compreensão preliminar dos potenciais riscos e impactos ambientais e sociais que a opção pode ter, descritos em um relatório de delimitação do escopo."
+    },
+    {
+      "id": "7b",
+      "texto": "Relatório de delimitação do escopo, que inclua: Termos de Referência detalhados para a avaliação; identificação dos riscos e impactos que requerem estudos e avaliações adicionais; especificação do tipo de experiência necessária para avaliar áreas de riscos sensíveis ou elevados."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento, após a definição dos fatores críticos de sucesso e a aplicação da Estrutura de Opções.",
+  "excecoes": [
+    "O relatório de delimitação de escopo deve incluir Termos de Referência detalhados, que estabeleçam os riscos e impactos identificados que requerem a realização de estudos e avaliações adicionais.",
+    "Incluir entendimento de como serão tratados os processos de licenciamento ambiental, de remoção de interferências e de desapropriação.",
+    "O escopo da AIAS deve considerar os requisitos legais nacionais ou subnacionais para avaliação de riscos ambientais e sociais e de impacto.",
+    "A equipe para realizar a AIAS deve incluir conhecimentos específicos, além de quaisquer áreas de riscos elevados identificados no estudo de escopo (licenciamento, remoção de interferências, desapropriação etc.)"
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Para a construção de um novo campus de uma Universidade Federal, o EVTEA incluiu um relatório de delimitação de escopo para a Avaliação de Impacto Ambiental e Social (AIAS). Esse relatório detalhou as áreas de influência direta e indireta para cada opção de localização do campus analisada e apresentou uma compreensão preliminar dos potenciais riscos e impactos ambientais (desmatamento, alteração de corpos d’água, impacto na fauna local) e sociais (deslocamento de comunidades, impacto no tráfego, demanda por serviços públicos). Foram identificados os estudos técnicos complementares necessários — levantamentos topográficos, estudos geológicos, sondagens de solo — e, sobretudo, foram anexados os Termos de Referência (TR) detalhados para a AIAS, os quais especificaram a necessidade de especialistas em gênero e povos tradicionais, bem como estabeleceram diretrizes para o tratamento dos processos de licenciamento ambiental, desapropriação e remoção de interferências para cada alternativa."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto de edificação de um novo bloco acadêmico para uma Universidade Federal, o EVTEA apresentou uma seção sobre avaliação ambiental preliminar. Nela, foram identificados alguns riscos ambientais e sociais, como geração de resíduos de construção e aumento de ruído. O documento também mencionou a necessidade de estudo de impacto ambiental e de autorizações da prefeitura. Entretanto, os Termos de Referência para os estudos complementares foram apresentados de forma sucinta, sem especificar a expertise necessária para lidar com os riscos mais sensíveis, e não houve plano claro de como os processos de licenciamento e possíveis remoções de interferências seriam tratados para cada alternativa."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um estudo preliminar para a construção de um grande polo em uma Universidade Federal não incluiu qualquer avaliação de impacto ambiental e social, nem a"
+    }
+  ]
+}

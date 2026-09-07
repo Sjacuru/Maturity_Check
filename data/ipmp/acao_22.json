@@ -1,0 +1,50 @@
+{
+  "acao_id": 22,
+  "titulo": "Desenvolva uma estrutura contratual para a opção mais vantajosa e aloque os riscos",
+  "dimensao": "Comercial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Após a escolha da alternativa mais vantajosa, é necessário estabelecer uma estrutura contratual compatível com os riscos identificados e com a natureza do empreendimento. Essa estrutura deve ser acompanhada de uma matriz de alocação de riscos clara, técnica e fundamentada, que reflita a lógica do projeto e a capacidade de gerenciamento das partes envolvidas. O objetivo é assegurar que os riscos mais relevantes — como aqueles ligados a licenciamento ambiental, remoções, desapropriações e alterações de projeto — estejam reconhecidos e adequadamente tratados, inclusive no aspecto quantitativo, antes da formalização do contrato. Essa ação é importante porque define, na prática, os contornos de governança do empreendimento. A ausência de fundamentação para o modelo contratual ou a adoção de uma matriz de riscos genérica, sem aplicabilidade no mercado de seguros, pode gerar insegurança jurídica, conflitos durante a execução ou alocação inadequada de responsabilidades, especialmente diante de eventos previsíveis que já haviam sido identificados nas fases anteriores. Por exemplo, atribuir à contratada o risco de alterações de quantitativos, mesmo diante de um projeto com baixa precisão nos dados de referência, tende a resultar em disputas, aditivos e atrasos, além de desincentivar a participação de concorrentes mais qualificados. Também se deixa espaço para problemas na execução contratual, a não definição quantitativa dos limites de repasse ou compartilhamento de cada risco. Além disso, a alocação excessiva de riscos à contratada, sem justificativas claras e sem considerar a capacidade real de gestão desses riscos, pode gerar consequências institucionais mais amplas. Ainda que existam seguros-garantia, a sobrecarga sistemática e mal calibrada tende a desestimular o mercado segurador, reduzir o apetite das empresas e favorecer judicializações e abandonos contratuais. Esse padrão, quando repetido, compromete a atratividade das licitações públicas e a efetividade da política de investimentos como um todo. É fundamental, portanto, que a escolha do desenho contratual — por exemplo, se preço unitário ou contratação integrada — seja tecnicamente justificada, e que a matriz de riscos traduza com clareza os critérios adotados, trazendo uma quantificação clara e estando embasada nas melhores práticas. Quando bem tratada, essa ação permite alinhar expectativas entre gestor e contratado, aumenta a previsibilidade da execução e fortalece a consistência jurídica do contrato, reduzindo a chance de litígios e ampliando a capacidade de entrega do empreendimento dentro dos prazos, custos e parâmetros esperados.",
+  "descricao_acao": "Desenvolver a estrutura contratual mais adequada para a alternativa escolhida na Ação 20. Elaborar uma matriz de alocação de riscos para essa alternativa, com base nos riscos identificados em fases anteriores, especialmente os relativos ao licenciamento ambiental, à remoção de interferências, às dificuldades na disponibilidade de recursos financeiros ao longo da obra e às desapropriações.",
+  "o_que_esperar": "Definição de uma estrutura contratual consolidada para a alternativa selecionada, compatível com o escopo e os riscos do projeto. Formalização da estrutura em documentos preparatórios (como ETP ou termo de referência), com justificativa técnica para o regime de execução adotado. Elaboração de matriz de riscos contratual robusta, com destaque para licenciamento ambiental, desapropriações e interferências. Alocação fundamentada dos riscos entre as partes, conforme a capacidade de gerenciamento, com quantificação e estimativas de custo quando possível.",
+  "produtos_esperados": [
+    {
+      "id": "22.1",
+      "texto": "Documento com a definição fundamentada da estrutura contratual a ser adotada, considerando a solução escolhida, em especial indicando o tipo de contratação (preço unitário, preço global), critérios de julgamento, formas de apresentação de preços e outros regimes de contratação previstos (empreitada integral, contratação integrada, contratação semi-integrada, fornecimento e prestação de serviço associado);"
+    },
+    {
+      "id": "22.2",
+      "texto": "Matriz de risco abordando os principais riscos do contrato, com o respectivo responsável por seu gerenciamento;"
+    },
+    {
+      "id": "22.2a",
+      "texto": "Justificativa técnica da alocação dos riscos, com base em critérios como capacidade de controle, custo e previsibilidade;"
+    },
+    {
+      "id": "22.2b",
+      "texto": "Elementos de quantificação e/ou precificação dos riscos, quando aplicável."
+    }
+  ],
+  "momento_ideal": "Fase intermediária do projeto, no início do processo de contratação.",
+  "excecoes": [
+    "A ausência de justificativa técnica para o regime contratual adotado ou a alocação genérica de riscos, sem base em estudos anteriores, pode indicar comprometimento da maturidade do projeto, ainda que haja documentação formal. Projetos padronizados não dispensam a análise, mas podem utilizar modelos replicáveis, desde que justificados com base em evidências.",
+    "A estrutura contratual e a matriz devem refletir os resultados das análises técnicas já realizadas, apresentando justificativa clara para o modelo adotado, com regras contratuais compatíveis com as incertezas e os riscos identificados. A matriz de riscos deve explicitar a alocação entre as partes, fundamentada em critérios técnicos, conforme diretrizes do M5D, e prever a quantificação e o custeio dos riscos do empreendimento."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de construção da ponte interestadual sobre o Rio São Miguel, a estrutura contratual foi desenvolvida com base em análises técnicas que consideraram o estágio de maturidade dos estudos, o perfil geotécnico da região e os riscos operacionais envolvidos. A opção adotada foi a empreitada por preço unitário, justificada tecnicamente pela necessidade de flexibilidade no enfrentamento de riscos, como variações hidrológicas e interferências não mapeadas. A matriz de riscos indicou claramente as responsabilidades da contratante e da contratada, incluindo cláusulas específicas para eventos como cheias sazonais, reprogramações ambientais e atrasos em licenças estaduais. Para cada risco relevante, foram detalhados a capacidade de controle da parte responsável, os custos estimados e os mecanismos de custeio. A matriz mostrou-se compatível com o mercado de seguros e permitiu avaliar com precisão os impactos financeiros de cada cenário. Esse grau de detalhamento proporcionou previsibilidade e transparência, tornando o processo contratual robusto e juridicamente sólido."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Na mesma obra da ponte sobre o Rio São Miguel, os documentos da fase intermediária incluíram uma proposta de regime contratual e uma matriz de riscos, com conteúdo aderente aos riscos identificados anteriormente. A opção pela contratação integrada foi justificada de forma consistente, considerando-se as especificidades do projeto e os riscos fundiários e ambientais já mapeados. A matriz de riscos, embora estruturada e vinculada aos elementos críticos do projeto, não incluiu cenários de mitigação para cada risco, ainda que estes estivessem mapeados corretamente."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Na obra da ponte interestadual sobre o Rio São Miguel, em cenário alternativo, não se localizou qualquer documento contendo a estrutura contratual específica nem matriz de riscos compatível com o escopo do empreendimento. A contratação foi prevista como empreitada por preço global, mas não houve justificativa técnica que considerasse os desafios geotécnicos, hidrológicos ou ambientais da região. A minuta contratual utilizada era um modelo genérico institucional, sem cláusulas específicas sobre os riscos mais relevantes identificados nos estudos de viabilidade. Não houve definição sobre alocação de responsabilidades nem análise de custeio de eventos adversos. Essa ausência de estrutura contratual tecnicamente fundamentada caracterizou o não atendimento da ação."
+    }
+  ]
+}

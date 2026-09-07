@@ -1,0 +1,56 @@
+{
+  "acao_id": 40,
+  "titulo": "Reconsidere as opções da Dimensão Econômica com base nas percepções colhidas junto ao mercado e sociedade",
+  "dimensao": "Econômica",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A dimensão econômica do projeto deve ser revisada após a consulta pública ou diante de qualquer fato superveniente relevante que possa impactar os custos, benefícios ou riscos envolvidos na proposta. Essa reavaliação permite confirmar se a alternativa escolhida continua oferecendo o melhor valor público entre as opções disponíveis, considerando a realidade atualizada do empreendimento. Essa ação é importante porque o contexto que embasou os estudos econômicos iniciais pode se alterar significativamente ao longo do processo de estruturação. Alterações nos custos de materiais, novas exigências de licenciamento ambiental, imprevistos com desapropriações, dificuldades adicionais com remoções de interferências ou mudanças relevantes nas condições de contorno que embasaram a matriz de riscos podem comprometer os fundamentos que sustentavam a relação custo-benefício do projeto. Ignorar essa dinâmica é correr o risco de contratar um empreendimento que já não apresenta a melhor solução sob a ótica da economicidade ou da eficiência alocativa dos recursos públicos. Por exemplo, se a consulta pública revelar a necessidade de alargar uma via, incluir elementos de acessibilidade ou executar obras complementares para evitar impacto em áreas sensíveis, esses ajustes podem elevar os custos ou alterar o cronograma. Da mesma forma, o agravamento de riscos fundiários ou ambientais pode demandar a revisão dos parâmetros de risco, afetando diretamente a viabilidade econômica. A revisão cuidadosa da dimensão econômica também evita o risco de se basear em análises desatualizadas, o que pode afastar investidores, reduzir a atratividade do certame ou comprometer a transparência da contratação. Ao reafirmar que o projeto ainda entrega o melhor valor público, essa ação fortalece a legitimidade técnica da decisão e contribui para a sustentabilidade financeira do investimento ao longo do tempo. Quando bem aplicada, trata-se de uma etapa de validação crítica para assegurar que o projeto, prestes a ser licitado, ainda é justificável sob os critérios de eficiência, eficácia e responsabilidade fiscal.",
+  "descricao_acao": "Revisar a dimensão econômica para adaptação após informações colhidas em consulta pública ou de qualquer fato superveniente significativo que possa impactar o projeto, inclusive quanto aos benefícios públicos e riscos levantados, e para demonstração de que a opção escolhida é a que ainda oferece melhor valor público.",
+  "o_que_esperar": "Revisão e ajuste das análises da Dimensão Econômica à luz das percepções obtidas junto ao mercado e à sociedade (por exemplo, em consultas públicas, roadshows ou reuniões com possíveis financiadores). Identificação de eventuais lacunas ou inconsistências nas projeções anteriores, considerando inputs recém-coletados (dados de demanda, custos, externalidades etc.), assim como recomendações ou determinações dos órgãos de controle. Avaliação de possíveis mudanças significativas na análise de custo-benefício ou nos indicadores de viabilidade econômica em virtude de feedbacks e atualizações observados.",
+  "produtos_esperados": [
+    {
+      "id": "40",
+      "texto": "Documento atualizado dos produtos relacionados à Dimensão Econômica, contendo:",
+      "scored": false
+    },
+    {
+      "id": "40a",
+      "texto": "Quais aspectos foram revisitados (suposições de demanda, indicadores socioeconômicos, estimativas de custos e benefícios);"
+    },
+    {
+      "id": "40b",
+      "texto": "Impactos quantitativos e qualitativos das novas informações sobre as métricas de valor econômico (por exemplo, VPL, TIR, relação benefício-custo);"
+    },
+    {
+      "id": "40c",
+      "texto": "Justificativa clara para as decisões de manter ou ajustar a opção mais vantajosa definida anteriormente;"
+    },
+    {
+      "id": "40d",
+      "texto": "Registro de todas as fontes de dados e referências utilizadas, garantindo transparência e rastreabilidade."
+    }
+  ],
+  "momento_ideal": "Após a fase de consulta ao mercado e à sociedade (ou seja, depois das interações formais com potenciais interessados e audiências públicas), quando já se dispuser de elementos concretos para refinar a análise econômica.",
+  "excecoes": [
+    "Caso esta etapa de revisão aponte para alterações profundas no escopo ou modelo de negócio, pode ser necessário retornar a etapas anteriores (Ação 20 ou 21) para nova rodada de análise;",
+    "É fundamental manter coerência com as demais Dimensões (Comercial, Financeira, Gerencial) para que qualquer mudança na Dimensão Econômica seja devidamente refletida nos contratos, alocação de riscos e estrutura de financiamento;",
+    "Revisar levando em consideração quaisquer mudanças que tenham ocorrido a respeito dos processos de licenciamento ambiental, de remoção de interferências e de desapropriação."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Após a consulta pública para o projeto de dragagem de aprofundamento de um porto, a Autoridade Portuária revisou a Dimensão Econômica do estudo de viabilidade. As percepções colhidas junto a armadores e operadores logísticos indicaram que a demanda por navios de maior calado foi mais elevada do que a projetada inicialmente, o que levou a um ajuste nas premissas de volume de cargas e, consequentemente, elevou os benefícios econômicos calculados, aumentando o Valor Público. A sociedade civil apresentou preocupações com a destinação do material dragado; por isso, a equipe técnica aprofundou a análise dos custos de remediação ambiental e incluiu tecnologias de tratamento mais sustentáveis, alterando a estrutura de custos, mas mantendo o projeto como a opção mais vantajosa. Ademais, as determinações de órgão de controle relativas ao detalhamento dos custos de desapropriação de áreas de bota-fora foram incorporadas, resultando na atualização do modelo financeiro e na confirmação de que o empreendimento continuou a oferecer o melhor Value for Money."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto de dragagem de manutenção de um canal de navegação, a Autoridade Marítima realizou consulta pública e recebeu contribuições sobre a necessidade de ajustar os cronogramas de dragagem para minimizar impactos na pesca local. A Dimensão Econômica foi revisada para incluir esses novos prazos, o que alterou ligeiramente os custos operacionais previstos. Entretanto, o retorno do mercado sobre a viabilidade de empregar dragas de menor porte, que poderiam reduzir custos e impactos ambientais em trechos específicos, ficou registrado sem que a equipe realizasse reavaliação do custo-benefício dessa alternativa. Por outro lado, recomendações de órgão de controle acerca da metodologia de precificação de itens de serviço foram implementadas, embora não tenham provocado alteração substancial na análise econômica."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Após a consulta pública para o projeto de dragagem de um rio destinado ao controle de cheias, a Administração não revisou a Dimensão Econômica do estudo de viabilidade. Diversas contribuições da sociedade, que ressaltaram preocupações com a realocação de famílias ribeirinhas e os impactos sobre a biodiversidade aquática, não foram incorporadas para reavaliar os custos sociais e ambientais ou para reanalisar as opções de dragagem. As projeções de custos e benefícios permaneceram inalteradas e a opção considerada mais vantajosa em fase anterior não foi submetida a nova análise de custo-benefício à luz das informações recebidas. Essa omissão impediu a otimização do projeto e comprometeu sua legitimidade social e a entrega do melhor valor público."
+    }
+  ]
+}

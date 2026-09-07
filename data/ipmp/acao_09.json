@@ -1,0 +1,59 @@
+{
+  "acao_id": 9,
+  "titulo": "Considere as possibilidades e as opções de contratação e o interesse do mercado",
+  "dimensao": "Comercial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A avaliação da capacidade do mercado e do ambiente concorrencial, ainda na fase de estudos de viabilidade, permite verificar se as alternativas analisadas podem ser efetivamente contratadas por meio de procedimentos licitatórios realistas e compatíveis com a oferta disponível. Quando essa análise é negligenciada, o projeto pode avançar com soluções cuja execução se mostra inviável na prática, por falta de fornecedores, limitações técnicas do setor ou inadequação dos modelos de contratação previstos. Por exemplo, poderia ser proposta a execução de um viaduto com método construtivo ou equipamento específico que não possui fornecedores no mercado nacional, elevando custos ou comprometendo prazos. Também pode ocorrer a escolha de uma alternativa cujo modelo de contratação — como a adoção de técnica e preço ou a exigência de orçamento detalhado por composição — seja incompatível com o tipo de obra, limitando a participação de concorrentes e gerando risco de licitação deserta ou pouco competitiva. Nesse sentido, da etapa do levantamento de mercado contida no Estudo Técnico Preliminar, previsto na Lei 14.133/2021, até Roadshows desenhados para divulgar projetos e atrair investimentos, tem-se instrumentos aptos a apurarem o interesse do mercado. Quando bem tratada, essa ação permite alinhar as decisões técnicas com as condições reais do mercado, apoiar a definição dos critérios licitatórios e mitigar riscos de retrabalho, judicialização ou fracasso no processo de contratação.",
+  "descricao_acao": "Avaliar a capacidade do mercado para fornecer os bens e serviços necessários à execução do projeto, considerando cada alternativa ainda em análise. Nos casos em que a obra seja pública, analisar de forma preliminar também aspectos contratuais e licitatórios relevantes, como tipo de contratação (preço unitário, preço global), critérios de julgamento, formas de apresentação de preços e regimes de contratação (empreitada integral, contratação integrada, contratação semi-integrada, fornecimento e prestação de serviço associado) previstos na NLLC e demais normativos. Em se tratando de concessão ou PPP, considerar o interesse potencial do mercado, identificar barreiras à participação e eventuais mecanismos de mitigação, bem como as especificidades do procedimento concorrencial, se for o caso. A ação deve resultar em uma análise estruturada sobre: a existência e a capacidade instalada de operadores/fornecedores para execução do objeto; riscos de baixa competitividade e de falhas de mercado; critérios técnicos e jurídicos que orientem a futura modelagem licitatória (no caso de obra pública); interesse de investidores e condições de bancabilidade (no caso de concessões e PPPs).",
+  "o_que_esperar": "Mapeamento preliminar do perfil de mercado (fornecedores, operadores, investidores) apto a atender ao projeto. Identificação de barreiras à entrada e riscos de restrição de mercado. Avaliação inicial da atratividade para o setor privado. Indicação de aspectos relevantes da futura modelagem contratual, em especial para licitações públicas (critérios de julgamento, formato de proposta, regime contratual).",
+  "produtos_esperados": [
+    {
+      "id": "9",
+      "texto": "Documento técnico de análise de mercado contendo:",
+      "scored": false
+    },
+    {
+      "id": "9a",
+      "texto": "Identificação de segmentos de mercado e operadores aptos à execução das alternativas consideradas;"
+    },
+    {
+      "id": "9b",
+      "texto": "Avaliação da capacidade instalada do setor e barreiras à entrada (técnicas, econômicas ou regulatórias);"
+    },
+    {
+      "id": "9c",
+      "texto": "Identificação de riscos de restrição de mercado e estratégias de mitigação;"
+    },
+    {
+      "id": "9d",
+      "texto": "Estudo preliminar de critérios de julgamento, formas de apresentação de propostas e regimes contratuais possíveis;"
+    },
+    {
+      "id": "9e",
+      "texto": "Avaliação da atratividade da proposta para o mercado."
+    }
+  ],
+  "momento_ideal": "Fase inicial, ainda na etapa de estudos de alternativas.",
+  "excecoes": [
+    "Em projetos executados diretamente por órgãos com tradição e estrutura consolidada (como o DNIT), e que utilizem modelos padronizados de contratação, a análise pode ser mais sintética, desde que devidamente justificada e baseada em experiências de sucesso anteriores.",
+    "Também é possível, em obras com menores dimensões, que os pontos verificados nesta ação sejam feitos de forma conjunta."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de duplicação de rodovia federal em trecho com alta densidade logística, os estudos iniciais incluíram uma análise estruturada do mercado fornecedor. O histórico recente de contratos similares na região foi mapeado, e a equipe identificou operadoras com capacidade instalada para executar serviços de pavimentação, sinalização e obras de arte especiais. Além disso, o documento avaliou os formatos de licitação usualmente empregados (menor preço, técnica e preço) e concluiu pela viabilidade de adoção da modalidade semi-integrada, com o projeto executivo elaborado pela própria contratada. A análise ainda identificou riscos de concentração de mercado em obras de grande porte e propôs o fracionamento do edital em lotes funcionais para fomentar a competitividade. Com base nessas informações, a equipe ajustou o escopo do projeto e definiu critérios licitatórios condizentes com a realidade do setor, reforçou a maturidade contratual e mitigou riscos de licitação deserta ou com baixa concorrência."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto de duplicação de uma rodovia federal, a análise de mercado contemplou o mapeamento detalhado dos segmentos de fornecedores e operadores aptos à execução das alternativas de obra e incluiu a identificação de empresas com capacidade instalada, bem como a avaliação das principais barreiras técnicas e regulatórias à entrada de novos participantes. A equipe também identificou riscos potenciais de restrição de mercado, especialmente em razão do porte da obra, e sugeriu estratégias de mitigação, como o fracionamento do edital em lotes e a flexibilização de exigências de qualificação. Contudo, a escolha pelo regime de contratação integrada não veio acompanhada de justificativa técnica formal que demonstrasse os motivos de sua adoção em detrimento da contratação do projeto básico ou executivo seguida da execução da obra. Não foram apresentados estudos comparativos, pareceres técnicos ou análises de riscos que comprovassem a vantajosidade dessa decisão face ao contexto do empreendimento."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No mesmo projeto de duplicação da rodovia, a equipe não realizou qualquer análise sobre a capacidade do mercado nem avaliou as opções contratuais compatíveis com as características do empreendimento. A modelagem seguiu padrão genérico, desconsiderou as especificidades do trecho e do mercado regional e, posteriormente, gerou dificuldades para atrair concorrentes. Não houve menção a estratégias para mitigar riscos concorrenciais nem levantamento de experiências prévias semelhantes. Essa omissão comprometeu a coerência entre as decisões técnicas e o planejamento da contratação e configurou o não atendimento da ação."
+    }
+  ]
+}

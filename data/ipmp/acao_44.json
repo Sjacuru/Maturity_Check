@@ -1,0 +1,37 @@
+{
+  "acao_id": 44,
+  "titulo": "Revise e atualize todas as seções da Dimensão Gerencial",
+  "dimensao": "Gerencial",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A Ação 44 trata da revisão dos planos e instrumentos gerenciais do projeto, com o objetivo de garantir que estejam atualizados, coerentes com os ajustes mais recentes e aptos a orientar a execução após a assinatura do contrato. Essa etapa deve incorporar os efeitos da consulta pública, de fatos supervenientes e de eventuais mudanças técnicas, institucionais ou normativas que tenham impacto direto na capacidade de gestão do empreendimento. Essa ação é importante porque a boa execução depende, em grande medida, da qualidade dos instrumentos de coordenação. Entre eles, o cronograma atualizado, realista e sincronizado com os demais planos operacionais ocupa papel central. Um cronograma desatualizado — que ignore, por exemplo, os prazos de licenciamento ambiental, de obtenção de áreas ou de mobilização de frentes de serviço — compromete a coordenação interinstitucional, induz à paralisação de etapas críticas e dificulta o controle dos custos e prazos do contrato. Além disso, essa revisão deve verificar se os planos de desapropriação, reassentamento, mitigação de riscos, gestão de interfaces e engajamento das partes interessadas estão de fato integrados ao planejamento final. A ausência de integração entre esses planos pode levar à execução fragmentada, com decisões desalinhadas, sobreposição de esforços ou lacunas operacionais. Quando bem realizada, essa ação garante que a fase contratual inicie com instrumentos vivos e coerentes, preparados para enfrentar os desafios operacionais do projeto. Ela assegura que o cronograma não seja uma peça decorativa, mas sim um guia realista e articulado de execução, ajustado à complexidade do empreendimento e às capacidades institucionais dos envolvidos.",
+  "descricao_acao": "Revisar todos os planos desenvolvidos a partir da consulta pública ou de qualquer fato superveniente significativo que possa impactar o projeto.",
+  "o_que_esperar": "Documentação gerencial devidamente alterada, na medida da necessidade de atualização, que sirva de validação final da capacidade gerencial do órgão, de forma a assegurar que os aspectos gerenciais do projeto estejam totalmente alinhados e otimizados antes da fase de contratação.",
+  "produtos_esperados": [
+    {
+      "id": "44",
+      "texto": "Documento gerencial (estudo técnico, plano, tabela, orçamento, organograma, cronograma etc.) original devidamente atualizado, a partir da necessidade percebida após consulta pública ou de fatos significativos supervenientes, tais como os provenientes dos órgãos de controles, mas não se limitando a eles."
+    }
+  ],
+  "momento_ideal": "Após a consulta ao mercado e antes da licitação.",
+  "excecoes": [
+    "Considerar como os planos precisam ser atualizados para que se tornem ferramentas de gerenciamento depois que o contrato for assinado e iniciar sua execução, especialmente no que se refere aos processos de licenciamento ambiental, de remoção de interferências e de desapropriação."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de infraestrutura hídrica com múltiplos componentes (captação, reservação e rede de distribuição), a equipe responsável realizou revisão minuciosa e documentada da Dimensão Gerencial após a conclusão dos principais planos. A etapa incluiu a incorporação de sugestões provenientes da consulta pública, como o reforço das ações de engajamento contínuo com comunidades rurais e ajustes no cronograma de execução para evitar interferência em períodos de estiagem crítica. A equipe também corrigiu inconsistências entre os planos de risco, cronograma e gestão de mudanças. O conjunto resultante apresentou coerência interna, clareza de responsabilidades e completa integração documental. A ação, portanto, foi plenamente atendida."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto de infraestrutura hídrica, a equipe técnica revisou e atualizou o cronograma de execução e o plano de engajamento social, incorporou as principais contribuições da consulta pública e adequou prazos às novas exigências ambientais. Contudo, o plano de gestão de riscos não foi revisado para refletir as alterações no escopo e nas etapas do projeto; ele permaneceu desatualizado em relação ao novo planejamento. Assim, embora componentes relevantes da Dimensão Gerencial tenham sido atualizados, a ausência de revisão do plano de riscos limitou a integração e a efetividade dos instrumentos gerenciais, caracterizando atendimento apenas parcial da ação."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Ainda no projeto de infraestrutura hídrica, as seções da Dimensão Gerencial permaneceram fragmentadas, com documentos desatualizados, ausência de controle de versões e divergências não resolvidas entre os planos de execução, gestão de riscos e engajamento com as partes interessadas. Não houve qualquer evidência de revisão formal ou consolidação das informações, mesmo após manifestações de órgãos de controle e interlocutores locais. A ausência desse processo comprometeu a capacidade de gestão integrada e dificultou o monitoramento da execução; por isso, a ação não foi atendida."
+    }
+  ]
+}

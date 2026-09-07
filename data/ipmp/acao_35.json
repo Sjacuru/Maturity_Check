@@ -1,0 +1,71 @@
+{
+  "acao_id": 35,
+  "titulo": "Finalize o plano de realização de benefícios públicos e o plano de gestão de riscos",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Com a definição da solução a ser executada, os planos de realização de benefícios públicos e de gestão de riscos, iniciados nas Ações 14 e 15, devem ser revisados e consolidados. Essa revisão visa a transformar os planos iniciais em instrumentos operacionais, compatíveis com os desafios da execução, e sob responsabilidade da equipe de gestão do projeto. Essa ação é importante porque ambos os planos têm função estratégica. O plano de riscos orienta a prevenção e mitigação de eventos que podem comprometer a entrega, enquanto o plano de benefícios ajuda a manter o foco nos resultados positivos prometidos. Diferente da Ação 22 — que trata da alocação contratual de riscos entre as partes —, aqui o foco está na capacidade da equipe do projeto de monitorar, responder e agir frente a riscos institucionais, operacionais e ambientais, e de garantir a realização dos benefícios pactuados com a sociedade. Por exemplo, um risco de atraso na emissão de licenças, caso não seja monitorado e respondido pela gestão, pode paralisar a obra por meses ou anos, mesmo que exista cláusula contratual prevendo as consequências. Da mesma forma, benefícios como passagens em nível, adequações de drenagem urbana, passarelas para pedestres ou intervenções paisagísticas prometidas nos estudos podem ser suprimidos durante a obra por pressão de cronograma ou de orçamento, se não houver um plano consolidado que assegure sua preservação. A ausência dessa consolidação reduz a capacidade de resposta do projeto a eventos previsíveis, gera perda de rastreabilidade e compromete a transparência. Quando bem elaborados, esses planos permitem que a equipe do projeto atue com agilidade, monitore compromissos críticos e conduza o empreendimento de forma mais eficiente e orientada a resultados públicos.",
+  "descricao_acao": "Revisar e finalizar o plano de realização de benefícios públicos e o plano de gestão de riscos desenvolvidos nas Ações 14 e 15, a partir da opção escolhida.",
+  "o_que_esperar": "Plano de benefícios públicos aprofundado a partir da alternativa escolhida. Plano de gestão de riscos aprofundado a partir da alternativa escolhida.",
+  "produtos_esperados": [
+    {
+      "id": "35.1",
+      "texto": "Documento completo que atualize e aprofunde o plano de realização de benefícios públicos da Ação 14, alinhando-o à alternativa escolhida;"
+    },
+    {
+      "id": "35.2",
+      "texto": "Documento completo que atualize e aprofunde o plano de gestão de riscos da Ação 15, alinhando-o à alternativa escolhida e contendo, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "35.2a",
+      "texto": "Classificação dos riscos por probabilidade e impacto."
+    },
+    {
+      "id": "35.2b",
+      "texto": "Causas e consequências de cada risco para avaliar o impacto no projeto."
+    },
+    {
+      "id": "35.2c",
+      "texto": "Estruturação por categorias (ambiental, técnico, financeiro, social) para facilitar análise e mitigação."
+    },
+    {
+      "id": "35.2d",
+      "texto": "Atribuição de responsabilidades para supervisão e ação."
+    },
+    {
+      "id": "35.2e",
+      "texto": "Estratégia de resposta (evitar, mitigar, transferir, aceitar) com ações específicas de gerenciamento."
+    },
+    {
+      "id": "35.2f",
+      "texto": "Acompanhamento contínuo, com revisão periódica e atualização das estratégias de mitigação."
+    },
+    {
+      "id": "35.2g",
+      "texto": "Métricas e indicadores para monitorar a eficácia das ações de mitigação."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Recomenda-se alinhar o plano de gestão de riscos ao plano de realização de benefícios, priorizando o monitoramento de riscos que possam impactar diretamente os benefícios, como atrasos que afetem a acessibilidade ou o desenvolvimento econômico.",
+    "Ressalta-se a diferença entre as Ações 22 e 35 do M5D: a primeira trata das responsabilidades contratuais entre as partes, enquanto a segunda foca a gestão operacional, incluindo monitoramento contínuo e estratégias de resposta pela equipe de projeto."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de mobilidade urbana que conectou bairros periféricos a um centro regional de serviços, foi apresentado um plano de realização de benefícios públicos atualizado e consistente, com indicadores específicos de acessibilidade, tempo de deslocamento, estímulo ao comércio local e integração entre modais de transporte. Paralelamente, o plano de gestão de riscos incluiu registro estruturado por categorias (ambiental, técnico, social), trouxe análise de impacto e probabilidade, descreveu causas e consequências, estabeleceu estratégias de resposta, designou responsáveis, fixou periodicidade de revisão e manteve vínculo explícito com os benefícios mapeados. Os dois instrumentos ficaram integrados ao planejamento geral do projeto e contaram com validação institucional, de modo que a ação foi plenamente atendida."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, o plano de benefícios públicos foi elaborado de forma robusta, definiu metas claras, indicadores objetivos e métodos de verificação, vinculou-os diretamente aos objetivos estratégicos da intervenção e apresentou boa articulação com o cronograma e os demais instrumentos de gestão. Por outro lado, o plano de riscos, embora tenha abordado fatores operacionais relevantes e tenha trazido medidas de mitigação coerentes, não explicitou formalmente os responsáveis por cada ação nem apresentou rotina de atualização periódica. A ausência desses elementos comprometeu parcialmente sua efetividade, ainda que o conteúdo técnico se mostrasse aproveitável."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Ainda no projeto de mobilidade urbana, não foram localizados documentos que consolidassem os benefícios públicos esperados ou os riscos associados à sua entrega. Não houve metas definidas, indicadores verificáveis nem estratégias para monitorar a concretização dos objetivos do projeto. Tampouco existiu plano de gestão de riscos operacionais: não se registraram ameaças relevantes, estratégias de mitigação ou mecanismos de resposta. A ausência desses dois instrumentos comprometeu a capacidade do projeto de gerar valor público com segurança e previsibilidade, de modo que a ação não foi atendida."
+    }
+  ]
+}

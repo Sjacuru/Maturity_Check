@@ -10,8 +10,9 @@
   "produtos_esperados": [
     {
       "id": "3",
-      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:"
-    }, 
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:",
+      "scored": false
+    },
     {
       "id": "3a",
       "texto": "Definição preliminar do que o projeto fará concretamente para solucionar os problemas ou atender às demandas identificadas nas ações anteriores, de forma realista e alinhado com a capacidade de gestão do órgão e com os recursos financeiros disponíveis."

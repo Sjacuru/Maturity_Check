@@ -1,0 +1,62 @@
+{
+  "acao_id": 32,
+  "titulo": "Finalize o orçamento de conclusão do projeto",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Além do orçamento da obra em si, é necessário prever e organizar os recursos de suporte à gestão do projeto. Isso inclui despesas com equipe técnica, assessorias externas, equipamentos de fiscalização, capacitações, viagens, softwares, infraestrutura operacional e outras necessidades logísticas que garantam a governança e o acompanhamento do empreendimento ao longo do tempo. Essa ação é importante porque a ausência de previsão orçamentária para esses itens compromete a capacidade do gestor de coordenar o projeto com qualidade. Por exemplo, se não houver recursos disponíveis para diárias e passagens, equipes técnicas podem, simplesmente, deixar de realizar vistorias in loco, mesmo diante de ocorrências críticas na execução. Da mesma forma, a falta de provisão para contratar supervisão técnica ou adquirir ferramentas digitais básicas enfraquece a capacidade de controle e eleva os riscos de falhas não detectadas. Essa previsão também é essencial para avaliar se a estrutura disponível — humana, tecnológica e institucional — é suficiente ou se será necessário reforçá-la. Quando esse mapeamento é negligenciado, o projeto pode avançar formalmente, mas sem as condições práticas mínimas para ser adequadamente gerido. Ao organizar esses custos de forma transparente e vincular cada item à sua fonte de custeio, o gestor reforça a credibilidade do planejamento e reduz o risco de fragilidade institucional ao longo da execução. Quando bem conduzida, essa ação garante que os recursos de suporte estejam disponíveis de forma coordenada com as etapas do projeto, fortalecendo o controle, a fiscalização e a capacidade de resposta da gestão pública.",
+  "descricao_acao": "Em paralelo com o desenvolvimento do plano do projeto, finalizar os orçamentos para: designação da equipe do projeto e contratação de consultores externos; obtenção de quaisquer recursos necessários à implementação do projeto; obtenção de quaisquer outros custos relacionados com o projeto; a contratação de quaisquer ativos que possam ser necessários para a conclusão do projeto (por exemplo, licenças de software).",
+  "o_que_esperar": "Orçamento de suporte que discrimine as despesas correntes do projeto.",
+  "produtos_esperados": [
+    {
+      "id": "32",
+      "texto": "Orçamento de suporte para as despesas correntes do projeto contendo os custos, no mínimo, de:",
+      "scored": false
+    },
+    {
+      "id": "32a",
+      "texto": "Composição da equipe e estrutura de governança."
+    },
+    {
+      "id": "32b",
+      "texto": "Treinamentos necessários."
+    },
+    {
+      "id": "32c",
+      "texto": "Viagens da equipe, se indispensáveis."
+    },
+    {
+      "id": "32d",
+      "texto": "Equipamentos tecnológicos essenciais para fiscalização."
+    },
+    {
+      "id": "32e",
+      "texto": "Contratação de supervisores e/ou consultores externos."
+    },
+    {
+      "id": "32f",
+      "texto": "Outros aspectos de planejamento e controle de qualidade."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ao fazer isso, será possível verificar se as condições do órgão estão suficientes para o adequado andamento e monitoramento das obras."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em projeto de requalificação de centro histórico com intervenções em mobilidade, drenagem e redes subterrâneas, foi apresentado orçamento de conclusão abrangente, que contemplou não apenas os custos diretos da obra, mas também todos os recursos necessários para assegurar a governança da execução. Foram previstos itens como contratação de equipe técnica de supervisão, aquisição de equipamentos de fiscalização, passagens e diárias para deslocamento das equipes, assessoramento jurídico e técnico especializado, contratação de consultorias, capacitação de servidores e ferramentas digitais para gestão do projeto. Cada item foi vinculado à respectiva fonte de custeio e foi apresentado de forma compatível com o cronograma de execução. O planejamento foi validado institucionalmente e se articulou às demais ações preparatórias, reforçando a capacidade gerencial do projeto."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "O projeto de requalificação urbana apresentou orçamento detalhado para a fase de implementação, incluiu itens de custeio, com previsão de contratação de supervisão técnica, aquisição de equipamentos e provisão de recursos para logística e capacitação operacional. As planilhas orçamentárias indicaram a distribuição por categoria de despesa, vinculada à fonte orçamentária identificada. A estrutura institucional encarregada da execução esteve indicada em documento formal, com atribuições compatíveis com a gestão dos recursos previstos. Contudo, não foi anexado o plano de monitoramento financeiro que consolidasse os marcos de desembolso ao longo do cronograma físico, lacuna que limitou a visibilidade do fluxo de recursos no tempo."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "O orçamento apresentado incluiu exclusivamente os custos diretos da obra (pavimentação, drenagem, iluminação etc.), sem prever recursos para gestão, fiscalização, logística ou apoio técnico. Não houve planos para contratação de equipe, nem estimativas para suporte institucional ou aquisição de sistemas de monitoramento. A inexistência de provisão para esses elementos comprometeu a capacidade do projeto de ser gerido adequadamente e elevou os riscos de falhas e ineficiências durante a execução."
+    }
+  ]
+}

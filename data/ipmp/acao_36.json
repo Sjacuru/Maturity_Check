@@ -1,0 +1,55 @@
+{
+  "acao_id": 36,
+  "titulo": "Elabore o plano de avaliação do projeto",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "A elaboração de um plano de avaliação do projeto é o que permite, ao final, responder com consistência à pergunta: o empreendimento cumpriu o que prometeu entregar à sociedade? Mais do que avaliar o sucesso econômico ou o cumprimento físico da obra, esse plano busca estruturar uma análise abrangente de resultados, considerando impactos sociais, ambientais e institucionais relevantes. Essa ação é importante porque assegura que a avaliação não fique restrita à execução contratual, mas avance para a verificação de resultados públicos. Sem um plano definido, é comum que avaliações sejam feitas de forma improvisada ou com foco limitado — por exemplo, com base apenas em indicadores de desembolso financeiro ou de cronograma. Também se perde a oportunidade de identificar lições que poderiam orientar projetos futuros, corrigir falhas sistêmicas ou institucionalizar boas práticas. O plano de avaliação deve prever com antecedência quais critérios serão utilizados, quem será responsável pela análise, em que momentos ela ocorrerá e como os aprendizados serão aproveitados pela Administração Pública. Por exemplo, pode-se estabelecer que a efetividade da requalificação urbana será medida após um ano da entrega, com base em indicadores de mobilidade, segurança viária e aceitação da comunidade — e que a responsabilidade pela avaliação será da equipe técnica do órgão gestor, em articulação com a instância do Poder Executivo. Quando estruturado de forma clara, esse plano fortalece a transparência, aprimora o controle interno e externo e consolida uma cultura institucional orientada a resultados. Além disso, reforça o compromisso do gestor com a entrega de valor público e a melhoria contínua da qualidade do gasto em infraestrutura.",
+  "descricao_acao": "Desenvolver um plano de avaliação do projeto que estabeleça: em que pontos devem ser realizadas as avaliações; quem será responsável pela realização da avaliação; como as lições aprendidas serão levadas em consideração pelo gestor; quais critérios devem ser usados para avaliar se o projeto foi bem-sucedido (os critérios devem incluir não apenas fatores econômicos, mas também resultados ambientais e sociais).",
+  "o_que_esperar": "Plano que descreva os métodos de revisão do projeto, de forma a identificar o que deu certo e o que deu errado ao longo do seu ciclo de vida, evidenciando as lições aprendidas e os fatores críticos de sucesso.",
+  "produtos_esperados": [
+    {
+      "id": "36",
+      "texto": "Documento completo que identifique e descreva, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "36a",
+      "texto": "Fatores críticos para avaliar o sucesso da entrega;"
+    },
+    {
+      "id": "36b",
+      "texto": "Métodos para revisar acertos e melhorias ao longo do projeto;"
+    },
+    {
+      "id": "36c",
+      "texto": "Responsáveis pelas avaliações;"
+    },
+    {
+      "id": "36d",
+      "texto": "Métodos de incorporação das lições aprendidas nos processos futuros."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ao fazer isso, será possível construir um banco de dados robusto com informações das lições aprendidas a ser utilizado em projetos futuros, de modo a evitar a repetição de erros e replicar práticas bem-sucedidas.",
+    "Recomenda-se considerar que essa avaliação seja realizada por um terceiro agente independente."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de ampliação do sistema de abastecimento de água em região semiárida, foi apresentado um plano de avaliação robusto, com indicadores de resultado (por exemplo, percentual de cobertura populacional, redução de doenças de veiculação hídrica), de processo (regularidade na entrega dos insumos) e de impacto (segurança hídrica regional, percepção dos usuários). O documento especificou metodologias quantitativas e qualitativas, determinou marcos de avaliação ex-ante, intermediária e ex-post e identificou as fontes de dados, as instituições responsáveis e os canais de divulgação dos achados. O plano ficou articulado aos objetivos estratégicos do projeto e previu o uso dos resultados para correção de rumos e prestação de contas. A ação foi plenamente atendida."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Considerando o mesmo projeto, o plano de avaliação foi estruturado com base em indicadores operacionais e de resultado, abarcou tanto a execução física quanto os efeitos esperados sobre a qualidade de vida da população atendida e apresentou metodologia clara, definição de responsáveis e previsão de avaliações intermediárias. Contudo, não explicitou formalmente as estratégias para utilização dos resultados no processo decisório, o que limitou sua integração à governança do projeto. Tratou-se de um plano tecnicamente robusto, mas com uma falha de articulação institucional que poderá exigir correções futuras."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Ainda no projeto de ampliação do sistema de abastecimento, não houve qualquer referência a instrumentos de avaliação de resultados. Os documentos se limitaram à execução física e orçamentária, sem prever indicadores, critérios de desempenho, planejamento de coleta de dados ou mecanismos de análise de eficácia. A ausência completa de estrutura avaliativa impediu qualquer forma de aferição de valor público ou de retroalimentação institucional; por isso, a ação não foi atendida."
+    }
+  ]
+}

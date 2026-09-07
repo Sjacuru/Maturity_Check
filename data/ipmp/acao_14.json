@@ -1,0 +1,61 @@
+{
+  "acao_id": 14,
+  "titulo": "Elabore um plano inicial para identificação dos benefícios públicos",
+  "dimensao": "Gerencial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "Refletir, já na fase de viabilidade, sobre os benefícios esperados do projeto — tanto quantitativos quanto qualitativos — permite estruturar o empreendimento com foco em valor público e planejar o monitoramento de seus efeitos ao longo do tempo. Quando essa previsão é negligenciada, perde-se a oportunidade de estabelecer critérios objetivos para avaliar os resultados da intervenção e de gerar aprendizados para projetos futuros. Por exemplo, um projeto pode ter como objetivo declarado a redução do tempo de deslocamento, mas não prever nenhum indicador ou referência de comparação para aferir esse ganho após a execução. Também é comum que benefícios secundários, como aumento na atratividade econômica ou redução de acidentes, não sejam sequer identificados, dificultando sua mensuração e seu uso como referência em projetos semelhantes. Além de orientar o próprio ciclo do empreendimento, essa ação contribui para formar um acervo de dados institucionais que pode alimentar avaliações posteriores, subsidiar decisões em empreendimentos similares e reforçar a cultura de monitoramento e retroalimentação no setor público. Quando bem tratada, ela amplia a capacidade de planejamento baseado em evidências e fortalece a visão de longo prazo sobre os impactos das políticas públicas.",
+  "descricao_acao": "Desenvolver um plano inicial para reflexão sobre os benefícios quantitativos e qualitativos que o projeto alcançará, como será mensurado, se eles estão sendo alcançados, conforme o projeto é implementado, e quem irá monitorá-los.",
+  "o_que_esperar": "Plano inicial que identifique quais são os benefícios esperados pelo projeto, como estes serão entregues e mensurados e quem serão os responsáveis por seu monitoramento ao longo do ciclo de vida do projeto.",
+  "produtos_esperados": [
+    {
+      "id": "14",
+      "texto": "Documento (ou tabela) preliminar que identifique e descreva, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "14a",
+      "texto": "Benefícios públicos esperados do projeto (tais como econômicos, sociais e ambientais, a exemplo de melhoria no acesso a áreas remotas, redução do tempo de deslocamento, diminuição de acidentes e atropelamentos, além de vantagens para a economia e a comunidade local etc.);"
+    },
+    {
+      "id": "14b",
+      "texto": "Método de entrega ou alcance de cada benefício;"
+    },
+    {
+      "id": "14c",
+      "texto": "Método de mensuração de cada benefícios (métricas específicas, recursos necessários e prazos realistas);"
+    },
+    {
+      "id": "14d",
+      "texto": "Responsáveis pelo monitoramento dos benefícios;"
+    },
+    {
+      "id": "14e",
+      "texto": "Método de reporte do progresso de cada benefício durante a execução da obra."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Recomenda-se partir dos benefícios já identificados na ação 4.",
+    "Recomenda-se a incorporação de especialistas para definir métodos de medição dos benefícios e para apoiar a coleta de dados que fundamentarão o monitoramento dos benefícios.",
+    "Recomenda-se a utilização de uma tabela, como a proposta pelo M5D, para organizar os benefícios identificados e as formas de entrega, medição e monitoramento ao longo do projeto, incluindo indicadores e prazos preliminares para a realização e verificação dos benefícios.",
+    "Ressalta-se que a medição e o monitoramento das informações exigidas podem servir de base para avaliações de viabilidade de empreendimentos semelhantes futuros, por meio da criação de um banco de dados robusto, proporcionando uma alocação de recursos mais eficiente e efetiva."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de modernização e ampliação do sistema de abastecimento de água em região semiárida, a equipe elaborou, ainda na fase de viabilidade, um plano de benefícios públicos estruturado. O documento detalhou os ganhos esperados da intervenção, como aumento da regularidade no fornecimento hídrico, redução de perdas por vazamentos, melhoria na qualidade da água distribuída e expansão da cobertura em comunidades rurais isoladas. Cada benefício esteve vinculado a produtos específicos do projeto e foi acompanhado de indicadores (por exemplo, volume médio de água entregue per capita e índice de perdas na rede), metas preliminares e definição de responsáveis pelo monitoramento. A estrutura de acompanhamento também previu métodos de verificação e periodicidade de reporte, e alinhou o projeto a resultados mensuráveis e socialmente relevantes."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, o estudo de viabilidade apresentou uma análise técnica detalhada sobre o déficit de cobertura e as perdas na distribuição, e vinculou essas informações a benefícios esperados, como a ampliação do acesso à água e a redução de perdas. Esses benefícios foram descritos com clareza e vieram acompanhados de metas quantitativas, responsáveis institucionais designados e estimativas de impacto; houve também um cronograma básico de monitoramento dos resultados. Contudo, o estudo não definiu indicadores formais de acompanhamento nem estruturou uma sistemática de reporte periódico. Apesar dessa lacuna pontual, o material demonstrou organização técnica consistente, permitindo sua utilização como referência para gestão e avaliação do projeto."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Na proposta de modernização do sistema de abastecimento, a equipe não apresentou qualquer referência aos benefícios públicos que se pretendia alcançar. O estudo se restringiu à descrição técnica da obra, não explicitou os impactos positivos esperados nem estabeleceu estratégias de mensuração ou valorização de ganhos sociais, ambientais ou econômicos. Essa inexistência enfraqueceu a justificativa estratégica do projeto e comprometeu sua orientação a resultados."
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "acao_id": 27,
+  "titulo": "Construa um modelo financeiro",
+  "dimensao": "Financeira",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "A elaboração de um modelo financeiro estruturado para a alternativa escolhida é indispensável para avaliar a real capacidade de custeio do empreendimento e antecipar os impactos orçamentários de sua implementação. Trata-se de transformar estimativas iniciais em um planejamento financeiro robusto, que contemple a totalidade dos custos esperados — incluindo investimento, operação, manutenção e eventuais ajustes futuros — e que permita simulações diante de cenários adversos. Essa ação é importante porque muitos projetos fracassam não por falta de mérito técnico, mas por falhas na modelagem financeira. A ausência de uma análise integrada dos custos e da dinâmica de desembolso ao longo do tempo pode levar à contratação de obras com subestimação de valores, cronogramas fisicamente incompatíveis com a capacidade de pagamento ou ausência de margem para reajustes. Por exemplo, orçamentos que não consideram a variação real dos insumos, o histórico de aditivos em projetos similares ou os riscos setoriais podem parecer viáveis no papel, mas rapidamente se revelam insustentáveis na prática. Além disso, a modelagem financeira bem-feita fornece uma base para o diálogo com órgãos de planejamento, controle e financiamento, demonstrando que a decisão pela solução escolhida está ancorada em premissas realistas. Também ajuda a evitar que ajustes necessários sejam feitos às pressas, já na fase de execução, comprometendo a eficiência e a credibilidade do projeto. Quando bem conduzida, essa ação fortalece a previsibilidade fiscal, reduz o risco de estouro orçamentário e contribui para a sustentabilidade do investimento ao longo de todo o seu ciclo de vida.",
+  "descricao_acao": "Elaborar uma análise financeira robusta que permita uma projeção total dos custos a serem incorridos com o empreendimento. Indicar a necessidade de capacidade de custeio da opção escolhida via Orçamento Geral da União (OGU) ou outras fontes, considerando os parcelamentos envolvidos e o histórico entre orçamento estimado e efetivamente necessário. Criar um modelo financeiro detalhado com projeções claras de fluxo de caixa, estrutura de custos, margens de contingência e cenários de risco, subsidiando decisões estratégicas e ajustando o cronograma físico-financeiro.",
+  "o_que_esperar": "Elaboração de um orçamento completo e detalhado da opção escolhida, com: projeção de fluxo de caixa, se for o caso; identificação de custos diretos e indiretos; inclusão de margens de contingência; análise de cenários de risco sistemáticos e não sistemáticos. Estruturação de modelo que permita o acompanhamento sistemático do financiamento e ajuste dinâmico do cronograma físico-financeiro.",
+  "produtos_esperados": [
+    {
+      "id": "27",
+      "texto": "Orçamento contendo:",
+      "scored": false
+    },
+    {
+      "id": "27a",
+      "texto": "Estrutura de custos organizados por categoria (inclusive desapropriações, licenças, fiscalização etc.)."
+    },
+    {
+      "id": "27b",
+      "texto": "Projeção de fluxo de caixa com parâmetros e pressupostos claros."
+    },
+    {
+      "id": "27c",
+      "texto": "Inclusão de riscos e cenários de estresse."
+    },
+    {
+      "id": "27d",
+      "texto": "Compatibilização com o cronograma físico-financeiro do projeto."
+    }
+  ],
+  "momento_ideal": "Antes da contratação final, na fase intermediária do projeto.",
+  "excecoes": [
+    "Obras menores e/ou rotineiras podem adotar modelos de orçamento simplificados, com a estimativa dos riscos baseada em contratos passados ou tabelas paramétricas."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de adequação e duplicação de uma rodovia federal, a equipe apresentou um orçamento da obra completo, rastreável e estruturado, detalhando todos os custos por categoria, incluindo desapropriações, licenciamento ambiental, fiscalização, investimentos em equipamentos e margens de contingência. O fluxo de caixa foi projetado para todo o período de execução, com parâmetros e premissas explicitados de forma clara e compatíveis com o cronograma físico-financeiro da obra. O modelo incorporou análises de risco, considerou cenários de estresse e variações relevantes de mercado e previu ajustes dinâmicos conforme a evolução do projeto. Essa modelagem permitiu realizar simulações e demonstrou a sustentabilidade fiscal do empreendimento, subsidiando a tomada de decisão e o diálogo com órgãos de planejamento, controle e financiamento."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto, a equipe elaborou um modelo financeiro que apresentou detalhamento dos custos de investimento e operação, bem como projeção do fluxo de caixa compatível com o cronograma físico-financeiro do empreendimento. As premissas utilizadas foram documentadas e incluíram análise de risco para variações de preços de insumos e prazos de execução. Contudo, o modelo deixou de contemplar os custos referentes às desapropriações necessárias para a implantação das obras, que não foram estimados nem incluídos no fluxo financeiro projetado. Embora a modelagem tenha atendido à maior parte dos requisitos, a omissão desse componente relevante do orçamento impediu o atendimento integral da ação."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No projeto de adequação e duplicação de uma rodovia federal, o modelo financeiro restringiu-se à previsão dos custos operacionais do empreendimento, sem contemplar valores referentes a desapropriações, reassentamentos, licenciamento ambiental, fiscalização ou margens de contingência. Além disso, não foram considerados cenários de risco nem projeções de fluxo de caixa compatíveis com o cronograma físico-financeiro da obra. A ausência desses elementos essenciais comprometeu a robustez do planejamento financeiro, caracterizando o não atendimento da ação."
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "acao_id": 23,
+  "titulo": "Elabore especificações do projeto e documentos do processo de contratação",
+  "dimensao": "Comercial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Os documentos do processo de contratação — como edital, termo de referência, minuta contratual, anteprojeto/projeto e peças complementares — são a formalização do planejamento feito até então. Sua qualidade e coerência impactam diretamente na competitividade da licitação, na execução do contrato e na segurança jurídica das decisões administrativas. Cada cláusula, escopo técnico ou condição contratual mal redigida ou desconectada das demais pode gerar disputas, atrasos ou execução desalinhada com os objetivos do projeto. Essa ação é importante porque exige que os elementos técnicos, jurídicos e operacionais estejam articulados e traduzam com fidelidade as decisões anteriormente tomadas — inclusive a matriz de risco, os critérios de medição, as entregas esperadas, os indicadores de desempenho e as formas de pagamento. Quando há inconsistência entre esses elementos, como cláusulas genéricas de reequilíbrio em contratos com riscos mal alocados, abrem-se brechas para litígios e interpretações divergentes, com impactos diretos sobre o custo e o prazo da obra. Além disso, a clareza desses documentos influencia a atratividade da licitação e a qualidade da concorrência. Editais com termos ambíguos ou critérios excessivamente restritivos podem afastar empresas qualificadas ou gerar questionamentos jurídicos, enquanto documentos bem estruturados promovem maior transparência, segurança para os licitantes e aderência às boas práticas de contratação pública. Quando bem elaborados, esses documentos consolidam o planejamento do projeto em termos contratuais, fortalecem o vínculo entre estudo e execução e aumentam a previsibilidade da entrega, o que favorece tanto a gestão pública quanto os agentes privados envolvidos.",
+  "descricao_acao": "Elaborar os documentos do processo de contratação — edital, termo de referência, minuta contratual, anteprojeto/projeto e demais peças complementares, como um orçamento-base do investimento — garantindo a clareza e a coerência entre os elementos técnicos, jurídicos e operacionais. Esses documentos devem contemplar, no mínimo: escopo, objetivos e resultados exigidos do projeto; alocação de riscos e responsabilidades compatível com a matriz definida; critérios de pagamento proporcionais às etapas e entregas; indicadores de desempenho, quando aplicável; cláusulas de rescisão, reequilíbrio, métodos alternativos de prevenção e solução de conflitos e penalidades claras.",
+  "o_que_esperar": "Consolidação do conjunto documental do processo de contratação, de forma clara, técnica e coerente com os estudos realizados. Definição precisa do objeto contratual, evitando ambiguidades que possam comprometer a execução, fiscalização ou gerar litígios. Compatibilidade entre o escopo técnico e os parâmetros utilizados na elaboração do orçamento. Clareza nos critérios de pagamento, bem como coerência entre a matriz de riscos aprovada e a alocação de responsabilidades no contrato. Ausência de dubiedades nas cláusulas contratuais e instrumentos licitatórios, garantindo segurança jurídica à contratação.",
+  "produtos_esperados": [
+    {
+      "id": "23.1",
+      "texto": "Termo de referência ou anteprojeto/projeto com descrição precisa do objeto, entregas e condicionantes;"
+    },
+    {
+      "id": "23.2",
+      "texto": "Edital e minuta de contrato com linguagem clara, compatíveis com o escopo e com os demais documentos do processo;"
+    },
+    {
+      "id": "23.3",
+      "texto": "Regras de pagamento proporcionais à execução e entregas do projeto;"
+    },
+    {
+      "id": "23.4",
+      "texto": "Dispositivos contratuais de alocação de riscos, reequilíbrio econômico-financeiro e penalidades;"
+    }
+  ],
+  "momento_ideal": "Fase final da etapa de planejamento, imediatamente anterior à publicação do edital de licitação.",
+  "excecoes": [
+    "Em modelos de contratação integrada, a definição de certos elementos poderá ser mais sintética, desde que os parâmetros para sua posterior elaboração estejam claramente definidos no anteprojeto e no edital. A ausência de vínculo com a matriz de riscos aprovada pode comprometer esta ação, mesmo havendo documentação formalmente completa."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de construção do centro logístico intermodal, os documentos do processo de contratação foram elaborados com elevada qualidade técnica e aderência ao planejamento prévio. O termo de referência descreveu com clareza o escopo da obra, as fases de execução e as exigências operacionais. O edital apresentou critérios de julgamento adequados ao objeto, regras de habilitação proporcionais e condições de pagamento compatíveis com as entregas previstas. A minuta do contrato refletiu integralmente a matriz de risco aprovada, com cláusulas específicas sobre reequilíbrio econômico-financeiro, penalidades e indicadores de desempenho. Houve também dispositivos claros sobre a responsabilidade da contratada na obtenção de licenças e no gerenciamento de riscos ambientais. Os documentos estiveram harmonizados entre si e garantiram segurança jurídica e atratividade ao certame."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto do centro logístico intermodal, os documentos do processo licitatório contemplaram os instrumentos essenciais e apresentaram articulação geral com as etapas anteriores do projeto. A matriz de riscos foi incorporada ao termo de referência, com indicação dos principais eventos e alocação de responsabilidades, e o edital definiu critérios de julgamento compatíveis com os objetivos da contratação. No entanto, a minuta do contrato apresentou falha formal ao não referenciar expressamente a matriz de riscos como anexo contratual, e os parâmetros de desempenho, embora tivessem sido delineados no termo de referência, não foram transcritos no corpo do edital. Tais omissões não inviabilizaram a funcionalidade dos documentos, mas exigiram ajustes pontuais."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No projeto do centro logístico intermodal, os documentos de contratação não refletiram as decisões técnicas e estratégicas anteriormente adotadas. O termo de referência limitou-se a indicar a necessidade de construção, sem detalhar entregas, metas ou critérios técnicos. A minuta contratual omitiu cláusulas sobre alocação de riscos, reequilíbrio ou indicadores de desempenho. O edital foi montado com base em modelos genéricos, sem considerar as especificidades da obra nem os critérios de julgamento compatíveis com o porte e o risco do empreendimento. Além disso, a documentação ficou completamente dispersa em vários processos eletrônicos, dificultando a rastreabilidade das decisões. A ausência de consolidação e de articulação entre os documentos e os estudos prévios comprometeu integralmente a maturidade do projeto."
+    }
+  ]
+}

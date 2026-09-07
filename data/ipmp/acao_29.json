@@ -1,0 +1,41 @@
+{
+  "acao_id": 29,
+  "titulo": "Finalize a composição de equipe e a estrutura de gestão e governança",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Com a alternativa selecionada e o planejamento técnico e financeiro em avançado estágio, é necessário revisar e consolidar a estrutura de gestão e governança que acompanhará o projeto até sua conclusão. A definição clara de papéis e responsabilidades, ajustada à complexidade e ao modelo da solução escolhida, é condição fundamental para garantir coordenação eficaz, tomada de decisão ágil e controle preventivo durante a execução. Essa ação é importante porque não basta que a estrutura de governança exista formalmente; é preciso verificar se ela é funcional para os desafios do empreendimento. Uma equipe subdimensionada ou mal distribuída pode gerar gargalos, enquanto sobreposições de funções ou ausência de pontos focais podem comprometer a fluidez do processo. Por exemplo, em projetos com múltiplas frentes — como licenciamento, desapropriações, reprogramações orçamentárias e contratações simultâneas — a inexistência de uma instância coordenadora pode resultar em atrasos, conflitos internos e perda de controle sobre os prazos. Além disso, esse é o momento para alinhar os recursos humanos disponíveis à estratégia de execução, considerando o regime de contratação adotado e as exigências de controle previstas. Trata-se de consolidar uma linha de frente que tenha clareza sobre suas atribuições e sobre os fluxos de supervisão e fiscalização, conforme as boas práticas de governança preconizadas, inclusive, no art. 169 da Lei 14.133/2021. Quando bem tratada, essa ação fortalece a capacidade institucional de entrega, reduz riscos de falhas operacionais e assegura maior integração entre os diversos núcleos técnicos e administrativos envolvidos no ciclo do investimento.",
+  "descricao_acao": "Revisar e finalizar, a partir da opção escolhida, a composição da equipe e a estrutura de gestão e governança desenvolvida na Ação 11, de modo que todos envolvidos tenham uma compreensão clara dos seus papeis e responsabilidades.",
+  "o_que_esperar": "Organograma completo que explicite as funções e responsabilidades de cada membro, e/ou resposta a questionamento do órgão de controle sobre a suficiência e adequação da estrutura de pessoal disponível, para verificação da capacidade de gestão do projeto com foco exclusivo na alternativa escolhida.",
+  "produtos_esperados": [
+    {
+      "id": "29.1",
+      "texto": "Organograma completo que estabeleça quais servidores/setores estarão envolvidos no projeto, indicando as funções e as responsabilidades de cada um, considerando as necessidades da alternativa escolhida, e/ou"
+    },
+    {
+      "id": "29.2",
+      "texto": "Resposta formal do órgão a questionamento do TCU ou de outros órgãos de controle sobre a suficiência e adequação da estrutura de pessoal disponível para gerenciar o projeto, principalmente no que diz respeito à equipe de análise de projetos e de fiscalização da obra."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ao fazer isso, será possível verificar a capacidade de gestão do projeto e identificar eventual necessidade de designação de consultores externos, com foco na solução escolhida."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação de um centro administrativo estadual de grande porte, a estrutura de governança foi revista e consolidada após a escolha da alternativa definitiva. O organograma apresentou os setores responsáveis pela gestão do empreendimento, com descrição das funções de cada unidade técnica, jurídica, financeira e de fiscalização. Foram definidas claramente as instâncias de coordenação e os pontos focais para as diferentes frentes do projeto. A equipe foi redimensionada com base em análise de carga de trabalho, complexidade da execução e exigências contratuais do modelo integrado. A estrutura demonstrou coerência e suficiência com as atribuições requeridas e viabilizou a coordenação eficaz entre os agentes envolvidos."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "A estrutura de governança do centro administrativo foi revista após a definição da alternativa, com a apresentação de um organograma atualizado que identificou os setores envolvidos e suas respectivas atribuições. Os fluxos de decisão foram descritos com clareza na maioria dos casos, e houve previsão formal de reforço técnico compatível com as exigências do modelo de contratação. A estrutura proposta demonstrou coerência institucional e articulação funcional entre os atores envolvidos. No entanto, não foi apresentado registro formal que consolidasse essas definições em documento único, como portaria ou plano de governança aprovado. Tratou-se de lacuna pontual de formalização, que não comprometeu de modo relevante a solidez da organização proposta."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Apesar da escolha da alternativa e da proximidade da licitação, a estrutura de gestão e governança não foi revisada nem ajustada. Não houve reavaliação da equipe responsável nem formalização de funções e dos fluxos institucionais. Mesmo que existisse um organograma genérico da instituição, não foram realizadas adaptações para acomodar as exigências do projeto, especialmente no que se refere à gestão contratual, análise técnica e controle orçamentário. A ausência de revisão comprometeu a capacidade de execução e dificultou o alinhamento institucional, até porque tampouco constou justificativa quanto à adequação da estrutura preexistente."
+    }
+  ]
+}

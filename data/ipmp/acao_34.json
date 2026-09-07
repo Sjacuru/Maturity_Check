@@ -1,0 +1,46 @@
+{
+  "acao_id": 34,
+  "titulo": "Finalize o plano de gestão de mudanças",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Esta ação está diretamente relacionada à anterior. Enquanto a Ação 33 trata da atualização do plano de engajamento com as partes interessadas, a Ação 34 se debruça sobre como essas mudanças serão, de fato, geridas ao longo do tempo, com foco na operacionalização dos ajustes e nos impactos institucionais e sociais decorrentes da solução escolhida. O plano de gestão de mudanças precisa refletir, com clareza, quem será impactado, de que forma, e como será conduzido o processo de adaptação às transformações provocadas pelo empreendimento. Essa ação é importante porque estrutura a resposta da gestão pública às consequências práticas da intervenção. A ausência de um plano claro pode comprometer a capacidade de articulação entre órgãos envolvidos, gerar decisões desencontradas e dificultar a antecipação de riscos. Por exemplo, sem um roteiro que integre desapropriações, reassentamentos, compensações e licenciamento, cada órgão ou área pode agir isoladamente, com sobreposições ou lacunas que comprometem o cronograma e a qualidade da execução. Além disso, o plano de gestão de mudanças é peça-chave para a coordenação interinstitucional. Ele permite alinhar responsabilidades, prazos e estratégias entre diferentes níveis de governo, concessionárias, comunidades locais e instâncias de controle. Também ajuda a sistematizar o acompanhamento dos impactos não previstos, criando condições para que o projeto responda com agilidade e legitimidade a cenários adversos. Quando bem elaborado, esse plano fortalece a capacidade institucional de entregar o projeto de forma coordenada, previsível e sensível às transformações que ele próprio gera, integrando planejamento técnico, diálogo social e governança compartilhada.",
+  "descricao_acao": "Revisar e finalizar o plano de gerenciamento de mudança inicial desenvolvido na Ação 13, a partir da opção escolhida.",
+  "o_que_esperar": "Plano completo de gerenciamento das mudanças que poderão ocorrer com a implantação do projeto, com foco exclusivo na alternativa escolhida, descrevendo como serão tratadas as transformações que ele próprio irá gerar, de forma a minimizar impactos negativos e comunicar as mudanças de forma eficaz.",
+  "produtos_esperados": [
+    {
+      "id": "34",
+      "texto": "Documento completo que identifique, descreva e atualize o plano da Ação 13, contendo, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "34a",
+      "texto": "Mudanças esperadas com o projeto, possíveis resistências e estratégias de mitigação de riscos."
+    },
+    {
+      "id": "34b",
+      "texto": "Ações e estratégias sincronizadas ao cronograma da Ação 31, para gerenciar as mudanças decorrentes da implementação da alternativa escolhida, contendo prazos, marcos e responsabilidades."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ao fazer isso, será possível assegurar se a implantação do projeto se dará nos prazos e custos estimados."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto de pavimentação de estrada em Região Amazônica, com interferência sobre terras indígenas em processo de demarcação e áreas de comunidades extrativistas, foi apresentado um plano de gestão de mudanças que afetam as partes interessadas com elevado grau de detalhamento. O documento previu ações específicas para acompanhar impactos sobre mobilidade, segurança alimentar, acesso a recursos naturais e deslocamento de rotas tradicionais. Incluiu também estratégias de comunicação contínua, mediação de conflitos, protocolos para revisão de medidas de mitigação e canais de escuta social em tempo real. O plano ficou integrado aos instrumentos de licenciamento e manteve-se alinhado às demandas da Funai, do ICMBio e das lideranças locais. A ação foi plenamente atendida."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Considerando o mesmo projeto, o plano de gestão de mudanças incluiu diagnóstico técnico dos impactos sociais, identificou alterações relevantes no deslocamento de comunidades tradicionais e no acesso a serviços públicos e foi atualizado após a definição da alternativa escolhida. Contemplou medidas voltadas a públicos vulneráveis, como populações indígenas, ribeirinhos e famílias em reassentamento. Contudo, as ações foram descritas de forma dispersa, sem se consolidarem em um plano estruturado e articulado com os demais instrumentos de gestão socioambiental. Embora os elementos essenciais estivessem presentes, a ausência de sistematização formal reduziu a efetividade do plano como ferramenta de apoio à governança social."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Ainda no projeto de pavimentação da estrada em região amazônica, não foi apresentado qualquer plano de gestão das mudanças que afetariam as partes interessadas. Não houve identificação de grupos potencialmente impactados, tampouco previsão de ações para mitigar os efeitos da intervenção sobre rotinas, acessos, atividades econômicas locais ou estruturas comunitárias. A ausência de mecanismos de consulta, escuta e resposta comprometeu gravemente a governança social da obra e gerou reações negativas por parte das comunidades, culminando em judicializações e paralisações. Por tais razões, a ação não foi atendida."
+    }
+  ]
+}

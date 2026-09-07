@@ -1,0 +1,35 @@
+{
+  "acao_id": 45,
+  "titulo": "Execute o processo de contratação e selecione o licitante vencedor",
+  "dimensao": "Comercial",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A Ação 45 diz respeito à finalização do processo licitatório, com a homologação do certame e a adjudicação do objeto ao licitante vencedor, conforme previsto na legislação vigente. Trata-se de uma etapa formal, mas que consolida juridicamente todo o esforço de estruturação realizado até aqui. Essa ação é importante porque representa o ponto de transição entre o planejamento e a execução. A homologação é o momento em que a Administração Pública atesta que o processo licitatório foi conduzido de maneira regular, transparente e em conformidade com os princípios da legalidade, isonomia e competitividade. Já a adjudicação formaliza o direito de contratação do licitante vencedor, assegurando segurança jurídica ao futuro contrato. Sem essa formalização adequada, todo o ciclo de amadurecimento pode ser comprometido. Um processo licitatório mal conduzido, ou homologado sem atenção às regras legais e procedimentais, pode resultar em impugnações, nulidades, judicializações e atrasos significativos. Além disso, falhas nesse ponto tendem a gerar repercussões negativas não apenas para o projeto específico, mas para a credibilidade institucional do órgão contratante. Quando devidamente registrado, com os atos administrativos publicados e disponíveis para controle e consulta, essa etapa também garante a rastreabilidade do processo e a transparência junto à sociedade, fechando o ciclo preparatório de forma íntegra e verificável.",
+  "descricao_acao": "Executar o processo de licitação, nos termos da legislação pertinente. Homologar o procedimento e adjudicar o objeto ao licitante vencedor.",
+  "o_que_esperar": "Execução de todas as etapas do processo licitatório, de acordo com o planejado e com a legislação aplicável. Seleção do licitante vencedor.",
+  "produtos_esperados": [
+    {
+      "id": "45",
+      "texto": "Registro da realização do processo licitatório, nos termos da legislação aplicável."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e dos ajustes que se fizerem necessários.",
+  "excecoes": [],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No processo de contratação da obra do anel viário metropolitano, todas as etapas da licitação foram executadas conforme o planejamento elaborado na fase anterior. A sessão pública de julgamento das propostas ocorreu com registro em ata, observou os critérios estabelecidos no edital e, após a análise das habilitações, o resultado foi publicado; em seguida, a autoridade competente homologou o certame e adjudicou o objeto ao consórcio vencedor. Todos os atos administrativos foram divulgados no Diário Oficial e foram juntados ao processo, assegurando rastreabilidade e transparência. O certame transcorreu de forma regular, sem impugnações relevantes, e demonstrou aderência aos princípios da legalidade, isonomia e publicidade, além de garantir segurança jurídica à contratação."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Na contratação da obra do anel viário metropolitano, a licitação foi realizada e o vencedor foi declarado. Contudo, durante a fase de esclarecimentos, constatou-se que as manifestações do órgão se limitaram a respostas extremamente concisas que se referiram apenas a termos já conhecidos do edital, sem solucionar dúvidas legítimas dos proponentes. Tal postura dificultou a elaboração de propostas mais vantajosas e comprometeu parcialmente a efetividade do procedimento."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No mesmo empreendimento, o processo licitatório foi suspenso antes da fase de homologação devido a impugnações não solucionadas tempestivamente. O certame não chegou a ser concluído e não houve adjudicação do objeto a qualquer licitante. Além disso, não se localizou reprogramação formal ou justificativa técnica para a não conclusão da licitação. A inexistência de atos formais de encerramento ou cancelamento evidenciou que a ação não foi atendida."
+    }
+  ]
+}

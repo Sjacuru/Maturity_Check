@@ -1,0 +1,55 @@
+{
+  "acao_id": 10,
+  "titulo": "Estime custos, capacidade de custeio e capacidade de obter financiamento",
+  "dimensao": "Financeira",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "Este procedimento reforça a consistência entre a projeção financeira e o planejamento governamental, evitando o comprometimento de recursos em iniciativas sem viabilidade econômica e orçamentária, diante de uma projeção realista dos custos do projeto. A estimativa preliminar dos custos de implementação, operação e manutenção permite comparar alternativas desde a fase inicial dos estudos e evitar que soluções inviáveis avancem para fases mais detalhadas. Quando essa análise é negligenciada, há risco de priorizar alternativas que extrapolam os limites orçamentários ou cuja sustentabilidade financeira futura é incerta. Por exemplo, poderia ser considerada como preferencial uma alternativa que exige alto investimento inicial e custos operacionais permanentes, sem que haja previsão orçamentária compatível ou capacidade institucional para arcar com sua manutenção. Também pode ocorrer a escolha de soluções que, embora eficientes tecnicamente, não se sustentam diante da realidade fiscal do ente responsável. Quando bem conduzida, essa ação ajuda a filtrar as opções mais promissoras, dá previsibilidade financeira ao processo decisório e orienta a compatibilização entre o projeto e os instrumentos de planejamento orçamentário — como o PPA e a LOA —, reforçando o compromisso com a execução responsável e viável do empreendimento. Ademais, a adequada realização desta ação é imprescindível para assegurar a sustentabilidade financeira do projeto e para fundamentar as decisões nas etapas subsequentes da modelagem e estruturação. Ressalta-se que, conforme boas práticas internacionais e o Modelo de Cinco Dimensões (M5D), as estimativas devem ser compatíveis com o grau de maturidade do projeto, adotando metodologias reconhecidas como o FEL - Front-End Loading e outras. Assim, esta ação pondera dois aspectos indissociáveis para a boa governança financeira do projeto: de um lado, a necessidade de uma previsão realista e fidedigna dos custos de implementação, operação e manutenção, adequada ao grau de maturidade do empreendimento; de outro, a verificação inicial da necessidade e possibilidade de custeio pelo ente ou órgão responsável, considerando suas limitações fiscais e orçamentárias. O equilíbrio entre esses elementos assegura que as alternativas analisadas sejam não apenas técnica e economicamente viáveis, mas também exequíveis sob o ponto de vista financeiro, contribuindo para a sustentabilidade do projeto e a consistência entre o planejamento setorial e os instrumentos de programação orçamentária.",
+  "descricao_acao": "Estimar os custos iniciais de implementação, operação e manutenção das alternativas identificadas nos estudos preliminares. Avaliar a viabilidade financeira de cada opção, a fim de descartar soluções inviáveis e priorizar as mais promissoras. Identificar a capacidade institucional de custeio do projeto, considerando restrições fiscais e orçamentárias. Mapear, ainda que de forma preliminar, as possíveis fontes de financiamento, como orçamento público, transferências ou financiamentos externos. Verificar a aderência inicial do projeto aos instrumentos oficiais de planejamento, especialmente o PPA.",
+  "o_que_esperar": "Elaboração de estimativas iniciais e estruturadas dos custos de implementação, operação e manutenção, abrangendo todas as opções consideradas. Descarte fundamentado de alternativas inviáveis. Identificação preliminar da capacidade de custeio institucional. Mapeamento das fontes potenciais de financiamento (orçamento próprio, transferências, financiamentos externos etc.). Demonstração do alinhamento inicial com os instrumentos oficiais de planejamento.",
+  "produtos_esperados": [
+    {
+      "id": "10",
+      "texto": "Seção específica do EVTEA, relatório de pré-viabilidade ou estudo equivalente contendo:",
+      "scored": false
+    },
+    {
+      "id": "10a",
+      "texto": "Estimativas iniciais dos custos de implementação, operação e manutenção para cada opção analisada."
+    },
+    {
+      "id": "10b",
+      "texto": "Identificação preliminar da capacidade de custeio institucional."
+    },
+    {
+      "id": "10c",
+      "texto": "Mapeamento das fontes potenciais de financiamento."
+    },
+    {
+      "id": "10d",
+      "texto": "Demonstração do alinhamento inicial com instrumentos de planejamento, notadamente os de médio e longo prazos."
+    }
+  ],
+  "momento_ideal": "Fase inicial do projeto, durante a elaboração dos estudos preliminares, antes da seleção da alternativa mais vantajosa.",
+  "excecoes": [
+    "Para grandes empreendimentos, recomenda-se a inclusão de projeções financeiras detalhadas e análises de sensibilidade que considerem riscos de sobrecustos e restrições orçamentárias.",
+    "Projetos menores ou rotineiros podem se basear em históricos de custos de empreendimentos similares, desde que adequadamente justificados e atualizados conforme parâmetros de mercado e inflação setorial."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em um projeto para duplicação e adequação de uma rodovia federal, o estudo preliminar (EVTEA, relatório de pré-viabilidade ou equivalente) apresentou estimativas iniciais consistentes de custos de implementação, operação e manutenção para cada alternativa analisada, já trazendo elementos úteis para a avaliação de todo o ciclo de vida do objeto. As premissas de custo foram claras, e as fontes de dados foram identificadas e mantiveram-se atualizadas. Além disso, houve uma primeira identificação da capacidade de custeio institucional e ocorreu um mapeamento preliminar de possíveis fontes de financiamento, demonstrando alinhamento com os instrumentos de planejamento (por exemplo, o PPA), mesmo em horizontes de médio e longo prazo."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto para duplicação e adequação de uma rodovia federal, o estudo preliminar apresentou estimativas estruturadas e detalhadas dos custos de implementação, operação e manutenção para todas as alternativas analisadas, identificou as premissas de cálculo e utilizou fontes de dados atualizadas. Houve ainda avaliação preliminar da capacidade de custeio institucional e realizou-se o mapeamento das principais fontes de financiamento, incluindo dotações orçamentárias e a possibilidade de transferências federais. No entanto, ao se analisar o alinhamento com os instrumentos oficiais de planejamento, verificou-se que o Plano Plurianual (PPA) não apresentou previsão compatível com o valor total estimado para o empreendimento, limitando-se a uma dotação parcial que não refletiu a integralidade dos custos previstos."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No projeto para duplicação e adequação de uma rodovia federal, não foram apresentadas estimativas estruturadas de custos de implementação, operação ou manutenção para as alternativas consideradas; o estudo ficou restrito a menções genéricas ou a valores de referência sem respaldo técnico atualizado. Tampouco houve identificação da capacidade de custeio institucional do órgão responsável, nem se mapeou fontes potenciais de financiamento. O projeto avançou para a etapa de seleção de alternativas sem a devida análise de viabilidade financeira ou demonstração de compatibilidade com instrumentos de planejamento, como o PPA."
+    }
+  ]
+}

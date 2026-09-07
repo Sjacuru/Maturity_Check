@@ -1,0 +1,41 @@
+{
+  "acao_id": 11,
+  "titulo": "Identifique a equipe de projeto (incluindo consultores externos) e a estrutura de gestão e governança",
+  "dimensao": "Gerencial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A definição da estrutura de governança e gestão do projeto ainda na fase de viabilidade é fundamental para garantir que o empreendimento contará, desde o início, com os recursos humanos adequados, com clareza de papéis e mecanismos de decisão minimamente estabelecidos. Ignorar esse aspecto pode levar à fragmentação de responsabilidades, lacunas na coordenação dos estudos e dificuldades futuras de execução, sobretudo em projetos interinstitucionais ou de maior complexidade. Por exemplo, poderia ser iniciado um estudo técnico sem que estivesse claro qual unidade conduziria os processos de validação, articulação com outros entes ou interlocução com o setor externo, resultando em retrabalhos, decisões desencontradas ou atrasos em análises e aprovações internas. Também pode ocorrer que o projeto avance sem qualquer previsão de apoio técnico especializado, limitando sua qualidade e robustez. Quando bem conduzida, essa ação ajuda a estruturar o fluxo de trabalho com base nas competências institucionais disponíveis, viabiliza a alocação de equipe com perfil adequado e reforça a capacidade da organização em exercer o controle e a orientação técnica necessários para o desenvolvimento de um projeto consistente.",
+  "descricao_acao": "Definir quem irá realizar o trabalho de consolidar a documentação e gerir o projeto. Definir como as decisões serão tomadas. Descrever como a orientação e o controle do projeto serão fornecidos.",
+  "o_que_esperar": "Organograma simples que estabeleça a base organizacional inicial do projeto, deixando claras as funções e responsabilidades de cada membro, e/ou resposta a questionamento do órgão de controle sobre a suficiência e adequação da estrutura de pessoal disponível.",
+  "produtos_esperados": [
+    {
+      "id": "11a",
+      "texto": "Organograma, em nível inicial, que estabeleça quais servidores/setores estarão envolvidos no projeto, indicando as funções e as responsabilidades de cada um, e/ou"
+    },
+    {
+      "id": "11b",
+      "texto": "Resposta formal do órgão a questionamento do TCU (cabendo nesse ponto outros órgãos de controle externo ou controle interno) sobre a suficiência e adequação da estrutura de pessoal disponível para gerenciar o projeto, principalmente no que diz respeito à equipe de análise de projetos e de fiscalização da obra."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Esta etapa se inicia pela definição de quem irá desempenhar cada função, além da definição de uma estrutura de governança e gestão, o que inclui a identificação e nomeação de consultores externos para trazer experiência e conhecimento não disponíveis internamente na organização pública."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação de uma ponte interestadual sobre rio de grande porte, a governança foi formalmente estruturada ainda na fase de estudos de viabilidade. O documento apresentou a composição da equipe técnica do órgão federal responsável pela infraestrutura de transportes, com identificação das funções, atribuições e estrutura de reporte. Também incluiu os tipos de contratos de engenharia consultiva necessários (estudos hidrológicos, geotécnicos e ambientais). A capacidade de entrega foi justificada com base em análise objetiva de indicadores como carga de trabalho estimada, tempo disponível dos profissionais alocados, produtividade técnica por tipo de entrega e nível de complexidade das atividades previstas. As instâncias decisórias e os canais de interlocução institucional ficaram claramente definidos e documentados."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "O estudo apresentou um organograma detalhado da equipe técnica, definiu claramente as funções e vínculos hierárquicos entre os integrantes do projeto e descreveu objetivamente as atribuições, evidenciando a estrutura de governança adotada. Também registrou a necessidade de contratação de consultores externos, com menção ao escopo de atuação, embora de forma resumida e sem especificação das entregas. Apesar dessa limitação, a documentação demonstrou organização técnico-institucional consistente, sendo a estrutura amplamente aproveitável para fins de avaliação."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "O estudo de viabilidade não apresentou qualquer referência clara à equipe responsável pela condução do projeto. Não houve identificação de técnicos, definição de funções ou estrutura de governança registrada. Tampouco se verificou evidência de contratação de consultores especializados ou qualquer demonstração da capacidade institucional para elaborar os estudos. Ademais, mesmo que houvesse um organograma com atribuições formais, caso se constatasse a baixa qualidade técnica das entregas ou a incompatibilidade entre a carga de trabalho e os recursos disponíveis, permaneceria caracterizado o não atendimento. A ausência de capacidade de entrega adequada e suficiente inviabilizou a estrutura mínima exigida de governança."
+    }
+  ]
+}

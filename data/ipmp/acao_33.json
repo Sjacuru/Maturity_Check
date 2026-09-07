@@ -1,0 +1,51 @@
+{
+  "acao_id": 33,
+  "titulo": "Finalize e implemente o plano de engajamento das partes interessadas",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "A escolha da alternativa mais vantajosa não encerra o diálogo com as partes interessadas — ao contrário, marca o momento de revisar e consolidar o plano de engajamento com base nas características concretas da solução selecionada. Trata-se de verificar se novos grupos poderão ser impactados, se os riscos e oportunidades inicialmente mapeados ainda são válidos e como será estruturado o processo de envolvimento contínuo com todos os públicos relevantes. Essa ação é importante porque permite uma leitura mais fina e realista dos efeitos do empreendimento sobre atores sociais, econômicos e institucionais. Por exemplo, a definição do traçado de uma rodovia pode implicar a necessidade de realocar infraestruturas privadas ou de serviços públicos, afetando diretamente empresas, concessionárias ou comunidades tradicionais. Se esse impacto for descoberto tardiamente, sem o devido engajamento, pode gerar resistências, judicializações ou até a necessidade de alterar o projeto após a contratação — o que compromete prazos, eleva custos e fragiliza a credibilidade da gestão. Além disso, os efeitos desse engajamento estruturado podem repercutir sobre outras dimensões do planejamento. Se a alternativa escolhida implicar impactos inaceitáveis sobre determinados grupos — como custos sociais elevados ou inviabilidade de reassentamento — pode ser necessário revisitar a avaliação econômica e reavaliar o custo-benefício da decisão. Da mesma forma, novas informações obtidas no engajamento podem exigir ajustes nos documentos da contratação, alterando escopos, prazos ou obrigações. Ainda, custos imprevistos decorrentes dessas interações — como compensações, adequações ou condicionantes — podem impactar diretamente a viabilidade financeira do projeto, tornando necessário revisar premissas ou reforçar as fontes de custeio. Quando bem conduzida, essa ação reforça a legitimidade do projeto, melhora a sua viabilidade técnica e institucional e amplia a capacidade de resposta da gestão pública, promovendo um planejamento mais integrado, realista e sustentável.",
+  "descricao_acao": "Revisar e finalizar o plano de engajamento das partes interessadas a partir da opção escolhida (avaliar se existem outros grupos afetados, como será feito o envolvimento com todos os grupos etc.).",
+  "o_que_esperar": "Plano completo de engajamento das partes interessadas que identifique e envolva os grupos impactados pelo projeto, considerando os já identificados em fase de viabilidade e outros que possam ter surgido ao longo do tempo.",
+  "produtos_esperados": [
+    {
+      "id": "33",
+      "texto": "Documento completo que identifique, descreva e atualize o plano da Ação 13, contendo, no mínimo:",
+      "scored": false
+    },
+    {
+      "id": "33a",
+      "texto": "Partes interessadas já identificadas e as novas, que podem ter surgido desde o levantamento da Ação 13, que poderão ser afetadas pelo projeto e seu nível de influência."
+    },
+    {
+      "id": "33b",
+      "texto": "Forma como essas partes serão envolvidas e comunicadas ao longo do ciclo de vida do projeto, considerando a alternativa escolhida, incluindo métodos de comunicação (reuniões, consultas), frequência, prazos, principais tópicos a serem discutidos, responsabilidades por cada ação etc."
+    },
+    {
+      "id": "33c",
+      "texto": "Atividades específicas de engajamento que serão realizadas com cada grupo de partes interessadas;"
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Destaca-se possíveis partes interessadas em projetos, como povos originários, comunidades quilombolas, famílias a serem reassentadas, proprietários de imóveis a serem desapropriados, sítios arqueológicos, áreas de preservação/conservação ambiental, entre outros.",
+    "Ressalta-se que essa avaliação da situação mais recente poderá exigir a revisão das demais dimensões, já que problemas inaceitáveis com a alternativa escolhida podem levar à reavaliação das opções econômicas, à revisão dos documentos de contratação ou à reanálise da viabilidade financeira em caso de custos imprevistos e insustentáveis."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Em projeto federal de pavimentação e alargamento de estrada em área de transição entre zona rural e unidade de conservação, o plano de engajamento foi revisado e foi consolidado à luz da alternativa escolhida, incorporou especificidades territoriais e institucionais relevantes e contemplou estratégias diferenciadas de diálogo com comunidades indígenas, quilombolas e agricultores familiares não mapeados inicialmente. O documento atualizou protocolos de consulta livre, prévia e informada conforme as normativas vigentes, incluiu medidas de mitigação cultural e estratégias de comunicação contínua e identificou as famílias a serem reassentadas, bem como os imóveis a serem desapropriados, prevendo acompanhamento social e jurídico. O plano ficou articulado aos instrumentos ambientais e permaneceu alinhado às diretrizes da Funai, Incra e Iphan, integrando-se ao processo decisório e às contratações da fase de implantação."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto de pavimentação e alargamento de estrada, o plano de engajamento apresentou diagnóstico consistente das partes interessadas, identificou famílias sujeitas a desapropriação e comunidades tradicionais na área de influência e foi atualizado após a definição da alternativa selecionada, trazendo informações relevantes sobre os públicos afetados. Contudo, o conteúdo permaneceu fragmentado entre estudos ambientais, relatórios sociais e documentos de desapropriação, pois não foi formalizado em documento único, o que prejudicou sua articulação prática."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No mesmo empreendimento, o plano de engajamento das partes interessadas não foi finalizado nem implementado após a escolha da alternativa de intervenção. A versão preliminar elaborada na fase de viabilidade não recebeu atualização para refletir impactos novos, como o aumento da área de reassentamento e a sobreposição com território tradicional não mapeado inicialmente. A equipe não realizou protocolos de consulta, nem estruturou canais de diálogo com os grupos afetados. Essa omissão gerou resistências locais, provocou a suspensão de frentes de obra e exigiu revisões emergenciais nos licenciamentos e contratos firmados."
+    }
+  ]
+}

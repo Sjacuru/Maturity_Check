@@ -1,0 +1,62 @@
+{
+  "acao_id": 18,
+  "titulo": "Prepare a análise econômica para as opções identificadas",
+  "dimensao": "Econômica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A aplicação de análises econômico-sociais estruturadas, mesmo que preliminares, permite comparar alternativas a partir de uma lógica de Valor Público do Projeto, e não apenas com base no custo financeiro direto. Quando bem elaboradas, ferramentas como a análise de custo-benefício (ACB), abordagens multicritério, análise de sensibilidade e avaliação qualitativa de riscos e benefícios oferecem maior robustez à decisão, tornando mais claro o equilíbrio entre custos, impactos e retornos sociais do investimento. Negligenciar essa etapa ou tratá-la de forma superficial pode induzir à escolha de soluções que parecem financeiramente viáveis, mas que entregam pouco benefício líquido à sociedade. Por exemplo, pode-se priorizar uma alternativa de menor custo inicial, sem considerar seus efeitos indiretos — como o aumento do tempo de deslocamento, maior emissão de poluentes ou geração de custos operacionais mais elevados no longo prazo. Também é comum a omissão de testes de sensibilidade sobre variáveis-chave, o que enfraquece a avaliação da resiliência do projeto diante de mudanças de cenário. Quando bem elaborada, a análise econômica confere maior robustez à decisão, tornando mais claro o equilíbrio entre custos, impactos e retornos sociais do investimento. Além disso, a ação contribui para a transparência da escolha, facilita a comunicação com órgãos de controle e financiamento, e reforça o compromisso com a alocação eficiente de recursos públicos. O objetivo principal é assegurar que os projetos selecionados maximizem o retorno social e a sustentabilidade no longo prazo.",
+  "descricao_acao": "Realizar as análises econômicas abaixo para cada opção da Ação 6: análise de custo-benefício; avaliação qualitativa de riscos e benefícios; análise de sensibilidade. O objetivo principal é definir o valor público do projeto, que é realizado em quatro etapas: 1. estimar o valor dos benefícios públicos de cada opção; 2. identificar os custos de cada opção, incluindo os custos do ciclo de vida; 3. identificar os riscos específicos de cada opção; 4. calcular o valor público de cada opção.",
+  "o_que_esperar": "Elaboração de uma análise econômica completa (análise de custo-benefício ou similar) para cada uma das opções retidas na fase anterior, com a apresentação do Valor Público obtido. Consideração do viés de otimismo, tanto para benefícios quanto para custos.",
+  "produtos_esperados": [
+    {
+      "id": "18",
+      "texto": "Seção específica do EVTEA ou documento similar, contendo:",
+      "scored": false
+    },
+    {
+      "id": "18a",
+      "texto": "Revisão das opções desenvolvidas na Proposta Inicial de Investimento, com confirmação ou ajustes na lista de opções."
+    },
+    {
+      "id": "18b",
+      "texto": "Análise de custo-benefício detalhada para cada opção, incluindo: estimativa dos Benefícios Públicos (separados em classes e com aplicação da taxa de desconto e ajuste para viés de otimismo); estimativa dos Custos (detalhados por categoria e com aplicação da taxa de desconto e ajuste para viés de otimismo); estimativa dos Riscos (identificados, quantificados e com cálculo do “custo de risco”); cálculo do Valor Público para cada opção."
+    },
+    {
+      "id": "18c",
+      "texto": "Cálculo da Razão de Custo-Benefício para cada opção."
+    },
+    {
+      "id": "18d",
+      "texto": "Tabelas de resumo mostrando os totais de Benefícios, Custos, Riscos, Valor Público e Razão de Custo-Benefício para cada opção."
+    },
+    {
+      "id": "18e",
+      "texto": "Explicação completa das suposições feitas e das razões para a aplicação da taxa de desconto e do ajuste para viés de otimismo."
+    }
+  ],
+  "momento_ideal": "Após a revisão da dimensão estratégica (Ação 17), a fim de avaliar de forma consistente os custos e benefícios de cada alternativa, subsidiando a escolha final sobre qual delas segue adiante.",
+  "excecoes": [
+    "A taxa de desconto a ser utilizada deve ser a Taxa Social de Desconto (TSD) definida pelas diretrizes do Ministério da Economia/Fazenda do Brasil.",
+    "A análise deve cobrir a vida útil dos ativos do projeto.",
+    "Custos irrecuperáveis não devem ser incluídos na análise econômica.",
+    "A metodologia para estimativa de custos, benefícios e riscos deve ser consistente entre as diferentes opções para garantir uma comparação justa.",
+    "A análise deve ser realizada preferencialmente por meio da construção de um modelo em planilha."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Para um grande projeto de contenção de encosta em área de alto risco de desastres naturais, o EVTEA incluiu uma análise econômica completa para as três opções de intervenção identificadas (solução de retaludamento e drenagem, muro de gabiões e bioengenharia). A análise de custo-benefício detalhou os benefícios públicos esperados, como a redução do número de vidas em risco, a preservação de moradias e infraestruturas e a diminuição dos custos com atendimentos emergenciais e reconstrução. Todos os benefícios foram quantificados e monetizados, e aplicou-se a Taxa Social de Desconto, conforme as diretrizes do Governo Federal. Os custos de capital e operacionais para cada opção foram estimados, incluindo custos de oportunidade e riscos ambientais e sociais. A análise quantificou os riscos específicos de cada alternativa (falha estrutural, atrasos na execução, problemas de desapropriação) e aplicou ajuste para viés de otimismo em custos e benefícios, baseado na experiência acumulada em projetos similares. O Valor Público e a Razão de Custo-Benefício foram calculados para cada opção e foram apresentados em tabelas claras que demonstraram a comparação entre elas."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Em um grande projeto de contenção de encosta, o EVTEA apresentou uma análise robusta de custo-benefício para duas opções de intervenção. Foram identificados e estimados os custos de implementação e manutenção para ambas as alternativas, e os benefícios — como a segurança da população e a redução de perdas materiais — foram avaliados, possibilitando o cálculo do Valor Público. Contudo, não houve clareza quanto à aplicação do ajuste pelo viés do otimismo, e não se identificou motivação qualitativa robusta para a não elaboração da análise de custo-benefício de uma terceira alternativa."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um estudo de intervenção em área de risco de deslizamento não apresentou uma análise econômica que comparasse diferentes opções de contenção. O documento se limitou a detalhar os custos de construção de uma solução técnica predefinida (muro de concreto armado), sem estimar os benefícios públicos esperados — como vidas salvas ou imóveis protegidos — nem os riscos associados à implementação dessa solução em comparação a outras alternativas. Não foi realizado cálculo de Valor Público ou Razão de Custo-Benefício, tampouco se aplicaram taxas de desconto ou ajustes para viés de otimismo. A ausência de uma análise comparativa das opções econômicas impediu a justificação da escolha da alternativa adotada e comprometeu a compreensão da real vantagem do investimento público."
+    }
+  ]
+}

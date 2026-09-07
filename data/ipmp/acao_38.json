@@ -1,0 +1,38 @@
+{
+  "acao_id": 38,
+  "titulo": "Consulte o mercado e a sociedade",
+  "dimensao": "Comercial",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "A realização de audiência pública nesta fase é uma oportunidade estratégica para promover ajustes finais nos documentos que embasarão a contratação, com base em uma escuta qualificada da sociedade e do mercado. Trata-se de uma das últimas chances para verificar, de forma estruturada, se há omissões relevantes, inconsistências técnicas ou percepções equivocadas sobre o empreendimento — elementos que, se ignorados, podem comprometer a atratividade, a execução ou até a legitimidade do projeto. Apesar de não ser obrigatória pela Lei nº 14.133/2021, a audiência pública não deve ser tratada como um rito meramente facultativo. Pelo contrário, em projetos relevantes, sua realização deveria ser considerada como padrão — e sua dispensa, se for o caso, precisa ser justificada de forma clara e fundamentada. Ignorar essa etapa sem qualquer análise crítica pode ser um indicativo de fragilidade na estratégia de engajamento, com uma condução excessivamente fechada do processo, baixa exposição ao contraditório e menor oportunidade de qualificação técnica e institucional do projeto. Essa ação é importante porque reforça o caráter comunicativo da gestão pública e amplia a capacidade de escuta e correção antes da contratação. Por exemplo, a audiência pode revelar que o traçado definido corta comunidades tradicionais que não haviam sido devidamente consideradas; pode apontar que o acesso a um polo industrial relevante ficou comprometido por uma solução técnica mal dimensionada; ou ainda que a divisão de lotes proposta na licitação é incompatível com a lógica de mercado local, reduzindo o interesse de concorrentes. Do ponto de vista do mercado, também é possível que surjam sinalizações relevantes sobre a viabilidade operacional da contratação, como cláusulas contratuais de difícil execução, matriz de riscos desequilibrada ou exigências técnicas desproporcionais — elementos que, se corrigidos previamente, podem evitar impugnações, baixa competitividade ou até o fracasso do certame. Quando bem conduzida, a audiência pública deixa de ser um mero rito formal e se transforma em instrumento efetivo de refinamento do projeto, ampliando a transparência, a legitimidade e a aderência da proposta às realidades sociais, territoriais e econômicas do seu entorno.",
+  "descricao_acao": "Realizar audiências públicas para solicitar feedback do mercado e da sociedade, de uma forma estruturada que pode levar aos últimos ajustes dos documentos do processo de contratação.",
+  "o_que_esperar": "Execução das atividades de consulta pública planejadas. Relatório que sistematize o feedback recebido, com indicação de como as percepções do mercado e da sociedade foram analisadas e consideradas no desenvolvimento do projeto.",
+  "produtos_esperados": [
+    {
+      "id": "38",
+      "texto": "Registro das interações com o mercado e com a sociedade, por meio de atas ou sumários das audiências públicas, compilação e análise das respostas aos questionários ou outras formas de coleta de feedback escrito, recomendações de ajustes, com base nas percepções colhidas."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ressalta-se que a necessidade da realização da consulta ou a justificativa para sua não realização serão analisadas na Dimensão Comercial, no âmbito da Ação 24.",
+    "A ação poderá ser considerada não atendida se a consulta pública não for realizada e não houver justificativa."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Na implantação do sistema BRT metropolitano entre duas capitais estaduais, foi realizada uma audiência pública ampla, divulgada antecipadamente nos portais institucionais, redes sociais e veículos de imprensa regionais. O evento contou com participação expressiva da sociedade civil, operadores de transporte, prefeitos dos municípios atendidos e representantes de movimentos sociais. Durante a audiência, foram colhidas contribuições relevantes, como a necessidade de ampliar os acessos aos terminais para pedestres e ciclistas e a preocupação com o impacto sobre comunidades ribeirinhas. Também surgiram críticas à divisão proposta dos lotes licitatórios, considerada desvantajosa por operadores locais. O relatório final do processo compilou todas as contribuições recebidas, indicou aquelas incorporadas aos documentos licitatórios — como a alteração dos acessos e a revisão da estratégia de lotes — e justificou tecnicamente as sugestões não acatadas. A audiência pública funcionou como etapa qualificada de refinamento do projeto, alinhando os documentos às realidades territoriais e institucionais."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No projeto do BRT metropolitano, a audiência pública foi realizada com estrutura adequada, participação de diversos segmentos sociais e registro das manifestações apresentadas. O conteúdo discutido foi analisado pela equipe técnica, tendo resultado em ajustes documentados no projeto. A convocação seguiu os prazos mínimos legais e houve divulgação pelos canais institucionais. No entanto, não foi disponibilizado ao público relatório que sistematizasse as contribuições recebidas, o que configurou falha no quesito transparência."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Na implantação do BRT entre as duas capitais, não foi realizada audiência pública nem foi apresentada justificativa para sua dispensa. Mesmo sendo empreendimento de grande porte, com impacto direto sobre diversos municípios, comunidades vulneráveis e operadores privados, o projeto avançou de forma fechada, sem oferecer espaços formais de participação ou de exposição prévia dos documentos ao escrutínio público. A ausência da audiência pública, sem motivação técnica ou institucional, configurou o não atendimento da Ação 38, indicando fragilidade na estratégia de engajamento e risco à legitimidade do certame."
+    }
+  ]
+}

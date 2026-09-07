@@ -1,0 +1,45 @@
+{
+  "acao_id": 28,
+  "titulo": "Teste a capacidade de custeio",
+  "dimensao": "Financeira",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Mais do que estimar custos e apontar fontes, é fundamental testar a capacidade de custeio do projeto ao longo do tempo. Trata-se de verificar, com base nos custos projetados e nos dados orçamentários disponíveis, se haverá recursos suficientes — ano a ano — para garantir a execução da solução escolhida, considerando inclusive os riscos e incertezas que podem afetar esse equilíbrio. Essa ação é importante porque a ausência desse teste pode resultar em uma falsa percepção de viabilidade. A presença do projeto no PPA, na LOA ou em programas prioritários, como o PAC, não garante, por si só, a existência de recursos suficientes. É necessário verificar se os valores alocados cobrem os custos totais, se os desembolsos estão sincronizados com o cronograma físico e se há margem para lidar com imprevistos, como aditivos contratuais ou atrasos que impliquem reprogramação financeira, algo que pode se mostrar materialmente relevante com o acúmulo do efeito de reajustes, os quais vão consumindo os recursos inicialmente previstos. Por exemplo, um projeto pode ter previsão orçamentária genérica para três anos, mas demandar, já no segundo ano, um pico de desembolso que não está compatível com a capacidade financeira real do órgão executor. Sem esse tipo de verificação, há risco de paralisação por insuficiência de caixa, além de aumento dos custos indiretos e perda de eficiência na entrega. Além disso, essa testagem permite identificar vulnerabilidades e propor soluções antecipadas, como ajustes no escopo, reescalonamento do cronograma ou negociação de suplementações. Quando bem conduzida, a análise contribui para a previsibilidade da execução, fortalece a governança financeira do projeto e reduz o risco de frustração dos objetivos públicos pretendidos.",
+  "descricao_acao": "Testar a capacidade de custeio da opção escolhida, verificando se os recursos efetivamente disponíveis são suficientes para cobrir os custos totais do projeto ano a ano. Avaliar histórico entre orçamento estimado e orçamento efetivamente necessário, utilizando como base as informações desenvolvidas nas Ações 26 e 27. Evidenciar quaisquer riscos para a capacidade de custeio. Propor soluções caso a análise demonstre que a opção não terá capacidade de custeio, ou que esta estará sujeita a risco significativo.",
+  "o_que_esperar": "Avaliação formal da capacidade de custeio ano a ano. Identificação de riscos financeiros e formulação de propostas de mitigação. Cotejamento entre disponibilidade financeira atual (fluxo de caixa, conta corrente) e necessidades futuras do projeto, considerando o conjunto de projetos em andamento e compromissos futuros da entidade.",
+  "produtos_esperados": [
+    {
+      "id": "28.1",
+      "texto": "Teste formal da viabilidade financeira do empreendimento."
+    },
+    {
+      "id": "28.2",
+      "texto": "Documento de mitigação de riscos financeiros, com propostas de ajuste caso sejam identificadas vulnerabilidades."
+    },
+    {
+      "id": "28.3",
+      "texto": "Declaração de compatibilidade com a LRF, assegurando que os recursos não extrapolam os limites legais de despesa."
+    }
+  ],
+  "momento_ideal": "Antes da licitação e contratação, com revisões anuais ao longo da execução do projeto.",
+  "excecoes": [
+    "Obras de grande vulto necessariamente exigem projeções de capacidade de custeio de longo prazo, com análise de cenários e medidas compensatórias."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de implantação de uma ferrovia interestadual, foi realizado um teste formal e documentado de capacidade de custeio, analisou-se a suficiência dos recursos para cada ano de execução, em compatibilidade com o cronograma físico-financeiro do empreendimento. A análise levou em consideração a disponibilidade orçamentária real do órgão executor, avaliou riscos de disputa por recursos com outros grandes projetos da União, limites de empenho e eventuais restrições fiscais. Também foram identificados períodos críticos de desembolso, propôs-se o reescalonamento de parcelas e previu-se margem de contingência para absorção de imprevistos. As medidas de mitigação incluíram compromissos formais de suplementação orçamentária junto à Secretaria de Orçamento Federal (SOF) e previsão de ajustes no escopo e no prazo de execução em caso de restrição de caixa. O processo foi registrado em planilhas de teste, nota técnica de validação da capacidade de pagamento e parecer formal do setor financeiro, assegurando robustez ao planejamento."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No mesmo projeto de implantação ferroviária, existiu previsão orçamentária formal nos principais instrumentos de planejamento (PPA, LOA e PCA) e foi elaborado o cronograma físico-financeiro do empreendimento. Entretanto, a equipe não conduziu teste estruturado e documentado de capacidade de custeio ano a ano. A análise limitou-se à existência de dotações para os anos iniciais, sem avaliar criticamente a suficiência dos valores projetados para os anos subsequentes ou o alinhamento com a média histórica de execução financeira do órgão. Além disso, não considerou o risco de concentração de desembolsos em determinados períodos nem cotejou a disponibilidade financeira líquida frente aos compromissos assumidos com outros grandes projetos ferroviários. Assim, apesar de haver indícios formais de custeio, a ausência da testagem completa e de análise crítica comprometeu a robustez do processo, caracterizando atendimento apenas parcial da ação."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "No projeto de implantação de uma ferrovia interestadual, ainda que o empreendimento estivesse previsto no PPA e na LOA, não se elaborou qualquer teste formal de capacidade de custeio. A equipe não avaliou a suficiência dos recursos disponíveis ao longo dos anos de execução, nem cotejou esses valores com a realidade orçamentária do órgão executor. Riscos relevantes, como disputa por recursos com outros projetos de infraestrutura, limites fiscais e restrições de empenho, não foram analisados. O cronograma financeiro apresentado permaneceu genérico e não dialogou com as etapas físicas do projeto. A ausência desse teste expos o empreendimento a riscos de paralisação, atrasos e reprogramações, caracterizando o não atendimento da ação."
+    }
+  ]
+}

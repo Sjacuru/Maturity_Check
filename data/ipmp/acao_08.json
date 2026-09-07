@@ -1,0 +1,54 @@
+{
+  "acao_id": 8,
+  "titulo": "Considere as disposições contratuais possíveis",
+  "dimensao": "Comercial",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A análise preliminar da estrutura contratual potencial permite avaliar, já na fase de viabilidade, a estratégia de execução mais compatível com o tipo de projeto, sua complexidade e os riscos envolvidos. Sem essa reflexão inicial, decisões fundamentais sobre a modelagem contratual podem ser postergadas para fases avançadas, quando já há menor margem para ajustes — o que tende a gerar incompatibilidades entre o escopo planejado, a forma de contratação e a capacidade de execução. Por exemplo, poderia ser iniciada a elaboração de projeto básico para execução direta, quando, na prática, o mais adequado seria um modelo de concessão ou parceria, seja em nível de projeto greenfield ou no âmbito de um aditivo para uma concessão preexistente (brownfield). Também pode ocorrer o inverso: se assume que o projeto será delegado a outro ente ou concedido ao setor privado, sem avaliar a real capacidade institucional, os riscos envolvidos ou o grau de atratividade da iniciativa. Além disso, a ausência dessa análise compromete a articulação com os estudos de risco e com o dimensionamento do escopo licitável. Quando bem conduzida, essa ação contribui para alinhar os aspectos técnicos, gerenciais e jurídicos do projeto, antecipar obstáculos à contratação e orientar a formulação de estratégias mais adequadas ao contexto federativo, institucional e territorial da intervenção.",
+  "descricao_acao": "Desenvolver, em nível estratégico, uma estrutura contratual potencial para a abordagem mais vantajosa identificada na lista de opções da Ação 6 (ainda não escolhida), considerando aspectos estratégicos da contratação. A ação deve resultar em um conjunto de análises sobre: se a execução deverá ser direta ou por meio de convênio ou delegação a outro ente; o tipo de contratação mais adequado (obra pública, concessão, PPP ou outro); como o contrato poderá articular o escopo do projeto ao longo da execução; quem serão as partes contratuais envolvidas (execução, operação, manutenção); os principais riscos contratuais e institucionais, especialmente ligados a licenciamento, desapropriações e interferências.",
+  "o_que_esperar": "Identificação, se possível, do modelo contratual mais adequado (obra pública, concessão, PPP etc.) para as opções consideradas. Indicação das partes envolvidas na execução, operação e manutenção do projeto. Avaliação de riscos e obstáculos institucionais que possam afetar a viabilidade contratual (fundiários, ambientais, financeiros, regulatórios etc.). Fundamentação inicial que subsidie, futuramente, a escolha do modelo de contratação mais apropriado.",
+  "produtos_esperados": [
+    {
+      "id": "8",
+      "texto": "Documento preliminar de estrutura contratual contendo:",
+      "scored": false
+    },
+    {
+      "id": "8a",
+      "texto": "Justificativa fundamentada sobre o formato de contratação mais adequado (obra direta, concessão, PPP etc.);"
+    },
+    {
+      "id": "8b",
+      "texto": "Articulação entre escopo do projeto e regime de execução proposto (direta, convênio, delegação etc.);"
+    },
+    {
+      "id": "8c",
+      "texto": "Identificação das partes contratuais envolvidas nas diferentes fases (execução, operação e manutenção);"
+    },
+    {
+      "id": "8d",
+      "texto": "Levantamento de riscos contratuais relevantes (licenciamento, interferências, desapropriações etc.)."
+    }
+  ],
+  "momento_ideal": "Fase inicial, ainda de estudos preliminares do projeto.",
+  "excecoes": [
+    "Projetos padronizados, de execução direta recorrente, podem dispensar avaliação aprofundada, desde que haja justificativa técnica e registro de experiências anteriores similares."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Dentro do contexto de uma concessão ferroviária constou um projeto de construção de uma barragem de regularização hídrica em que a equipe técnica desenvolveu, ainda na fase de estudos iniciais, uma análise clara e fundamentada das alternativas contratuais possíveis. Constatou-se que, sem a barragem, o VPL da concessão ferroviária seria negativo, inviabilizando o interesse do setor privado. Por esse motivo, foi proposto que a barragem fosse executada como obra pública direta, permitindo a posterior estruturação da concessão em condições atrativas. O documento produzido detalhou como essa decisão dialogou com o escopo do projeto, quais entes seriam responsáveis por cada fase (construção, operação, manutenção) e antecipou riscos contratuais associados, como a dependência de licenciamento ambiental, a disponibilidade de recursos e eventuais conflitos de competência federativa sobre o uso da água. Essa abordagem demonstrou maturidade na integração entre decisões técnicas e contratuais, estabelecendo uma base sólida para as fases seguintes do projeto."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Em um projeto de construção de uma barragem de regularização hídrica, houve um estudo detalhado que considerou a estruturação via obra pública ou via PPP. Embora a análise tenha sido robusta para essas duas vertentes, não constou qualquer consideração qualitativa ou quantitativa sobre a modelagem via concessão."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Em um projeto de construção de uma barragem de regularização hídrica, não se realizou qualquer análise contratual na fase inicial. A escolha pela execução da obra como empreendimento público direto ocorreu por padrão institucional, sem estudo prévio das opções existentes nem discussão sobre o impacto contratual da decisão. A definição do modelo de contratação apareceu apenas em documentos operacionais produzidos após a fase de viabilidade e ficou restrita ao tipo de contratação (integrada ou não), com base exclusivamente no estágio de projeto. Nenhum elemento indicou que houvesse avaliação dos riscos contratuais envolvidos, como a relação entre a entrega da barragem e o início da concessão, tampouco quem seria responsável pela transição operacional. A ausência completa de análise de estrutura contratual demonstrou que a ação não foi atendida."
+    }
+  ]
+}

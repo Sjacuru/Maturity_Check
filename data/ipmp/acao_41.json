@@ -1,0 +1,46 @@
+{
+  "acao_id": 41,
+  "titulo": "Confirme os critérios para seleção da melhor proposta econômica",
+  "dimensao": "Econômica",
+  "fase": "Consulta pública, Revisões e atualizações",
+  "ponto_transicao": false,
+  "por_que_importante": "Embora relacionada à Ação 40, que trata da revisão da viabilidade econômica da alternativa escolhida, a Ação 41 foca a validação da própria escolha da alternativa, ou seja, no mérito da decisão tomada diante de novas informações relevantes. Enquanto a Ação 40 verifica se o projeto ainda se justifica sob critérios de custo-benefício, a Ação 41 pergunta: diante da realidade atual, a solução escolhida continua sendo a mais adequada? Essa diferenciação é fundamental, porque mudanças técnicas, institucionais ou contextuais — especialmente após a audiência pública ou manifestações de órgãos de controle — podem tornar a solução inicialmente selecionada menos eficiente, mais onerosa ou menos aderente às necessidades do território. Por exemplo, pode-se constatar que a alternativa escolhida exigirá o reassentamento de um número elevado de famílias, enquanto outra opção, antes descartada, teria menor impacto social sem comprometer os resultados do projeto. Ou ainda que a alternativa preferida inicialmente pressupunha obras de interferência urbana em regiões que, por alterações legislativas ou eventos supervenientes, passaram a ter restrições mais severas. Essa ação é importante porque impede a cristalização acrítica de uma escolha feita em momento anterior, assegurando que o processo decisório seja sensível às novas evidências, à escuta da sociedade e à evolução do contexto. Também evita que o projeto siga adiante sustentado em critérios ultrapassados ou em uma lógica técnica que já não se sustenta. Quando bem aplicada, essa ação protege o investimento contra decisões obsoletas e amplia a robustez técnica, institucional e social do empreendimento, contribuindo para uma contratação mais alinhada com o interesse público.",
+  "descricao_acao": "Confirmar se a opção escolhida permanece inalterada ou se eventual alteração é aceitável, a partir da consulta pública realizada ou de qualquer fato superveniente significativo que possa impactar o projeto.",
+  "o_que_esperar": "Confirmação dos critérios para a seleção da melhor proposta econômica, utilizando a avaliação das eventuais propostas apresentadas durante o processo de consulta ao mercado e sociedade. Verificação se a Opção Mais Vantajosa (OMV) permanece a mesma ou se houve alterações aceitáveis pela Autoridade, em função de fato superveniente (como decisões dos órgãos de controle).",
+  "produtos_esperados": [
+    {
+      "id": "41",
+      "texto": "Documentos do Processo Administrativo relacionado ao projeto que contenham:",
+      "scored": false
+    },
+    {
+      "id": "41a",
+      "texto": "Confirmação interna sobre os critérios de seleção da melhor proposta econômica."
+    },
+    {
+      "id": "41b",
+      "texto": "Declaração sobre a permanência ou alteração da Opção Mais Vantajosa, com justificativa para qualquer mudança ocorrida."
+    }
+  ],
+  "momento_ideal": "Após a reconsideração das opções com base nas percepções do mercado e da sociedade (Ação 40) e antes da documentação do processo de ajustes aos documentos da licitação (Ação 42).",
+  "excecoes": [
+    "É importante garantir que o processo de seleção seja transparente e esteja em conformidade com a legislação aplicável."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de duplicação de uma BR, após a consulta pública (Ação 38) e em resposta a recomendação de órgão de controle para aprimorar os critérios de economicidade, realizou-se uma reanálise aprofundada. Confirmou-se que a Opção Mais Vantajosa (OMV) — duplicação completa com concreto asfáltico de alto desempenho — se manteve como a melhor alternativa. Essa validação revisou o modelo de custo-benefício, incorporou feedbacks sobre eficiência dos materiais e redução de custos de manutenção a longo prazo e gerou relatório técnico detalhado que justificou a manutenção dos critérios de seleção. Todos os documentos foram revisados e foram aprovados internamente, garantindo transparência e aderência às boas práticas."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "No caso da duplicação de uma rodovia, confirmaram-se os critérios de seleção da melhor proposta econômica após a fase de consulta pública. Embora a OMV (duplicação com vias marginais) tenha sido revalidada com base em análise quantitativa de tráfego atualizada, a equipe não revisitou alguns quesitos da avaliação qualitativa de riscos e benefícios. Os impactos sobre pequenas propriedades rurais lindeiras e a necessidade de reassentamento foram devidamente ponderados na confirmação final, porém a justificativa não abordou de forma completa as preocupações socioambientais levantadas, o que prejudicou a robustez da análise e enfraqueceu a confiança dos stakeholders na legitimidade da decisão."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Para a duplicação de uma rodovia, a Ação 41 foi classificada como não atendida porque, apesar da consulta pública, as manifestações da sociedade e do mercado não foram analisadas formalmente para reconfirmar os critérios de seleção econômica. Apresentou-se uma nova tecnologia de pavimentação mais sustentável e com menor custo de ciclo de vida, mas ela não foi incorporada à avaliação nem foi justificada sua exclusão. Além disso, um órgão de controle solicitou a revisão dos critérios, considerando impactos sociais e ambientais levantados, mas essa revisão não foi realizada ou documentada antes da homologação da licitação. Essa omissão comprometeu a completude da análise técnica, reduziu a transparência do processo decisório e fragilizou a credibilidade perante as partes interessadas."
+    }
+  ]
+}

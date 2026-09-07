@@ -1,0 +1,47 @@
+{
+  "acao_id": 5,
+  "titulo": "Defina os fatores críticos de sucesso (FCS)",
+  "dimensao": "Econômica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A importância reside em se prestigiar uma análise considerando as especificidades do projeto – considerar as particularidades de cada obra para definir quais seriam os fatores críticos de sucesso – o que teria maior ênfase na avaliação. A definição dos Fatores Críticos de Sucesso (FCS) nas etapas iniciais de um estudo de viabilidade é um passo estratégico, indispensável para a qualidade de todo o planejamento. Ao explicitar quais elementos são realmente decisivos para o êxito do projeto, o gestor estabelece uma bússola clara para orientar as decisões subsequentes e alocar os esforços de forma mais inteligente. Essa definição exige reflexão e domínio do contexto, pois projetos distintos apresentam gargalos distintos; em alguns, a questão central pode estar no licenciamento ambiental, enquanto em outros, na capacidade de reassentamento, na remoção de interferências urbanas, na consistência orçamentária ou em dificuldades de despertar o interesse do mercado. Ignorar essas particularidades e repetir modelos genéricos enfraquece o planejamento e dificulta a prevenção de riscos que já eram previsíveis desde o início. Não é incomum que, nessas situações, o projeto avance tecnicamente, mas acabe fragilizado por ter negligenciado os pontos realmente sensíveis, muitas vezes descobertos tardiamente, quando as margens para correção já estão estreitas. Por outro lado, quando os FCS são bem definidos, adaptados ao projeto e registrados com clareza, eles funcionam como uma âncora de racionalidade: orientam a escolha da alternativa mais compatível, fundamentam as justificativas técnicas, embasam o desenho contratual e organizam o monitoramento futuro. Mais do que reduzir riscos, essa abordagem amplia a capacidade de entrega do projeto, ao torná-lo mais aderente à realidade operacional e institucional.",
+  "descricao_acao": "Definir os atributos essenciais para a entrega do projeto, que serão usados como critérios para avaliar e pontuar as diferentes opções de solução, a partir das seguintes questões: Implementação: como a opção se enquadra melhor em termos de tempo e capacidade de ser executado? Ambiental: como a opção otimiza os fatores ambientais, com a menor interferência possível? Econômico: como a opção otimiza o custo-benefício em termos de potenciais custos, benefícios e riscos? Como o licenciamento ambiental, a remoção de interferências e o processo de desapropriação poderão impactar o custo e o prazo de entrega do projeto?",
+  "o_que_esperar": "Registro explícito, de forma estruturada e objetiva sobre quais são os fatores críticos de sucesso.",
+  "produtos_esperados": [
+    {
+      "id": "5",
+      "texto": "Seção específica do EVTEA (ou estudo técnico similar) que contenha:",
+      "scored": false
+    },
+    {
+      "id": "5a",
+      "texto": "Declaração formal da listagem dos fatores críticos de sucesso;"
+    },
+    {
+      "id": "5b",
+      "texto": "Descrição de cada um dos fatores críticos de sucesso, a exemplo de: alinhamento estratégico e necessidades operacionais; value for money; capacidade de custeio; capacidade de entrega; riscos sistêmicos."
+    }
+  ],
+  "momento_ideal": "Fase inicial de estudo de viabilidade do empreendimento.",
+  "excecoes": [
+    "Os FCS genéricos podem ser adaptados para se adequar às especificidades do projeto.",
+    "Devem, ainda, ser observados o alinhamento estratégico, a conformidade, o value for money e a capacidade de entrega e de ser custeada."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "Um projeto de duplicação de uma rodovia em área de expansão urbana teve seu EVTEA aprovado. Nesse estudo, houve uma seção dedicada, em formato de tabela, que listou formalmente cinco Fatores Críticos de Sucesso (Alinhamento Estratégico, Value for Money, Capacidade de Custeio, Capacidade de Entrega e Riscos Sistêmicos), com descrição clara e objetiva de cada um, detalhando como seriam avaliados. Por exemplo, em “Capacidade de Entrega”, foi especificado que a conclusão do projeto dependeria da remoção tempestiva de interferências, com prazos e responsáveis preliminares definidos para cada etapa, além de uma análise de engenharia preliminar dos riscos de desapropriação na área urbana, com base em dados de um Relatório de Pré-Viabilidade que serviu de subsídio ao EVTEA. A documentação demonstrou que essa definição ocorreu na fase inicial do estudo e orientou as análises subsequentes."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Em um projeto de construção de um novo anel viário metropolitano, o EVTEA apresentou uma seção específica intitulada “análise pré-morte”, que simulou, de forma robusta, um cenário hipotético de fracasso devido à materialização de fatores críticos de sucesso. Nessa parte, foi discutida de modo fundamentado apenas a questão da desapropriação como FCS, mesmo que em outras partes do próprio EVTEA tenham sido comentados diversos riscos associados ao licenciamento ambiental."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um estudo de viabilidade para a readequação de um trecho rodoviário não conteve qualquer seção ou menção formal aos Fatores Críticos de Sucesso do projeto. Embora o estudo tenha abordado genericamente aspectos de custos e benefícios, não houve registro explícito dos atributos essenciais que guiariam a avaliação das opções ou o sucesso do empreendimento. Não foram identificadas variáveis-chave cuja não observância implicaria o fracasso do projeto, nem foi feita alusão a metodologias como a análise pré-morte que pudessem gerar produtos aproveitáveis para a Ação 5. A ausência de uma declaração formal de FCS inviabilizou a avaliação estruturada das alternativas e comprometeu a rastreabilidade das decisões tomadas."
+    }
+  ]
+}

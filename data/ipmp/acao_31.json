@@ -1,0 +1,77 @@
+{
+  "acao_id": 31,
+  "titulo": "Aprofunde o plano de projeto e o plano de controle de qualidade e aprovações",
+  "dimensao": "Gerencial",
+  "fase": "Aprimoramento da alternativa escolhida",
+  "ponto_transicao": false,
+  "por_que_importante": "Com a solução escolhida, espera-se que os planos de projeto e de controle de qualidade e aprovações sejam atualizados e aprofundados com base nessa decisão. Isso significa estruturar, com maior nível de detalhamento, como os processos críticos — como desapropriações, licenciamento ambiental, remoção de interferências, obtenção de financiamento, contratação e execução — serão coordenados, controlados e monitorados ao longo do tempo. Essa ação é importante porque permite transformar um planejamento preliminar em um instrumento operativo. É o momento de definir cronogramas realistas, pontos de controle, responsáveis, marcos decisórios e formas de acompanhar riscos que já foram identificados anteriormente. Sem esse refinamento, mesmo projetos bem planejados podem enfrentar descompassos entre fases, lacunas de coordenação institucional ou atrasos decorrentes de processos mal sincronizados, como iniciar uma licitação antes da conclusão do licenciamento ou da liberação de áreas por desapropriação. Por exemplo, a ausência de um plano que articule os marcos da contratação com os trâmites fundiários pode levar a cronogramas pouco factíveis, paralisando a obra logo após a assinatura do contrato. Também pode ocorrer que a obtenção de financiamento ou liberação orçamentária esteja prevista em momento posterior à demanda contratual de recursos, comprometendo a execução. Quando bem elaborados, esses planos conferem robustez gerencial ao projeto, facilitam o monitoramento institucional e permitem maior previsibilidade na tomada de decisões, além de viabilizar uma execução mais coordenada e menos sujeita a interrupções evitáveis.",
+  "descricao_acao": "Detalhar e aprofundar o plano de projeto e o plano de controle de qualidade e aprovações a partir da opção escolhida. O plano de projeto e o plano de controle de qualidade e aprovações devem incluir, no mínimo: cronogramas e marcos para atividades-chave, entregas concretas e as dependências entre elas; processos fundiários (desapropriações e permissões de planejamento territorial); processos de licenciamento ambiental e de remoção de interferências; cronogramas realistas de contratação, construção, operação e de obtenção de financiamentos; responsabilidades definidas por quem revisa, aprova e valida os produtos técnicos; critérios de qualidade e conformidade que orientam as análises; prazos e marcos para as etapas de revisão e aprovação; procedimentos padrão para o tratamento de não conformidades.",
+  "o_que_esperar": "Cronograma completo e realista detalhando os marcos principais do planejamento, da contratação e da execução do projeto, considerando prazos, tarefas, responsabilidades, recursos e controles.",
+  "produtos_esperados": [
+    {
+      "id": "31.1",
+      "texto": "Cronograma gerencial completo com indicação explícita do caminho crítico, no mínimo, de:",
+      "scored": false
+    },
+    {
+      "id": "31.1a",
+      "texto": "Marcos específicos, atividades concretas e prazos realistas e sincronizados para as fases de desenvolvimento, contratação, construção, operação e encerramento do projeto;"
+    },
+    {
+      "id": "31.1b",
+      "texto": "Estrutura de detalhamento do trabalho, decompondo o projeto em entregas menores e gerenciáveis;"
+    },
+    {
+      "id": "31.1c",
+      "texto": "Identificação de dependências entre as tarefas;"
+    },
+    {
+      "id": "31.1d",
+      "texto": "Método de gerenciamento dos processos fundiários, de licenciamento ambiental e de remoção de interferências (inclui prazos, custos, responsabilidades e riscos);"
+    },
+    {
+      "id": "31.1e",
+      "texto": "Alocação de recursos (humanos, financeiros, materiais) para as diferentes atividades;"
+    },
+    {
+      "id": "31.1f",
+      "texto": "Principais responsáveis por cada etapa;"
+    },
+    {
+      "id": "31.1g",
+      "texto": "Padrões de qualidade a serem alcançados em cada etapa;"
+    },
+    {
+      "id": "31.1h",
+      "texto": "Procedimentos de controle de qualidade que serão implementados (inspeções, revisões, testes, aprovações)."
+    },
+    {
+      "id": "31.2",
+      "texto": "Plano de ataque da execução do empreendimento, que organiza como e quando cada parte da obra será executada, considerando restrições técnicas, interferências existentes, metas de prazo, condições climáticas, disponibilidade de recursos, e regras de segurança."
+    }
+  ],
+  "momento_ideal": "Após a definição da melhor alternativa e antes da licitação.",
+  "excecoes": [
+    "Ao fazer isso, será possível consolidar o planejamento da alternativa escolhida em um roteiro de execução detalhado.",
+    "Recomenda-se que esse cronograma seja alvo de constante atualização e monitoramento à medida que o projeto se desenvolve.",
+    "Ressalta-se que o cronograma gerencial envolve toda a fase de planejamento do projeto, e o plano de ataque foca a execução dos serviços contratados, de forma a abranger todo o ciclo de vida do empreendimento.",
+    "O plano de ataque serve para deixar nas mãos dos gestores a sequência de execução que deve ser dada às obras, considerando o princípio da eficiência, a fim de evitar jogo de cronograma, bem como garantir a priorização de frentes de serviço que possam ser entregues como produtos parciais ao usufruto dos usuários antes da conclusão final das obras."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de extensão de linha de metrô, o plano de projeto consolidado apresentou cronograma compatível com a complexidade da intervenção e com o histórico de obras similares; os prazos foram definidos de forma realista para cada etapa e foram ajustados após análise crítica de condicionantes e riscos. As atividades ficaram devidamente encadeadas e foram sincronizadas com processos paralelos, como licenciamento ambiental, desapropriações, negociação de reassentamento e aprovação de projetos executivos. Os marcos de aprovação foram estabelecidos de maneira clara e incorporaram momentos formais de revisão entre fases, permitindo reavaliação de prazos e reprogramação fundamentada, quando necessário. O plano de controle de qualidade especificou critérios técnicos objetivos, pontos de verificação em cada etapa e responsáveis designados por validar as entregas, o que garantiu rastreabilidade e consistência nas decisões."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Nesse mesmo projeto, o cronograma contemplou as principais etapas do empreendimento, encadeou logicamente as atividades e incluiu os marcos ligados ao licenciamento ambiental e às negociações fundiárias. As estimativas de prazo foram construídas com base em premissas institucionais reconhecidas e em dados históricos, refletindo esforço de aderência à realidade operacional. O plano de controle de qualidade foi estruturado, definiu critérios técnicos e distribuiu responsabilidades por fase do projeto. Entretanto, o cronograma não dispôs de mecanismo formal de revisão periódica, o que limitou a capacidade de reprogramação diante de imprevistos."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Ainda na extensão da linha de metrô, o cronograma apresentado permaneceu excessivamente genérico, sem apresentar estimativas fundamentadas, nem articulação entre atividades interdependentes. Os prazos foram estabelecidos de forma visivelmente subestimada, desconsiderando a complexidade de trâmites como licenciamento ambiental, desapropriações e aprovações técnicas. Não houve previsão de momentos de revisão nem de marcos intermediários de aprovação. Além disso, o plano de controle de qualidade esteve ausente, sem definir parâmetros, etapas críticas ou responsáveis, comprometendo a governança do projeto desde o início da execução."
+    }
+  ]
+}

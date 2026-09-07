@@ -1,0 +1,61 @@
+{
+  "acao_id": 20,
+  "titulo": "Selecione a opção mais vantajosa e realize uma análise de sensibilidade",
+  "dimensao": "Econômica",
+  "fase": "Inicial",
+  "ponto_transicao": false,
+  "por_que_importante": "A seleção da opção mais vantajosa (OMV) é o ponto de consolidação de todo o estudo de viabilidade. Trata-se de uma decisão que deve ser embasada no conjunto das análises anteriores — técnicas, econômicas, ambientais, financeiras e contratuais — e deve refletir, de forma transparente, qual alternativa oferece o melhor equilíbrio entre valor público, custo, riscos e viabilidade de implementação. Essa escolha não pode ser apenas declarada; deve ser fundamentada com clareza e testada quanto à sua robustez. A ausência dessa justificativa ou a seleção baseada apenas em critérios formais compromete a credibilidade do estudo e fragiliza o processo decisório. Por exemplo, pode-se declarar uma alternativa como a “melhor”, sem demonstrar que ela supera outras opções em termos de custo-benefício, ou sem validar a sensibilidade dessa escolha frente a mudanças nas premissas adotadas. Nesses casos, é comum que, durante a execução ou contratação, surjam dúvidas quanto à real aderência da solução escolhida às necessidades do projeto, o que pode gerar revisões tardias, retrabalhos ou paralisações. A realização de testes de sensibilidade — como o estresse de variáveis críticas, análise de substituição ou variação controlada de premissas — fortalece essa escolha, pois mostra o grau de resiliência da alternativa selecionada diante de cenários menos favoráveis. Quando bem conduzida, essa ação traduz a maturidade do estudo como um todo, fornece uma base sólida para o prosseguimento do projeto e reforça o compromisso com decisões públicas mais transparentes e tecnicamente justificadas.",
+  "descricao_acao": "Definir a melhor opção com base no cumprimento das ações anteriores, levando em consideração os fatores críticos de sucesso, a análise econômica e a viabilidade comercial, contratual, técnica, ambiental e financeira. Proceder a análise de sensibilidade para a opção mais vantajosa: realizar análises para identificar variáveis que possuem elevado grau de influência na opção mais vantajosa, impactando significativamente o resultado se premissas forem alteradas, visando a substituir a opção, se necessário.",
+  "o_que_esperar": "Convergência na seleção da opção mais vantajosa (aquela com melhor relação custo-benefício econômico e maior aderência aos fatores críticos de sucesso e objetivos estratégicos). Análise de sensibilidade para verificar como variações em premissas-chave (custos, receitas, demanda, taxas de desconto etc.) podem afetar a viabilidade e a atratividade dessa opção preferencial. Avaliação clara dos limites de tolerância do projeto para riscos e incertezas, identificando possíveis cenários (otimista, base e pessimista).",
+  "produtos_esperados": [
+    {
+      "id": "20",
+      "texto": "Seção específica do EVTEA (ou estudo técnico equivalente) com:",
+      "scored": false
+    },
+    {
+      "id": "20a",
+      "texto": "Identificação clara da Opção Mais Vantajosa (OMV), com justificativa detalhada da seleção com base nos resultados das análises econômica quantitativa e qualitativa."
+    },
+    {
+      "id": "20b",
+      "texto": "Tabela de resumo da análise de sensibilidade para a OMV e outras opções relevantes, mostrando o impacto de variações nas premissas-chave no Valor Público e na Razão de Custo-Benefício."
+    },
+    {
+      "id": "20c",
+      "texto": "Se necessário, descrição da “análise de substituição”, incluindo os cálculos e as conclusões sobre a robustez da OMV."
+    },
+    {
+      "id": "20d",
+      "texto": "Registro dos critérios utilizados para a tomada de decisão (incluindo eventuais pontos de corte ou gatilhos de revisão)."
+    },
+    {
+      "id": "20e",
+      "texto": "Documentação completa de toda a análise e cálculos realizados para a seleção da OMV e a análise de sensibilidade."
+    }
+  ],
+  "momento_ideal": "Após a finalização das análises de custo-benefício (Ação 18) e do mapeamento qualitativo de riscos e benefícios (Ação 19), pois a seleção da opção e a checagem de sensibilidade dependem dessas informações consolidadas.",
+  "excecoes": [
+    "As variações percentuais utilizadas na análise de sensibilidade devem ser apropriadas à natureza e complexidade do projeto, com valores mais altos para projetos mais complexos e para variáveis com maior incerteza.",
+    "A análise de sensibilidade deve refletir cenários futuros possíveis e realistas.",
+    "Se a análise de sensibilidade demonstrar que outra opção apresenta resultados muito próximos ou superiores à OMV em cenários específicos, a realização de uma “análise de substituição” é recomendada.",
+    "Toda a análise e os cálculos devem ser cuidadosamente documentados para garantir a transparência e a rastreabilidade das decisões."
+  ],
+  "exemplos": [
+    {
+      "nivel": "Atendido",
+      "score": 3,
+      "texto": "No projeto de construção de um conjunto de creches, o EVTEA apresentou uma seção clara e fundamentada para a seleção da Opção Mais Vantajosa (OMV). Após as análises econômicas quantitativa (Ação 18) e qualitativa (Ação 19), a opção de construção de um novo prédio com arquitetura modular foi selecionada, pois ofereceu a melhor relação custo-benefício, maior agilidade na entrega e adaptabilidade a futuras expansões. A análise de sensibilidade foi robusta e testou o impacto de variações de 10 % nos custos de capital, 15 % na demanda por vagas (considerou cenários de crescimento populacional e políticas de incentivo à natalidade) e 10 % nas receitas (para creches conveniadas). As tabelas-resumo demonstraram que a OMV permaneceu a mais vantajosa mesmo em cenários adversos, identificando claramente os limites de tolerância para os principais riscos. Além disso, a equipe incluiu uma análise de substituição detalhada para a alternativa que apresentou resultados próximos em cenário específico, mas que, ao final, comprovou a robustez da OMV."
+    },
+    {
+      "nivel": "Parcialmente Atendido",
+      "score": 1,
+      "texto": "Em um programa de expansão de escolas infantis, o estudo de viabilidade identificou a reforma e ampliação de prédios existentes como a opção mais vantajosa e justificou-a pela otimização de custos e pela rapidez na disponibilização de vagas. A análise de sensibilidade foi robusta ao considerar variações nos custos de construção e operação, mas não estressou a variável de demanda por vagas, que poderia variar em razão de mudanças demográficas ou de políticas de incentivo à educação infantil."
+    },
+    {
+      "nivel": "Não Atendido",
+      "score": 0,
+      "texto": "Um projeto de construção de novas escolas infantis em áreas periféricas não apresentou seção dedicada à seleção da opção mais vantajosa nem à análise de sensibilidade. O Estudo de Viabilidade descreveu apenas uma solução única de construção e os custos associados e não comparou essa alternativa com outras possibilidades (como adaptação de estruturas existentes, construção modular ou diferentes portes de escolas). Não houve cálculo de Valor Público ou de Razão de Custo-Benefício que justificasse a escolha, e a ausência de análise de sensibilidade impediu a compreensão de como variações em premissas-chave (custos, demanda etc.) poderiam afetar a viabilidade do projeto. A decisão pela solução adotada não foi tecnicamente fundamentada em comparação estruturada de opções."
+    }
+  ]
+}
