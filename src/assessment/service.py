@@ -7,8 +7,15 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-from evaluation import evaluate, select_evidence, EvaluationResult, RejectedChunk
+from evaluation import (
+    EvaluationResult,
+    ProductGateReport,
+    RejectedChunk,
+    evaluate,
+    select_evidence,
+)
 from evaluation._config import get_gate_llm_client, get_llm_client
+from evaluation.llm.llamacpp import LlamaCppBusy, LlamaCppTimeout, LlamaCppUnavailable
 from evaluation.progress import set_reporter
 from extraction import extract_document
 from ingestion import get_ipmp_store
@@ -21,6 +28,13 @@ from assessment._config import get_db_path
 
 logger = logging.getLogger(__name__)
 
+# Failures that mean the inference server itself is unusable. The LLM wiring is
+# GPU-only and deliberately has no fallback (see main.py), so these must abort
+# the whole run: continuing would walk all 46 Ações, pay a connect timeout on
+# each, and store 46 empty evaluations that look like "no evidence found" but
+# are really "nothing was ever asked". Any OTHER per-Ação exception is recorded
+# and the run continues, so one bad Ação does not discard 45 good ones.
+_INFRASTRUCTURE_FAILURES = (LlamaCppUnavailable, LlamaCppTimeout, LlamaCppBusy)
 
 
 class AssessmentService:
@@ -76,30 +90,89 @@ class AssessmentService:
                     process_number, "documentos_disponiveis", f"{path.name}: {label}.", "success"
                 )
 
+        _preflight_llm(process_number)
+
         store = get_ipmp_store()
         results: list[EvaluationResult] = []
+        failed: list[int] = []
         for acao_id in store.acoes:
-            accepted, rejected = _retrieve_and_select(acao_id, process_number)
-            result = evaluate(acao_id, process_number, accepted, rejected_chunks=rejected)
+            try:
+                accepted, rejected, gate_reports = _retrieve_and_select(acao_id, process_number)
+                result = evaluate(
+                    acao_id,
+                    process_number,
+                    accepted,
+                    rejected_chunks=rejected,
+                    product_gate_reports=gate_reports,
+                )
+            except _INFRASTRUCTURE_FAILURES as exc:
+                # Server gone mid-run: stop immediately rather than producing 40+
+                # more empty evaluations that would be indistinguishable from
+                # genuine "no evidence" outcomes.
+                progress.emit(
+                    process_number, "erro",
+                    f"Servidor de inferência indisponível na Ação {acao_id} "
+                    f"({type(exc).__name__}) — execução interrompida. "
+                    f"{len(results)} Ação(ões) já avaliada(s) foram preservadas.",
+                    "error",
+                )
+                raise
+            except Exception as exc:  # noqa: BLE001 — one Ação must not kill the run
+                logger.exception("Ação %s failed; continuing with the rest.", acao_id)
+                failed.append(acao_id)
+                progress.emit(
+                    process_number, "erro",
+                    f"Ação {acao_id} falhou ({type(exc).__name__}: {exc}) — "
+                    "seguindo para a próxima.",
+                    "error",
+                )
+                continue
             _persist_evaluation_result(db_path, result)
             results.append(result)
 
+        suffix = f" {len(failed)} com falha: {failed}." if failed else ""
         progress.emit(
             process_number, "concluido",
-            f"Avaliação concluída — {len(results)} Ação(ões) processada(s).", "success",
+            f"Avaliação concluída — {len(results)} Ação(ões) processada(s).{suffix}",
+            "warning" if failed else "success",
         )
         return results, documents
 
 
+def _preflight_llm(process_number: str) -> None:
+    """Probe the inference server before the Ação loop starts.
+
+    The wiring is GPU-only with no fallback, so a switched-off server otherwise
+    surfaces as a connect timeout on the first gate call of every Ação in turn.
+    One cheap /health probe turns that into an immediate, unambiguous failure.
+    Clients that do not expose health_check() (test stubs, Ollama) are skipped.
+    """
+    for label, client in (("avaliador", get_llm_client()), ("gate", get_gate_llm_client())):
+        probe = getattr(client, "health_check", None)
+        if probe is None:
+            continue
+        try:
+            probe()
+        except _INFRASTRUCTURE_FAILURES as exc:
+            progress.emit(
+                process_number, "erro",
+                f"Servidor de inferência ({label}) não está respondendo "
+                f"({type(exc).__name__}). Nenhuma Ação foi avaliada.",
+                "error",
+            )
+            raise
+
+
 def _retrieve_and_select(
     acao_id: int, process_number: str
-) -> tuple[list[RetrievedChunk], list[RejectedChunk]]:
+) -> tuple[list[RetrievedChunk], list[RejectedChunk], list[ProductGateReport]]:
     """Step A/B short-circuit (ungated) -> Step C gate (ADR-0050).
 
     Document-focused matches (Step A/B) already return all of a single
     document's chunks; that's a different evidentiary basis than per-product
     query-based retrieval, so the relevance gate — built around per-product
-    evidence_intent — does not apply to them.
+    evidence_intent — does not apply to them, and there are no per-product gate
+    reports to return for that route.
 
     Regex (Step D) was removed in ADR-0052 — see cascade.py for reasoning.
     """
@@ -114,7 +187,7 @@ def _retrieve_and_select(
             f"Ação {acao_id}: documento focal encontrado — usando correspondência "
             "direta (sem gate de relevância).",
         )
-        return doc_result, []
+        return doc_result, [], []
 
     progress.emit(
         process_number, "selecionando_rota",
@@ -122,7 +195,7 @@ def _retrieve_and_select(
     )
     candidates = retrieve_hybrid_candidates_for_acao(acao_id, process_number)
     selection = select_evidence(acao_id, process_number, candidates)
-    return selection.accepted, selection.rejected
+    return selection.accepted, selection.rejected, selection.product_reports
 
 
 def _compute_sha256(path: Path) -> str:

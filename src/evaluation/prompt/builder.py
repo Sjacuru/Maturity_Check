@@ -11,15 +11,23 @@ _EXAMPLES_FRAMING = (
     "independente do setor ou domínio."
 )
 
+_NO_EVIDENCE_MARKER = "NENHUMA evidência foi recuperada para este Produto Esperado."
+
 _PRODUCT_BLOCK_INSTRUCTION = (
     "As evidências abaixo estão organizadas por Produto Esperado. "
+    "HÁ UM BLOCO PARA CADA Produto Esperado desta Ação, inclusive para aqueles "
+    "sem nenhuma evidência. "
     "Use exclusivamente as evidências do bloco correspondente para avaliar cada produto. "
+    f'Um bloco marcado "{_NO_EVIDENCE_MARKER}" significa que o produto '
+    "NÃO está evidenciado — trate-o como não atendido, e não como inexistente ou "
+    "dispensável. "
     "Se as evidências de um bloco forem insuficientes para concluir o atendimento, "
     "registre explicitamente essa limitação no raciocínio."
 )
 
 def _build_scoring_instruction(product_ids: list[str]) -> str:
     products_label = f"({', '.join(product_ids)})" if product_ids else ""
+    n_products = len(product_ids)
     return f"""\
 Com base exclusivamente nas evidências fornecidas acima, avalie o processo e \
 responda com um objeto JSON contendo os campos "reasoning", "score" e "uncertainty".
@@ -27,14 +35,19 @@ responda com um objeto JSON contendo os campos "reasoning", "score" e "uncertain
 No campo "reasoning" (texto livre em português): explique quais Produtos \
 Esperados foram ou não evidenciados e por quê.
 
-Regras de avaliação para o campo "score":
-- Pontue 3 quando todos os Produtos Esperados {products_label} estiverem claramente evidenciados.
+Avalie CADA UM dos Produtos Esperados {products_label}, um por um, inclusive os \
+cujo bloco de evidências esteja vazio. Um produto sem nenhuma evidência é um \
+produto NÃO evidenciado.
+
+Regras de avaliação para o campo "score" — conte quantos dos {n_products} \
+Produtos Esperados estão evidenciados:
+- Pontue 3 SOMENTE quando TODOS os {n_products} Produtos Esperados {products_label} estiverem claramente evidenciados.
 - Pontue 1 quando alguns, mas não todos, os Produtos Esperados estiverem evidenciados.
 - Pontue 0 quando nenhum Produto Esperado estiver evidenciado.
 - Trate texto com ruído de OCR (caracteres ilegíveis ou garbled) como evidência não confiável; não pontue positivamente com base apenas em texto OCR ilegível.
 
 Regra para o campo "uncertainty":
-- Defina "uncertainty": true quando as evidências não permitirem avaliação segura de um ou mais Produtos Esperados {products_label}.\
+- Defina "uncertainty": true quando as evidências não permitirem avaliação segura de um ou mais Produtos Esperados {products_label}, incluindo o caso de um produto sem nenhuma evidência recuperada.\
 """
 
 
@@ -136,13 +149,26 @@ def build_user_prompt(chunks: list[RetrievedChunk], acao_id: int = 1) -> str:
             parts.append(_render_chunk(chunk))
             total_chunks += 1
 
-    # One block per expected product in IPMP order (1a → 1b → 1c → 1d).
+    # One block per expected product in IPMP order (1a → 1b → 1c → 1d),
+    # INCLUDING products with no accepted evidence.
+    #
+    # Empty blocks used to be omitted entirely, and nothing told the scorer that
+    # a missing block meant "not evidenced". The model therefore graded only the
+    # products it happened to receive and applied the 0/1/3 rubric to that
+    # silently-reduced subset: in the 2026-09-07 run Ação 31 scored a full,
+    # unhedged 3 on 2 of its 9 products ("Both products are adequately
+    # evidenced, so the score for each is 3"), while Ação 2 scored 0 with 1 of 4
+    # evidenced. Score bands overlapped almost completely against real product
+    # coverage (score=3 seen as low as 22%, score=1 as high as 100%).
+    empty_products: list[str] = []
     for pid in product_order:
         product_chunks = sorted(grouped.get(pid, []), key=_sort_key)
-        if not product_chunks:
-            continue
         title = product_texts.get(pid, pid)
         parts.append(f"## Evidências para Produto {pid} — {title}")
+        if not product_chunks:
+            parts.append(_NO_EVIDENCE_MARKER)
+            empty_products.append(pid)
+            continue
         for chunk in product_chunks:
             parts.append(_render_chunk(chunk))
             total_chunks += 1
@@ -156,6 +182,12 @@ def build_user_prompt(chunks: list[RetrievedChunk], acao_id: int = 1) -> str:
             total_chunks += 1
 
     total_chars = sum(len(c.text) for c in chunks)
-    parts.append(f"--- {total_chunks} trecho(s) recuperado(s), {total_chars} caracteres ---")
+    summary = f"--- {total_chunks} trecho(s) recuperado(s), {total_chars} caracteres"
+    if product_order:
+        evidenced = len(product_order) - len(empty_products)
+        summary += f"; {evidenced} de {len(product_order)} Produto(s) Esperado(s) com evidência"
+        if empty_products:
+            summary += f"; SEM evidência: {', '.join(empty_products)}"
+    parts.append(summary + " ---")
 
     return "\n\n".join(parts)

@@ -28,3 +28,14 @@ class RetrievedChunk(BaseModel):
     # the accepted chunk's text — populated deterministically post-gate for
     # auditor traceability (ADR-0052). Empty for ungated paths (regex, doc-focused).
     matched_concepts: list[str] = []
+    # The relevance gate's reasoning channel for the call that accepted this
+    # chunk, keyed by Expected Product id (a chunk accepted for several products
+    # carries one entry per product; _deduplicate_across_products merges them).
+    # Empty for ungated paths and for rows persisted before 2026-10-03.
+    gate_reasoning: dict[str, str] = {}
+    # Where each product's accepting verdict came from — "model" (asked this
+    # run), "ledger" (frozen earlier verdict) or "auditor" (overridden) — and
+    # the ledger key, which the override route takes (ADR-0067). Keyed by
+    # product id like gate_reasoning; empty on ungated paths and older rows.
+    gate_source: dict[str, str] = {}
+    gate_prompt_hash: dict[str, str] = {}

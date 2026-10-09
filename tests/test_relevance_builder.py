@@ -57,3 +57,153 @@ def test_system_prompt_with_negative_patterns_lists_each_as_a_bullet():
 def test_user_prompt_wraps_chunk_text():
     prompt = build_relevance_user_prompt("texto do trecho")
     assert prompt == "[Trecho a avaliar]\ntexto do trecho"
+
+
+# --------------------------------------------------------------------------
+# Identity block (2026-09-29) and sibling contrast + user-prompt tag (V5,
+# 2026-10-02, ADR-0064). The block had no tests until the sibling list landed.
+# --------------------------------------------------------------------------
+
+from ingestion.ipmp import AcaoIPMP, ProdutoEsperado  # noqa: E402
+
+from evaluation.prompt import relevance_builder as rb  # noqa: E402
+
+
+def _acao(products: list[tuple[str, str, bool]], acao_id: int = 7) -> AcaoIPMP:
+    return AcaoIPMP(
+        acao_id=acao_id,
+        titulo="Título da Ação",
+        dimensao="Gerencial",
+        fase="Inicial",
+        ponto_transicao=False,
+        por_que_importante="",
+        descricao_acao="",
+        o_que_esperar="",
+        produtos_esperados=[ProdutoEsperado(id=i, texto=t, scored=s) for i, t, s in products],
+        momento_ideal="",
+        excecoes=[],
+        exemplos=[],
+    )
+
+
+_THREE = [
+    ("7", "Documento que contenha, no mínimo:", False),  # section header, not scored
+    ("7a", "Texto do produto A", True),
+    ("7b", "Texto do produto B", True),
+    ("7c", "Texto do produto C", True),
+]
+
+
+def test_identity_block_names_acao_product_and_sibling_count():
+    prompt = build_relevance_system_prompt("critério B", acao=_acao(_THREE), product_id="7b")
+    assert "## O que está sendo avaliado" in prompt
+    assert "Ação 7 — Título da Ação" in prompt
+    assert "Dimensão Gerencial, fase Inicial." in prompt
+    assert "Produto Esperado 7b, um dos 3 Produtos Esperados avaliados nesta Ação." in prompt
+    assert rb._SCOPE_RULE in prompt
+
+
+def test_identity_block_lists_every_other_scored_product_as_not_under_evaluation():
+    prompt = build_relevance_system_prompt("critério B", acao=_acao(_THREE), product_id="7b")
+    assert "Os demais Produtos Esperados desta Ação, que NÃO estão em avaliação aqui" in prompt
+    assert "- 7a — Texto do produto A" in prompt
+    assert "- 7c — Texto do produto C" in prompt
+    assert "- 7b —" not in prompt            # the product under evaluation is not its own sibling
+    assert "- 7 —" not in prompt             # the unscored section header is not a sibling
+    # Order: product line -> sibling list -> scope rule -> criterion.
+    assert (
+        prompt.index("Produto Esperado 7b")
+        < prompt.index("Os demais Produtos Esperados")
+        < prompt.index(rb._SCOPE_RULE)
+        < prompt.index("## Critério de relevância")
+    )
+
+
+def test_identity_block_single_product_has_no_sibling_list():
+    acao = _acao([("37", "Conjunto completo dos documentos finalizados.", True)], acao_id=37)
+    prompt = build_relevance_system_prompt("critério", acao=acao, product_id="37")
+    assert "Produto Esperado 37, o único Produto Esperado avaliado nesta Ação." in prompt
+    assert "Os demais Produtos Esperados" not in prompt
+
+
+def test_sibling_text_is_truncated_at_the_limit():
+    long_text = "palavra " * 60  # ~480 chars
+    acao = _acao([("7a", long_text, True), ("7b", "curto", True)])
+    prompt = build_relevance_system_prompt("critério", acao=acao, product_id="7b")
+    line = next(l for l in prompt.splitlines() if l.startswith("- 7a — "))
+    body = line[len("- 7a — "):]
+    assert body.endswith("…")
+    assert len(body) <= rb._SIBLING_TEXT_MAX
+    assert "palavra palavra" in body
+
+
+def test_identity_block_quotes_product_text_only_when_the_intent_does_not_restate_it():
+    acao = _acao(_THREE)
+    different = build_relevance_system_prompt("critério B, formulado de outra maneira",
+                                              acao=acao, product_id="7b")
+    assert "«Texto do produto B»" in different
+    restating = build_relevance_system_prompt("Texto do produto B", acao=acao, product_id="7b")
+    assert "«Texto do produto B»" not in restating
+
+
+def test_system_prompt_without_acao_has_no_identity_block():
+    prompt = build_relevance_system_prompt("critério")
+    assert "## O que está sendo avaliado" not in prompt
+    assert "Os demais Produtos Esperados" not in prompt
+    assert "## Critério de relevância" in prompt
+
+
+def test_user_prompt_with_product_id_tags_it_before_the_chunk():
+    prompt = build_relevance_user_prompt("texto do trecho", product_id="14e")
+    assert prompt == (
+        "[Produto Esperado 14e — avalie SOMENTE este critério]\n"
+        "[Trecho a avaliar]\n"
+        "texto do trecho"
+    )
+
+
+# --- polarity sentence (2026-10-03, ADR-0066) ---
+
+def test_instructions_say_attested_non_fulfilment_is_still_relevant():
+    """Ação 26's parecer stating the budget declaration was NOT met was rejected
+    4/4 because the gate read 'evidence for X' as evidence THAT X holds; the
+    fulfilment judgement belongs to the scorer, so the instructions say so."""
+    prompt = build_relevance_system_prompt("evidência de X")
+    assert "NÃO foi atendido" in prompt
+    assert "julgar o cumprimento é da etapa seguinte" in prompt
+    # and the guard against reading it as looseness
+    assert "apenas mencione o tema" in prompt
+
+
+# --- V4: a concept list that only restates the intent is omitted (2026-10-03) ---
+
+def test_concept_list_that_restates_the_intent_is_omitted():
+    intent = "Método de reporte do progresso de cada benefício durante a execução da obra."
+    prompt = build_relevance_system_prompt(
+        intent, ["Método de reporte do progresso de cada benefício durante a execução da obra"]
+    )
+    assert "Qualquer um dos elementos abaixo" not in prompt
+    assert intent in prompt
+
+
+def test_concept_list_with_one_distinct_concept_is_kept_whole():
+    intent = "Método de reporte do progresso de cada benefício durante a execução da obra."
+    prompt = build_relevance_system_prompt(
+        intent,
+        [
+            "Método de reporte do progresso de cada benefício durante a execução da obra",
+            "Periodicidade e destinatário dos relatórios de progresso",
+        ],
+    )
+    assert "Qualquer um dos elementos abaixo" in prompt
+    assert "- Periodicidade e destinatário dos relatórios de progresso" in prompt
+    # the restating entry is not singled out: the rule is all-or-nothing
+    assert "- Método de reporte do progresso de cada benefício" in prompt
+
+
+def test_concepts_restate_intent_rule_is_case_and_punctuation_insensitive():
+    from evaluation.prompt.relevance_builder import _concepts_restate_intent
+
+    assert _concepts_restate_intent(["  método DE reporte "], "Método de reporte.")
+    assert not _concepts_restate_intent([], "qualquer coisa")
+    assert not _concepts_restate_intent(["Periodicidade dos relatórios"], "Método de reporte.")

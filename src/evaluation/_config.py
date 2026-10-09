@@ -14,6 +14,10 @@ _model: str | None = None
 # volume). Mirrors the configure_llm()/get_llm_client() pair above.
 _gate_client: LLMClient | None = None
 
+# Gate verdict ledger (ADR-0067). None = off: every gate call reaches the model.
+# main.py wires one on the shared app DB; measurement runs leave it off.
+_gate_ledger = None
+
 
 def configure_llm(
     provider: str,
@@ -117,6 +121,17 @@ def configure_gate_llm(
         _gate_client = GroqClient(model=model)
 
 
+def configure_gate_ledger(ledger) -> None:
+    """Register the GateLedger that select_evidence() consults before calling
+    the gate model, or None to switch it off (ADR-0067)."""
+    global _gate_ledger
+    _gate_ledger = ledger
+
+
+def get_gate_ledger():
+    return _gate_ledger
+
+
 def get_gate_llm_client() -> LLMClient:
     if _gate_client is None:
         raise RuntimeError(
@@ -127,8 +142,9 @@ def get_gate_llm_client() -> LLMClient:
 
 def _reset() -> None:
     """Reset module state — for test isolation only."""
-    global _client, _provider, _model, _gate_client
+    global _client, _provider, _model, _gate_client, _gate_ledger
     _client = None
     _provider = None
     _model = None
     _gate_client = None
+    _gate_ledger = None

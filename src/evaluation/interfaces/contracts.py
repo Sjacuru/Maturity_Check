@@ -22,6 +22,142 @@ class RejectedChunk(BaseModel):
     expected_product_id: str
     matched_concepts: list[str] = []
 
+    # Whether the gate actually reached a verdict on this chunk. True means the
+    # call broke (unparseable response, token-cap truncation, transport error)
+    # and the chunk was dropped WITHOUT being judged — not that it was found
+    # irrelevant. Until 2026-09-27 the two were conflated, so a broken call
+    # looked exactly like a rejection; 65% of (Ação, product) pairs in the
+    # 2026-09-07 run rejected 100% of their candidates and there was no way to
+    # tell how much of that was real. Defaults preserve older persisted rows.
+    gate_failed: bool = False
+    gate_failure_reason: str | None = None
+
+    # Which provider/model actually decided. EvaluationResult.provider is the
+    # SCORER's, so before these fields a gate served by a different model left
+    # no trace at all in the audit trail.
+    gate_provider: str | None = None
+    gate_model: str | None = None
+
+    # The gate model's reasoning channel for this call, verbatim. With a
+    # one-boolean schema this is the only justification a rejection has; the
+    # 2026-10-02 study read 1 749 of these to find the confounds that became
+    # canonical profile fixes. None when the call failed or the model has no
+    # reasoning channel; absent on rows persisted before 2026-10-03.
+    gate_reasoning: str | None = None
+
+    # ADR-0067: "model" | "ledger" | "auditor", and the ledger key the auditor
+    # overrides by. None on failed calls, when no ledger is configured, and on
+    # rows persisted before 2026-10-03.
+    gate_source: str | None = None
+    gate_prompt_hash: str | None = None
+
+
+class ProductVerdict(BaseModel):
+    """The scorer's judgement on one Expected Product.
+
+    The 0/1/3 rubric is a count over these, so recording them makes the score
+    auditable: the auditor can see which product the model considered evidenced
+    and why, instead of only a single number and a prose paragraph.
+    """
+
+    product_id: str
+    evidenced: bool
+    justificativa: str = ""
+
+
+class ProductGateReport(BaseModel):
+    """Per-Expected-Product gate telemetry for one evaluation.
+
+    Makes "this product had no evidence" a first-class, auditable outcome
+    instead of something inferred from the absence of chunks. n_candidates vs
+    n_examined shows how much of the retrieved pool _MAX_EXAMINED discarded
+    before any judgement; n_gate_failures separates broken calls from real
+    rejections; providers/models record who decided.
+    """
+
+    expected_product_id: str
+    n_candidates: int          # after pre-gate near-duplicate removal
+    n_examined: int            # actually sent to the gate (<= _MAX_EXAMINED)
+    n_accepted: int            # anchors accepted for this product
+    n_rejected: int            # judged and found irrelevant
+    n_gate_failures: int = 0   # call broke — NOT a rejection
+    providers: list[str] = []  # distinct provider labels that served this product
+    models: list[str] = []     # distinct model labels that served this product
+    n_ledger_hits: int = 0     # verdicts answered from the gate ledger (ADR-0067)
+
+    @property
+    def no_evidence(self) -> bool:
+        return self.n_accepted == 0
+
+
+class ProductMargin(BaseModel):
+    """How much accepted evidence holds one Expected Product's `evidenced` bit.
+
+    n_accepted counts the accepted chunks the SCORER actually saw attributed to
+    this product — after pre-gate dedup, post-gate dedup and _cap_evidence, so
+    it is the real support, not the gate's gross count.
+
+    `fragile` marks the one case the chain makes deterministic: an evidenced
+    product supported by exactly ONE accepted chunk. Lose that chunk and
+    build_user_prompt emits "NENHUMA evidência foi recuperada para este Produto
+    Esperado", so the bit necessarily turns off — no judgement involved. With
+    two or more accepts, losing one leaves evidence and the bit depends on the
+    scorer, which is not deterministic and is therefore not claimed here.
+
+    Why it matters (measured 2026-10-04 over two independent cold runs of the
+    same frozen configuration): the gate's rejections are near-deterministic
+    (1.7 % flip) but its ACCEPTS are close to coin-flips (38.5 %), and only
+    48 % of ever-accepted chunks were accepted by both runs. 8 of the 13
+    product-bit flips observed came from products held by a single accept.
+    """
+
+    product_id: str
+    evidenced: bool
+    n_accepted: int
+    fragile: bool = False
+
+
+class ScoreMargin(BaseModel):
+    """The deterministic uncertainty around a counted score (ADR-0058).
+
+    Two margins, as decided 2026-10-05: per product (how many accepts hold the
+    bit, in `products`) and per Ação (`band_margin` — how many bits must flip to
+    change the 0/1/3 band, in either direction).
+
+    `score_floor` is the reported interval's lower end: the score obtained when
+    every fragile bit turns off at once, or None when nothing accepted would
+    remain (i.e. the Ação would come out `sem evidência`, not 0). `score_ceiling`
+    is the current score — no upward claim is made, because a rejection flipping
+    to accept is not deterministic from one pass.
+
+    Same input gives the same score AND the same interval, so this does not
+    touch the reproducibility constraint. Nothing here is fed to the scorer
+    (ADR-0058 deliberately took the count out of the model's judgement); it is
+    reported beside the score and read by the auditor.
+    """
+
+    products: list[ProductMargin] = []
+    n_products: int = 0
+    n_evidenced: int = 0
+    n_fragile: int = 0
+    # Steps to the nearest band change, counting bit flips in either direction.
+    # None when there are no scored products to count over.
+    band_margin: int | None = None
+    score_floor: int | None = None
+    score_ceiling: int | None = None
+    # False when the evidence carries no per-product attribution at all — the
+    # document-focused Step A/B route bypasses the gate (ADR-0050), so there is
+    # nothing to count accepts against and the per-product margin does not
+    # apply. Stated rather than silently reported as zero.
+    attribution_complete: bool = True
+    # The auditor's signal (optional review, decided 2026-10-05): True only when
+    # a fragile bit falling would actually move the band. Measured volume is
+    # under 10 per case, so it stays legible.
+    review_recommended: bool = False
+    # One deterministic sentence naming what happened in the system's own
+    # process, for the auditor to read beside the score.
+    explanation: str = ""
+
 
 class EvaluationResult(BaseModel):
     acao_id: int
@@ -30,6 +166,31 @@ class EvaluationResult(BaseModel):
     model: str
     retrieved_chunks: list[RetrievedChunk]
     rejected_chunks: list[RejectedChunk] = []
+    # One entry per scored Expected Product the gate examined. Empty for
+    # document-focused (Step A/B) routing, which bypasses the gate entirely,
+    # and for rows persisted before 2026-09-27.
+    product_gate_reports: list[ProductGateReport] = []
+    # Per-product verdicts the score was computed from, plus which of the two
+    # paths produced proposed_score. Empty / "model" for rows persisted before
+    # 2026-09-27 and whenever the model's verdicts were unusable.
+    product_verdicts: list[ProductVerdict] = []
+    score_source: str = "model"
+
+    # Deterministic uncertainty around the counted score: how many accepts hold
+    # each product's bit, how far the Ação sits from a band change, and the
+    # resulting score interval. Computed in code from the verdicts and the
+    # accepted chunks — no model call, no extra cost. None for rows persisted
+    # before 2026-10-05; the read path is json.loads(raw_json) (ADR-0031) and
+    # does not re-validate, so older rows keep serving unchanged.
+    score_margin: ScoreMargin | None = None
+
+    # How many scorer calls were combined, and on how many Expected Products
+    # they disagreed. A split is the auditor's signal that the model did not
+    # agree with itself on this Ação — information a single call discards
+    # entirely. Defaulted so rows persisted before 2026-09-29 still validate;
+    # the read path is json.loads(raw_json) (ADR-0031) and does not re-validate.
+    n_scorer_votes: int = 1
+    n_verdict_splits: int = 0
     evidence_char_count: int
     system_prompt: str | None
     user_prompt: str | None

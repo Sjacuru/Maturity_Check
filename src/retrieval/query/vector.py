@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 import sqlite3
 from pathlib import Path
@@ -19,8 +20,24 @@ def _get_lancedb_path() -> Path:
 
 
 def _table_name(process_number: str) -> str:
-    """Sanitize process_number into a valid LanceDB table name."""
-    return re.sub(r"[^a-zA-Z0-9_-]", "_", process_number)
+    """Map a process_number to its own LanceDB table name, injectively.
+
+    The sanitising substitution alone is NOT injective: "SMG-040/101607/2024",
+    "SMG-040 101607 2024" and "SMG-040_101607_2024" all collapse to the same
+    name, and process_number arrives unvalidated straight from the URL path of
+    POST /cases/{process_number}/assess. Two colliding processes would then
+    share one vector table, and because ensure_vector_index_exists() reuses any
+    table that already exists (ADR-0035), the second process would silently
+    search the first one's chunks - stamped with its OWN process_number on the
+    way out, so nothing downstream could detect it. The BM25 and
+    document-focused lanes are safe: both filter on the exact string in SQL.
+
+    The digest suffix makes distinct identifiers distinct tables while keeping
+    the readable slug for anyone inspecting the LanceDB directory.
+    """
+    slug = re.sub(r"[^a-zA-Z0-9_-]", "_", process_number)
+    digest = hashlib.sha256(process_number.encode("utf-8")).hexdigest()[:8]
+    return f"{slug}_{digest}"
 
 
 def _get_model():

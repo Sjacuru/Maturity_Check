@@ -1,6 +1,8 @@
 # Interactive assessments process actions incrementally, not all 46 at once
 
-**Status:** accepted — direct consequence of ADR-0050's 2026-06-29 latency amendment
+**Status:** superseded by ADR-0062 (2026-09-29) — every latency figure below was measured on CPU-only hardware with no usable GPU. On the GPU server a full 46-action run takes ~45 min, against the 60-90 min budget this ADR itself cites, so the constraint no longer holds. The non-latency findings (small-model rejection, bounded parallelism speedup) remain valid.
+
+**Original status:** accepted — direct consequence of ADR-0050's 2026-06-29 latency amendment
 
 A full 46-action assessment is not attempted as a single interactive request. Actions are assessed one at a time today (Phase 1 scope is already Ação 1 only — CLAUDE.md decision 8), and the system is expected to support a small batch (3-4 actions) per interactive sitting once Phase 1 expands, but never the full 46 in one run.
 

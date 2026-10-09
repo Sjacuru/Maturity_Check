@@ -12,7 +12,7 @@ from starlette.concurrency import run_in_threadpool
 
 from assessment import progress
 from assessment._config import get_db_path
-from assessment.api.schemas import ReviewSubmission
+from assessment.api.schemas import GateOverrideRequest, ReviewSubmission
 from assessment.interfaces.contracts import ReviewOutcome
 from assessment.service import AssessmentService
 
@@ -155,6 +155,38 @@ def get_evaluation(process_number: str, acao_id: int):
             detail=f"No evaluation found for acao_id={acao_id}, process_number='{process_number}'.",
         )
     return json.loads(row[0])
+
+
+# ── POST /cases/{process_number}/evaluations/{acao_id}/gate-overrides ────────
+
+@router.post("/cases/{process_number}/evaluations/{acao_id}/gate-overrides", status_code=200)
+def override_gate_verdict(process_number: str, acao_id: int, body: GateOverrideRequest):
+    """Auditor overturns one frozen gate verdict (ADR-0067). The row must exist
+    and belong to this Ação; the new verdict applies from the next assessment
+    of the case onward (the stored evaluation is not rewritten)."""
+    from evaluation._config import get_gate_ledger
+
+    ledger = get_gate_ledger()
+    if ledger is None:
+        raise HTTPException(status_code=503, detail="Gate verdict ledger is not configured.")
+    _require_evaluation_exists(get_db_path(), process_number, acao_id)
+    entry = ledger.lookup(body.prompt_hash)
+    if entry is None or (entry.acao_id is not None and entry.acao_id != acao_id):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No gate verdict with prompt_hash={body.prompt_hash[:12]}… for acao_id={acao_id}.",
+        )
+    entry = ledger.override(body.prompt_hash, relevant=body.relevant, justification=body.justification)
+    return {
+        "prompt_hash": entry.prompt_hash,
+        "acao_id": entry.acao_id,
+        "product_id": entry.product_id,
+        "relevant": entry.relevant,
+        "source": entry.source,
+        "overridden_at": entry.overridden_at,
+        "override_justification": entry.override_justification,
+        "applies_from": "next assessment of this case",
+    }
 
 
 # ── POST /cases/{process_number}/evaluations/{acao_id}/review ────────────────

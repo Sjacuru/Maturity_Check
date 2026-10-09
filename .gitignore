@@ -6,6 +6,11 @@
 .env.*
 !.env.example
 
+# Local credentials / server-access notes — NEVER pushed. Readable by Claude on
+# this machine, excluded from the remote. Whole directory ignored so nothing
+# inside can leak, even files added later.
+.secrets/
+
 # Python
 __pycache__/
 *.py[cod]
@@ -78,6 +83,12 @@ checkpoints/
 tmp/
 temp/
 .cache/
+
+# Throwaway analysis scripts. Anything whose RESULT is quoted in CLAUDE.md or an
+# ADR belongs in scripts/diagnostics/ (tracked) instead — the 17 scratchpad/
+# scripts the 2026-09 investigation passes relied on were all lost because this
+# directory was never tracked and never ignored either.
+scratchpad/
 
 # LanceDB vector store (derived from SQLite path; never committed)
 lancedb/

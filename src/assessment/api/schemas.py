@@ -5,6 +5,30 @@ from pydantic import BaseModel, field_validator, model_validator
 _VALID_SCORES = {0, 1, 3}
 
 
+class GateOverrideRequest(BaseModel):
+    """Write-side body for POST /evaluations/{acao_id}/gate-overrides (ADR-0067):
+    the auditor overturns one recorded gate verdict, identified by the ledger
+    key shown on the chunk. Takes effect on the next assessment of the case."""
+
+    prompt_hash: str
+    relevant: bool
+    justification: str
+
+    @field_validator("prompt_hash")
+    @classmethod
+    def _validate_hash(cls, v: str) -> str:
+        if len(v) != 64 or any(c not in "0123456789abcdef" for c in v):
+            raise ValueError("prompt_hash must be a 64-char lowercase hex SHA-256")
+        return v
+
+    @field_validator("justification")
+    @classmethod
+    def _validate_justification(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("justification is required and must be non-empty")
+        return v.strip()
+
+
 class ReviewSubmission(BaseModel):
     """Write-side request body for POST /evaluations/{acao_id}/review."""
 

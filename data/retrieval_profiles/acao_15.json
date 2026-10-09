@@ -280,11 +280,15 @@
       "negative_evidence_patterns": []
     },
     "15e": {
-      "evidence_intent": "Delimitação simples dos riscos da contratante, da contratada e do risco compartilhado, para visão global da magnitude dos problemas e avaliação preliminar de repasse de riscos ao mercado.",
+      "evidence_intent": "Delimitação simples dos riscos da contratante, da contratada e do risco compartilhado, para se ter uma visão global da magnitude dos problemas a serem enfrentados e para confirmar se é possível ou não repassar esses riscos ao mercado, tornando o projeto viável ou inviável.",
       "retrieval_signal_concepts": [
         {
           "key": "risk_allocation_between_parties",
           "text": "Delimitação dos riscos da contratante, da contratada e do risco compartilhado"
+        },
+        {
+          "key": "market_transferability_conclusion",
+          "text": "Conclusão preliminar sobre a possibilidade de repassar os riscos ao mercado e o efeito dessa conclusão sobre a viabilidade ou inviabilidade do projeto"
         }
       ],
       "query_terms": [
@@ -339,6 +343,22 @@
           "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "risk_allocation_between_parties"
+        },
+        {
+          "encoding": "phrase",
+          "text": "repasse de riscos ao mercado",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "market_transferability_conclusion"
+        },
+        {
+          "encoding": "phrase",
+          "text": "inviabilidade do projeto",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "market_transferability_conclusion"
         }
       ],
       "evidence_logic_patterns": [

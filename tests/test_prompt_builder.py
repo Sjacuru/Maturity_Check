@@ -137,3 +137,88 @@ def test_user_prompt_cascade_order_all_steps():
     assert positions["filename"] < positions["variant"] < positions["regex"]
     # Product block always after ungrouped section
     assert positions["regex"] < positions["bm25"]
+
+
+# --- every scored product gets a block, evidenced or not (2026-09-27) ---
+
+def _acao1_scored_ids() -> list[str]:
+    from ingestion import get_ipmp_store
+    return [p.id for p in get_ipmp_store().acoes[1].produtos_esperados if p.scored]
+
+
+def test_user_prompt_emits_a_block_for_every_scored_product():
+    """Only 1a has evidence, but 1b/1c/1d must still get a block.
+
+    Omitting them let the scorer apply the 0/1/3 rubric to a silently reduced
+    subset of the Ação — the 2026-09-07 runs produced a full unhedged 3 on 2 of
+    Ação 31's 9 products that way.
+    """
+    prompt = build_user_prompt([_chunk(expected_product_ids=["1a"])])
+    for pid in _acao1_scored_ids():
+        assert f"## Evidências para Produto {pid}" in prompt
+
+
+def test_empty_product_blocks_are_explicitly_marked():
+    prompt = build_user_prompt([_chunk(expected_product_ids=["1a"])])
+    # Count inside the product blocks only — the header instruction quotes the
+    # same marker when explaining what it means.
+    blocks = prompt.split("## Evidências para Produto ")[1:]
+    marked = [b.splitlines()[0] for b in blocks if "NENHUMA evidência foi recuperada" in b]
+    assert len(marked) == len(_acao1_scored_ids()) - 1
+    assert not any(m.startswith("1a") for m in marked)
+
+
+def test_evidenced_product_block_carries_no_empty_marker():
+    prompt = build_user_prompt([_chunk(expected_product_ids=["1a"], text="conteudo de 1a")])
+    block_1a = prompt.split("## Evidências para Produto 1a")[1].split("## Evidências")[0]
+    assert "conteudo de 1a" in block_1a
+    assert "NENHUMA evidência" not in block_1a
+
+
+def test_empty_marker_instruction_states_it_means_not_evidenced():
+    prompt = build_user_prompt([_chunk()])
+    assert "HÁ UM BLOCO PARA CADA Produto Esperado" in prompt
+    assert "NÃO está evidenciado" in prompt
+
+
+def test_summary_line_reports_product_coverage():
+    prompt = build_user_prompt([_chunk(expected_product_ids=["1a"])])
+    n = len(_acao1_scored_ids())
+    assert f"1 de {n} Produto(s) Esperado(s) com evidência" in prompt
+    assert "SEM evidência: 1b, 1c, 1d" in prompt
+
+
+def test_summary_line_omits_missing_list_when_all_products_evidenced():
+    chunks = [
+        _chunk(expected_product_ids=[pid], chunk_index=i, text=f"texto {pid}")
+        for i, pid in enumerate(_acao1_scored_ids())
+    ]
+    prompt = build_user_prompt(chunks)
+    n = len(chunks)
+    assert f"{n} de {n} Produto(s) Esperado(s) com evidência" in prompt
+    assert "SEM evidência" not in prompt
+
+
+def test_empty_blocks_do_not_inflate_the_chunk_count():
+    """The marker is not evidence — the retrieved-chunk total must ignore it."""
+    prompt = build_user_prompt([_chunk(expected_product_ids=["1a"])])
+    assert "--- 1 trecho(s) recuperado(s)" in prompt
+
+
+def test_scoring_instruction_states_the_product_count():
+    prompt = build_system_prompt(1)
+    n = len(_acao1_scored_ids())
+    assert f"conte quantos dos {n}" in prompt
+    assert f"Pontue 3 SOMENTE quando TODOS os {n}" in prompt
+
+
+def test_scoring_instruction_product_count_is_per_acao():
+    """The count is derived from the store, not hardcoded to Ação 1's four."""
+    from ingestion import get_ipmp_store
+    store = get_ipmp_store()
+    for acao_id in (2, 31):
+        acao = store.acoes.get(acao_id)
+        if acao is None:
+            continue
+        n = len([p for p in acao.produtos_esperados if p.scored])
+        assert f"conte quantos dos {n}" in build_system_prompt(acao_id)

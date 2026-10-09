@@ -129,8 +129,8 @@ def reset_vector_state():
 
 # ── table_name sanitization ───────────────────────────────────────────────────
 
-def test_table_name_alphanumeric_unchanged():
-    assert _table_name("P001") == "P001"
+def test_table_name_keeps_readable_slug():
+    assert _table_name("P001").startswith("P001_")
 
 
 def test_table_name_special_chars_replaced():
@@ -140,7 +140,28 @@ def test_table_name_special_chars_replaced():
 
 
 def test_table_name_hyphen_and_underscore_preserved():
-    assert _table_name("case_A-1") == "case_A-1"
+    assert _table_name("case_A-1").startswith("case_A-1_")
+
+
+def test_table_name_is_injective_across_sanitisation_collisions():
+    """Distinct process numbers must never share a vector table.
+
+    These three sanitise to the same slug. If they also shared a table name,
+    ensure_vector_index_exists() would hand the second process the first
+    process's chunks under its reuse semantics (ADR-0035), and search_vector()
+    stamps its own process_number on the way out, so the swap would be
+    invisible downstream.
+    """
+    names = {
+        _table_name("SMG-040_101607_2024"),
+        _table_name("SMG-040/101607/2024"),
+        _table_name("SMG-040 101607 2024"),
+    }
+    assert len(names) == 3
+
+
+def test_table_name_is_stable_across_calls():
+    assert _table_name("0023.001234/2024-01") == _table_name("0023.001234/2024-01")
 
 
 # ── lazy ML loading ───────────────────────────────────────────────────────────

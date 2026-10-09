@@ -7,13 +7,14 @@ from dataclasses import dataclass, field
 
 from rapidfuzz import fuzz
 
-from ingestion import get_retrieval_profile_store
+from ingestion import get_ipmp_store, get_retrieval_profile_store
 from ingestion.retrieval_profile import ExpectedProductProfile
 from retrieval import fetch_neighbor_chunks
 from retrieval.interfaces.contracts import RetrievedChunk
 
-from evaluation._config import get_gate_llm_client
-from evaluation.interfaces.contracts import RejectedChunk
+from evaluation._config import get_gate_ledger, get_gate_llm_client
+from evaluation.interfaces.contracts import ProductGateReport, RejectedChunk
+from evaluation.llm.llamacpp import LlamaCppTruncated
 from evaluation.parsing.relevance_response import RelevanceVerdict, parse_relevance_response
 from evaluation.progress import report
 from evaluation.prompt.relevance_builder import build_relevance_system_prompt, build_relevance_user_prompt
@@ -21,8 +22,31 @@ from evaluation.schemas import GATE_SCHEMA
 
 logger = logging.getLogger(__name__)
 
+# How many accepted candidates are KEPT per product. Not how many are
+# examined: since 2026-10-05 the gate walks the whole examined pool whatever
+# the verdicts are. It used to stop at the 5th accept, which made the list of
+# questions depend on the answers -- measured consequence: of the differences
+# between two clean passes over the same documents, part came from chunks that
+# were never even asked in one of them, not from a verdict that changed.
 _ANCHOR_TARGET = 5
 _EXPANSION_TARGET = 5
+
+# Neighbour expansion: gate the previous/next chunk of each ACCEPTED chunk.
+# Off since 2026-10-06, because the question it asks depends on an answer:
+# a flip on an accept changes WHICH chunks are gated, not just how one is
+# judged. Measured over independent clean passes of the whole case (ledger
+# off, one process per pass):
+#   * with expansion  — the per-product n_examined vector repeats in 26/46
+#     Ações; 27-37 of the differing (chunk, product) pairs are neighbours
+#   * without it      — 46/46 in three passes, zero neighbour differences,
+#     8% fewer gate calls, and no Expected Product lost its evidenced bit
+#     (the 45 neighbour chunks it contributed only ever reinforced products
+#     already evidenced by a chunk from their own top-_MAX_EXAMINED)
+# Kept switchable: the diagnostics turn it back on to measure the output
+# with it (reproducibility.py --expansion), and the 23 products that used
+# neighbours stayed just as unstable without them, so this removes the
+# cascade, not the ambiguity that causes it.
+EXPANSION_ENABLED = False
 
 # Worst-case bound on candidates examined per product before giving up, even
 # if fewer than _ANCHOR_TARGET were accepted. Without this, a strict gate
@@ -31,12 +55,32 @@ _EXPANSION_TARGET = 5
 # single product (2026-06-28 live run). Trades thoroughness for a predictable
 # latency ceiling: 46 actions in one interactive sitting cannot tolerate an
 # unbounded per-product call count (ADR-0050 latency redesign, 2026-06-29).
-_MAX_EXAMINED = 8
+#
+# 8 -> 16 on 2026-10-03: at 8, 161 of the 164 products hit the cap and 49.8 %
+# of the distinct fused candidates never reached the gate; Ação 3's validated
+# evidence (p.158) sat at rank 10 and could never be examined. With one call in
+# flight at reasoning_effort=low (ADR-0065) a gate call costs ~0.7-1.0 s, so the
+# doubled cap is affordable. _ANCHOR_TARGET is unchanged, so the evidence volume
+# sent to the scorer is bounded exactly as before.
+_MAX_EXAMINED = 16
+
+# How many gate calls may be in flight to the server at once. 1 = the products
+# are gated one after the other, in scored-product order, each product's
+# candidates in RRF rank order - the same fixed call sequence the 2026-10-02
+# measurements used. Under 4 concurrent calls the same prompt reached up to 8
+# distinct verdict trajectories in 8 passes; with one call in flight and the
+# gate model at reasoning_effort=low, 0/80 chunks were unstable across Acoes
+# 14, 22 and 3 (ADR-0065). main.py gives the gate client the same number as its
+# request semaphore, so this constant is the single knob.
+GATE_MAX_IN_FLIGHT = 1
 
 # Mirrors evaluator._MAX_EVIDENCE_CHARS — evidence_selection trims expansion
 # chunks against the same ceiling _cap_evidence() enforces downstream as a
-# final safety net for any residual overflow (ADR-0050).
-_EVIDENCE_BUDGET_CHARS = 21_000
+# final safety net for any residual overflow (ADR-0050). Raised 21,000 ->
+# 40,000 on 2026-09-28 in lockstep with it; see the derivation in evaluator.py.
+# These two must move together — whichever is lower is the one that actually
+# binds, so raising only one changes nothing.
+_EVIDENCE_BUDGET_CHARS = 40_000
 
 # Deterministic stripping of mechanical PDF-extraction noise (repeated
 # header/address block, digital-signature block, version tag, vertically-
@@ -109,6 +153,66 @@ def strip_extraction_noise(text: str) -> str:
 class EvidenceSelectionResult:
     accepted: list[RetrievedChunk] = field(default_factory=list)
     rejected: list[RejectedChunk] = field(default_factory=list)
+    # Per-product gate telemetry (one entry per product examined). Lets the
+    # caller distinguish "the gate judged everything irrelevant" from "the gate
+    # never managed to judge", and record which provider decided — neither was
+    # observable before 2026-09-27.
+    product_reports: list[ProductGateReport] = field(default_factory=list)
+
+
+@dataclass
+class _GateCall:
+    """One gate verdict plus who produced it and the reasoning behind it."""
+
+    verdict: RelevanceVerdict
+    provider: str | None
+    model: str | None
+    reasoning: str | None = None
+    source: str = "model"          # "model" | "ledger" | "auditor" (ADR-0067)
+    prompt_hash: str | None = None
+
+
+@dataclass
+class _GateStats:
+    """Mutable accumulator threaded through anchor selection and expansion, so
+    both phases' calls land in the same ProductGateReport."""
+
+    n_candidates: int = 0
+    n_examined: int = 0
+    n_accepted: int = 0
+    n_rejected: int = 0
+    n_failures: int = 0
+    n_ledger_hits: int = 0
+    providers: set[str] = field(default_factory=set)
+    models: set[str] = field(default_factory=set)
+
+    def record(self, call: _GateCall) -> None:
+        self.n_examined += 1
+        if call.source != "model":
+            self.n_ledger_hits += 1
+        if call.provider:
+            self.providers.add(call.provider)
+        if call.model:
+            self.models.add(call.model)
+        if call.verdict.parse_failed:
+            self.n_failures += 1
+        elif call.verdict.relevant:
+            self.n_accepted += 1
+        else:
+            self.n_rejected += 1
+
+    def to_report(self, product_id: str) -> ProductGateReport:
+        return ProductGateReport(
+            expected_product_id=product_id,
+            n_candidates=self.n_candidates,
+            n_examined=self.n_examined,
+            n_accepted=self.n_accepted,
+            n_rejected=self.n_rejected,
+            n_gate_failures=self.n_failures,
+            providers=sorted(self.providers),
+            models=sorted(self.models),
+            n_ledger_hits=self.n_ledger_hits,
+        )
 
 
 @dataclass
@@ -116,6 +220,7 @@ class _ProductSelection:
     anchors: list[tuple[float, RetrievedChunk]]
     expansions: list[tuple[float, RetrievedChunk]]
     rejected: list[RejectedChunk]
+    report: ProductGateReport | None = None
 
 
 def _attribute_concepts(
@@ -205,10 +310,12 @@ def select_evidence(
     vertically-rotated watermark) before anything else sees it. The gate
     itself only returns a binary relevant/not-relevant verdict — no cleaning.
 
-    For each product: classifies up to _MAX_EXAMINED RRF-ranked candidates
+    For each product: classifies the _MAX_EXAMINED top RRF-ranked candidates
     against the product's evidence_intent PLUS its retrieval_signal_concepts
     (in original RRF order) — the same curated concepts hybrid.py's vector
-    query already uses (_vector_query_text()). Keeps the top _ANCHOR_TARGET
+    query already uses (_vector_query_text()). All of them are classified, in
+    every pass, whatever the verdicts are: retrieval is deterministic, so the
+    set of questions asked is too. Keeps the top _ANCHOR_TARGET
     relevant ones as anchors, fetches each anchor's immediate document
     neighbors and gates them too, keeping up to _EXPANSION_TARGET relevant
     neighbors per product. When the combined result exceeds the evidence
@@ -221,23 +328,37 @@ def select_evidence(
     ungated (top _ANCHOR_TARGET candidates by score, noise-stripped, no
     expansion) — a safe degrade for Ações without a populated profile yet.
 
-    The 4+ products are independent of each other and gated concurrently —
-    each is I/O-bound (waiting on the local Ollama HTTP call), so threads
-    give real wall-clock parallelism despite Python's GIL. Measured 2.4x
-    speedup on 6-core/12-thread CPU-only hardware (2026-06-29); necessary to
-    keep a 46-action interactive assessment within an acceptable total time.
+    The products are independent of each other. They USED to be gated
+    concurrently (measured 2.4x speedup on CPU-only Ollama, 2026-06-29); since
+    ADR-0065 the default is one gate call in flight, in a fixed order (see
+    GATE_MAX_IN_FLIGHT) — concurrency on the GPU server was the largest single
+    source of verdict non-determinism, and reasoning_effort=low makes the
+    serial gate cost about what the concurrent one did.
     """
     profile_acao = get_retrieval_profile_store().acoes.get(acao_id)
+    # Identity for the gate prompt: which Acao and which Expected Product this
+    # judgement belongs to. Resolved once here rather than per call.
+    acao = get_ipmp_store().acoes.get(acao_id)
 
     gate_client = get_gate_llm_client()
     describe_route = getattr(gate_client, "describe_route", None)
     if describe_route is not None:
         report("selecionando_llm", f"Gate de relevância: {describe_route()}.")
 
+    mode = (
+        "em sequência, 1 chamada em voo (ADR-0065)"
+        if GATE_MAX_IN_FLIGHT <= 1
+        else f"até {GATE_MAX_IN_FLIGHT} chamadas em voo"
+    )
     report(
         "avaliando_relevancia",
-        f"Iniciando gate de relevância — {len(candidates)} produto(s) em paralelo.",
+        f"Iniciando gate de relevância — {len(candidates)} produto(s), {mode}.",
     )
+
+    # One memo per select_evidence call -- one Acao, one pass. No lock: each
+    # product is handled by exactly one worker and its prompts carry its own
+    # product block, so two workers never write the same key.
+    gate_memo: dict[str, _GateCall] = {}
 
     def _run(item: tuple[str, list[tuple[float, RetrievedChunk]]]) -> _ProductSelection:
         product_id, ranked = item
@@ -245,25 +366,45 @@ def select_evidence(
             profile_acao.expected_products.get(product_id) if profile_acao else None
         )
         deduped = _prefilter_near_duplicates(ranked)
-        return _select_for_product(product_id, deduped, profile_product, process_number)
+        return _select_for_product(
+            product_id, deduped, profile_product, process_number, acao, memo=gate_memo
+        )
 
-    with ThreadPoolExecutor(max_workers=max(len(candidates), 1)) as pool:
-        results = list(pool.map(_run, candidates.items()))
+    if GATE_MAX_IN_FLIGHT <= 1:
+        # Fixed order: dict insertion order is hybrid.py's scored-product order,
+        # and _select_for_product walks each product's candidates by RRF rank.
+        results = [_run(item) for item in candidates.items()]
+    else:
+        with ThreadPoolExecutor(
+            max_workers=max(1, min(len(candidates), GATE_MAX_IN_FLIGHT))
+        ) as pool:
+            results = list(pool.map(_run, candidates.items()))
 
     scored_anchors = [a for r in results for a in r.anchors]
     scored_expansions = [e for r in results for e in r.expansions]
     rejected = [rc for r in results for rc in r.rejected]
+    product_reports = [r.report for r in results if r.report is not None]
+
+    total_failures = sum(rep.n_gate_failures for rep in product_reports)
+    if total_failures:
+        report(
+            "avaliando_relevancia",
+            f"Atenção: {total_failures} chamada(s) do gate falharam nesta Ação - "
+            "os trechos correspondentes foram descartados sem julgamento.",
+            "warning",
+        )
 
     deduped_anchors, deduped_expansions = _deduplicate_across_products(
         scored_anchors, scored_expansions
     )
     accepted_anchors = [chunk for _, chunk in deduped_anchors]
     accepted_expansions = _trim_expansions_to_budget(deduped_anchors, deduped_expansions)
-    accepted = _dedup_semantic(accepted_anchors + accepted_expansions)
+    accepted = _dedup_semantic_per_product(accepted_anchors + accepted_expansions)
 
     return EvidenceSelectionResult(
         accepted=accepted,
         rejected=rejected,
+        product_reports=sorted(product_reports, key=lambda r: r.expected_product_id),
     )
 
 
@@ -272,18 +413,26 @@ def _select_for_product(
     ranked: list[tuple[float, RetrievedChunk]],
     profile_product: ExpectedProductProfile | None,
     process_number: str,
+    acao=None,
+    memo: dict[str, _GateCall] | None = None,
 ) -> _ProductSelection:
     if profile_product is None or not profile_product.evidence_intent:
         anchors = [
             (score, chunk.model_copy(update={"text": strip_extraction_noise(chunk.text)}))
             for score, chunk in ranked[:_ANCHOR_TARGET]
         ]
-        return _ProductSelection(anchors=anchors, expansions=[], rejected=[])
+        # Ungated degrade path: no gate call was made, so there is nothing to
+        # report beyond how many candidates went straight through.
+        stats = _GateStats(n_candidates=len(ranked), n_accepted=len(anchors))
+        return _ProductSelection(
+            anchors=anchors, expansions=[], rejected=[], report=stats.to_report(product_id)
+        )
 
     evidence_intent = profile_product.evidence_intent
     concepts = [c.text for c in profile_product.retrieval_signal_concepts]
     rejected: list[RejectedChunk] = []
     product_anchors: list[tuple[float, RetrievedChunk]] = []
+    stats = _GateStats(n_candidates=len(ranked))
 
     examined_pool = ranked[:_MAX_EXAMINED]
     report(
@@ -292,29 +441,60 @@ def _select_for_product(
     )
     negative_patterns = profile_product.negative_evidence_patterns
     for score, chunk in examined_pool:
-        if len(product_anchors) >= _ANCHOR_TARGET:
-            break
         stripped_text = strip_extraction_noise(chunk.text)
-        verdict = _gate_chunk(stripped_text, evidence_intent, concepts, negative_patterns)
+        call = _gate_chunk(
+            stripped_text, evidence_intent, concepts, negative_patterns,
+            acao=acao, product_id=product_id,
+            chunk=chunk, process_number=process_number, memo=memo,
+        )
+        stats.record(call)
         matched = _attribute_concepts(stripped_text, profile_product)
-        if not verdict.relevant:
-            rejected.append(_to_rejected(chunk, product_id, matched))
+        if not call.verdict.relevant:
+            rejected.append(_to_rejected(chunk, product_id, matched, call))
+            continue
+        if len(product_anchors) >= _ANCHOR_TARGET:
+            # Accepted, but the anchor cap is full. Not kept -- the evidence
+            # delivered is the same first _ANCHOR_TARGET accepts in rank order
+            # as before. What changed is that it was still ASKED: the examined
+            # pool must be a function of retrieval alone.
             continue
         product_anchors.append((score, chunk.model_copy(update={
             "text": stripped_text,
             "expected_product_ids": [product_id],
             "matched_concepts": matched,
+            "gate_reasoning": _reasoning_entry(product_id, call),
+            "gate_source": {product_id: call.source},
+            "gate_prompt_hash": _hash_entry(product_id, call),
         })))
 
-    expansions = _expand_anchors(
-        product_anchors, product_id, process_number, evidence_intent, concepts, rejected,
-        profile_product=profile_product,
+    expansions = (
+        _expand_anchors(
+            product_anchors, product_id, process_number, evidence_intent, concepts, rejected,
+            profile_product=profile_product, stats=stats, acao=acao, memo=memo,
+        )
+        if EXPANSION_ENABLED
+        else []
     )
+    failures = f", {stats.n_failures} falha(s) de gate" if stats.n_failures else ""
     report(
         "avaliando_relevancia",
-        f"Produto {product_id}: {len(product_anchors)} aceito(s), {len(rejected)} descartado(s).",
+        f"Produto {product_id}: {len(product_anchors)} aceito(s), "
+        f"{len(rejected)} descartado(s){failures}.",
+        "warning" if stats.n_failures else "info",
     )
-    return _ProductSelection(anchors=product_anchors, expansions=expansions, rejected=rejected)
+    if stats.n_failures:
+        logger.warning(
+            "Product %s: %d of %d gate calls failed - those chunks were dropped "
+            "unjudged, so this product's evidence set is incomplete for reasons "
+            "unrelated to relevance.",
+            product_id, stats.n_failures, stats.n_examined,
+        )
+    return _ProductSelection(
+        anchors=product_anchors,
+        expansions=expansions,
+        rejected=rejected,
+        report=stats.to_report(product_id),
+    )
 
 
 def _natural_key(chunk: RetrievedChunk) -> tuple[str, int, int]:
@@ -342,9 +522,8 @@ def _deduplicate_across_products(
             best_anchor[key] = (score, chunk)
         else:
             existing_score, existing = best_anchor[key]
-            merged_ids = sorted(set(existing.expected_product_ids + chunk.expected_product_ids))
             winner = existing if existing_score >= score else chunk
-            best_anchor[key] = (max(existing_score, score), winner.model_copy(update={"expected_product_ids": merged_ids}))
+            best_anchor[key] = (max(existing_score, score), _merge_attribution(winner, existing, chunk))
     anchor_keys = set(best_anchor.keys())
 
     best_expansion: dict[tuple[str, int, int], tuple[float, RetrievedChunk]] = {}
@@ -353,18 +532,38 @@ def _deduplicate_across_products(
         if key in anchor_keys:
             # Anchor already includes this chunk — merge the expansion's product IDs in.
             existing_score, existing = best_anchor[key]
-            merged_ids = sorted(set(existing.expected_product_ids + chunk.expected_product_ids))
-            best_anchor[key] = (existing_score, existing.model_copy(update={"expected_product_ids": merged_ids}))
+            best_anchor[key] = (existing_score, _merge_attribution(existing, existing, chunk))
             continue
         if key not in best_expansion:
             best_expansion[key] = (score, chunk)
         else:
             existing_score, existing = best_expansion[key]
-            merged_ids = sorted(set(existing.expected_product_ids + chunk.expected_product_ids))
             winner = existing if existing_score >= score else chunk
-            best_expansion[key] = (max(existing_score, score), winner.model_copy(update={"expected_product_ids": merged_ids}))
+            best_expansion[key] = (max(existing_score, score), _merge_attribution(winner, existing, chunk))
 
     return list(best_anchor.values()), list(best_expansion.values())
+
+
+def _merge_attribution(
+    winner: RetrievedChunk, a: RetrievedChunk, b: RetrievedChunk
+) -> RetrievedChunk:
+    """The winner's copy with both chunks' product ids and per-product gate
+    reasoning merged in — one physical chunk, every product that accepted it."""
+    merged_ids = sorted(set(a.expected_product_ids + b.expected_product_ids))
+    return winner.model_copy(update={
+        "expected_product_ids": merged_ids,
+        "gate_reasoning": {**a.gate_reasoning, **b.gate_reasoning},
+        "gate_source": {**a.gate_source, **b.gate_source},
+        "gate_prompt_hash": {**a.gate_prompt_hash, **b.gate_prompt_hash},
+    })
+
+
+def _reasoning_entry(product_id: str, call: _GateCall) -> dict[str, str]:
+    return {product_id: call.reasoning} if call.reasoning else {}
+
+
+def _hash_entry(product_id: str, call: _GateCall) -> dict[str, str]:
+    return {product_id: call.prompt_hash} if call.prompt_hash else {}
 
 
 def _expand_anchors(
@@ -375,6 +574,9 @@ def _expand_anchors(
     concepts: list[str],
     rejected: list[RejectedChunk],
     profile_product: ExpectedProductProfile | None = None,
+    stats: _GateStats | None = None,
+    acao=None,
+    memo: dict[str, _GateCall] | None = None,
 ) -> list[tuple[float, RetrievedChunk]]:
     negative_patterns = profile_product.negative_evidence_patterns if profile_product else []
     product_expansions: list[tuple[float, RetrievedChunk]] = []
@@ -388,18 +590,27 @@ def _expand_anchors(
             if len(product_expansions) >= _EXPANSION_TARGET:
                 break
             stripped_text = strip_extraction_noise(neighbor.text)
-            verdict = _gate_chunk(stripped_text, evidence_intent, concepts, negative_patterns)
+            call = _gate_chunk(
+                stripped_text, evidence_intent, concepts, negative_patterns,
+                acao=acao, product_id=product_id,
+                chunk=neighbor, process_number=process_number, memo=memo,
+            )
+            if stats is not None:
+                stats.record(call)
             matched = (
                 _attribute_concepts(stripped_text, profile_product)
                 if profile_product else []
             )
-            if not verdict.relevant:
-                rejected.append(_to_rejected(neighbor, product_id, matched))
+            if not call.verdict.relevant:
+                rejected.append(_to_rejected(neighbor, product_id, matched, call))
                 continue
             expanded = neighbor.model_copy(update={
                 "text": stripped_text,
                 "expected_product_ids": [product_id],
                 "matched_concepts": matched,
+                "gate_reasoning": _reasoning_entry(product_id, call),
+                "gate_source": {product_id: call.source},
+                "gate_prompt_hash": _hash_entry(product_id, call),
             })
             product_expansions.append((anchor_score, expanded))
     return product_expansions
@@ -475,28 +686,230 @@ def _dedup_semantic(
     return kept
 
 
+def _dedup_semantic_per_product(
+    chunks: list[RetrievedChunk],
+    threshold: float = _SEMANTIC_DEDUP_THRESHOLD,
+) -> list[RetrievedChunk]:
+    """Near-duplicate dedup WITHIN each Expected Product, never across them.
+
+    _dedup_semantic() ran over the whole Ação's accepted list and dropped the
+    later chunk without transferring its attribution, so a product could lose
+    its only evidence to a >= threshold-similar chunk accepted by a different
+    product — and since the score counts evidenced products (ADR-0058), that
+    silently turned a bit off. Each product now compares only against its own
+    chunks: a chunk leaves the batch only when it is a duplicate for every
+    product that attributed it, and otherwise stays with its attribution
+    narrowed to the products that kept it.
+
+    Deliberate consequence: the same text may now appear in two different
+    product blocks of the scorer prompt. That is what the criterion asks for —
+    each product is judged on its own evidence — and it costs evidence budget,
+    which _cap_evidence bounds.
+    """
+    def _norm(text: str) -> str:
+        return _SEMANTIC_DEDUP_WS_RE.sub(" ", text).strip().lower()
+
+    threshold_pct = threshold * 100
+    by_product: dict[str, list[RetrievedChunk]] = {}
+    unattributed: list[RetrievedChunk] = []
+    for chunk in chunks:
+        if not chunk.expected_product_ids:
+            unattributed.append(chunk)
+            continue
+        for product_id in chunk.expected_product_ids:
+            by_product.setdefault(product_id, []).append(chunk)
+
+    keep: dict[tuple[str, int, int], set[str]] = {}
+    for product_id in sorted(by_product):
+        kept_norms: list[str] = []
+        for chunk in by_product[product_id]:
+            norm = _norm(chunk.text)
+            if len(norm) >= _SEMANTIC_DEDUP_MIN_CHARS and any(
+                len(existing) >= _SEMANTIC_DEDUP_MIN_CHARS
+                and fuzz.ratio(norm, existing) >= threshold_pct
+                for existing in kept_norms
+            ):
+                logger.info(
+                    "Semantic dedup dropped near-duplicate for %s: %s pg=%d idx=%d",
+                    product_id, chunk.filename, chunk.page_number, chunk.chunk_index,
+                )
+                continue
+            kept_norms.append(norm)
+            keep.setdefault(_natural_key(chunk), set()).add(product_id)
+
+    # Original order preserved: only membership and attribution change here.
+    out = _dedup_semantic(unattributed, threshold)
+    for chunk in chunks:
+        if not chunk.expected_product_ids:
+            continue
+        kept_for = keep.get(_natural_key(chunk))
+        if not kept_for:
+            continue
+        out.append(
+            chunk if set(chunk.expected_product_ids) == kept_for
+            else chunk.model_copy(update={"expected_product_ids": sorted(kept_for)})
+        )
+    return out
+
+
 def _gate_chunk(
     text: str,
     evidence_intent: str,
     concepts: list[str],
     negative_patterns: list[str] | None = None,
-) -> RelevanceVerdict:
+    acao=None,
+    product_id: str | None = None,
+    chunk: RetrievedChunk | None = None,
+    process_number: str | None = None,
+    memo: dict[str, _GateCall] | None = None,
+) -> _GateCall:
+    """One gate call, returning the verdict plus which provider/model served it.
+
+    memo, when given, holds the verdicts already produced in THIS pass, keyed
+    by the same prompt hash. A chunk can reach the gate twice for one product
+    in a single pass -- once from ranked[:_MAX_EXAMINED], once as the neighbour
+    of an accepted chunk -- and answering the identical question twice with two
+    different verdicts is incoherent. The memo makes the second occurrence
+    deterministic without a ledger; it is created per select_evidence call, so
+    nothing survives into the next pass.
+
+    With a gate ledger configured (ADR-0067) the call is first looked up by
+    the hash of (model, reasoning effort, system prompt, user prompt); a hit
+    is returned without asking the model, and a fresh successful verdict is
+    recorded so the next identical call is answered the same way. chunk and
+    process_number only annotate the ledger row for the auditor.
+
+    A LlamaCppTruncated (the server hit its token cap mid-answer) is converted
+    into a FAILED verdict rather than being allowed to look like "not
+    relevant" — gpt-oss emits the schema-constrained JSON after an
+    unconstrained reasoning channel, so a cap firing mid-reasoning yields empty
+    content that json.loads() rejects. The chunk is then dropped without
+    judgement, which is materially different from being judged irrelevant, and
+    _GateStats counts it separately.
+
+    Transport failures (LlamaCppUnavailable/Timeout/Busy) are deliberately NOT
+    caught: with the GPU-only wiring there is no fallback, so a server outage
+    must abort the run loudly instead of quietly producing an assessment in
+    which every product looks unevidenced.
+
+    Deliberately ONE call, not a best-of-N vote: voting was implemented,
+    measured over a full sweep and reverted — see ADR-0061 for why majority
+    voting cannot stabilise this gate.
+    """
     client = get_gate_llm_client()
-    system = build_relevance_system_prompt(evidence_intent, concepts, negative_patterns)
-    user = build_relevance_user_prompt(text)
-    raw = client.complete(system, user, schema=GATE_SCHEMA)
-    return parse_relevance_response(raw)
+    system = build_relevance_system_prompt(
+        evidence_intent, concepts, negative_patterns,
+        acao=acao, product_id=product_id,
+    )
+    user = build_relevance_user_prompt(text, product_id=product_id)
+    from evaluation.gate_ledger import prompt_hash
+
+    # Computed whether or not a ledger is configured: the in-pass memo is keyed
+    # on the same hash, so the two mechanisms cannot disagree about what counts
+    # as "the same question".
+    key = prompt_hash(
+        _ledger_model(client), getattr(client, "reasoning_effort", None), system, user
+    )
+    if memo is not None and key in memo:
+        return memo[key]
+    ledger = get_gate_ledger()
+    if ledger is not None:
+        hit = ledger.lookup(key)
+        if hit is not None:
+            call = _GateCall(
+                RelevanceVerdict(relevant=hit.relevant, parse_failed=False),
+                provider="ledger",
+                model=hit.model,
+                reasoning=hit.reasoning,
+                source=hit.source if hit.source == "auditor" else "ledger",
+                prompt_hash=key,
+            )
+            if memo is not None:
+                memo[key] = call
+            return call
+    reasoning: str | None = None
+    try:
+        detailed = getattr(client, "complete_detailed", None)
+        if detailed is not None:
+            completion = detailed(system, user, schema=GATE_SCHEMA)
+            raw = completion.content
+            reasoning = completion.reasoning
+        else:
+            raw = client.complete(system, user, schema=GATE_SCHEMA)
+    except LlamaCppTruncated as exc:
+        logger.warning("Gate call truncated at the token cap — chunk dropped unjudged: %s", exc)
+        verdict = RelevanceVerdict(relevant=False, parse_failed=True, failure_reason="truncated")
+        return _GateCall(verdict, _gate_provider(client), _gate_model(client), prompt_hash=key)
+    verdict = parse_relevance_response(raw)
+    if verdict.parse_failed:
+        logger.warning(
+            "Gate response could not be parsed (%s) — chunk dropped unjudged, "
+            "NOT counted as a rejection. Raw: %.200r",
+            verdict.failure_reason, raw,
+        )
+    elif ledger is not None:
+        ledger.record(
+            key,
+            relevant=verdict.relevant,
+            reasoning=reasoning,
+            model=_ledger_model(client),  # the same string the key was hashed with
+            reasoning_effort=getattr(client, "reasoning_effort", None),
+            acao_id=getattr(acao, "acao_id", None),
+            product_id=product_id,
+            process_number=process_number,
+            filename=chunk.filename if chunk else None,
+            page_number=chunk.page_number if chunk else None,
+            chunk_index=chunk.chunk_index if chunk else None,
+        )
+    call = _GateCall(
+        verdict, _gate_provider(client), _gate_model(client), reasoning, prompt_hash=key
+    )
+    # A failed call is not an answer, so it is not frozen for the rest of the
+    # pass either -- the same rule the ledger follows (ADR-0060).
+    if memo is not None and not verdict.parse_failed:
+        memo[key] = call
+    return call
+
+
+def _gate_provider(client) -> str | None:
+    """Provider label for whichever client served the call. last_provider_used
+    covers a FallbackLLMClient that may have switched; provider_label covers a
+    bare client. Stubs in tests have neither, hence the None."""
+    return getattr(client, "last_provider_used", None) or getattr(client, "provider_label", None)
+
+
+def _gate_model(client) -> str | None:
+    return getattr(client, "last_model_used", None) or getattr(client, "model_label", None)
+
+
+def _ledger_model(client) -> str | None:
+    """Model component of the ledger key (ADR-0067): the label the client was
+    CONFIGURED with, not the name the server reports back. last_model_used is
+    None until the process's first response and then the served name
+    ("Meme-GPT" for the gpt-oss GGUF), so a key built from it changes after
+    the first call — the first prompt of every process would miss once and be
+    re-asked. The configured label is known before any call and stable."""
+    return getattr(client, "model_label", None) or _gate_model(client)
 
 
 def _to_rejected(
     chunk: RetrievedChunk,
     product_id: str,
     matched_concepts: list[str] | None = None,
+    call: _GateCall | None = None,
 ) -> RejectedChunk:
+    verdict = call.verdict if call else None
     return RejectedChunk(
         filename=chunk.filename,
         page_number=chunk.page_number,
         chunk_index=chunk.chunk_index,
         expected_product_id=product_id,
         matched_concepts=matched_concepts or [],
+        gate_failed=bool(verdict and verdict.parse_failed),
+        gate_failure_reason=verdict.failure_reason if verdict else None,
+        gate_provider=call.provider if call else None,
+        gate_model=call.model if call else None,
+        gate_reasoning=call.reasoning if call else None,
+        gate_source=call.source if (call and not call.verdict.parse_failed) else None,
+        gate_prompt_hash=call.prompt_hash if call else None,
     )

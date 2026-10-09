@@ -54,6 +54,48 @@ _RELEVANT_YES = json.dumps({"relevant": True})
 _RELEVANT_NO = json.dumps({"relevant": False})
 
 
+def test_the_same_gate_question_twice_in_one_pass_is_asked_once():
+    """A chunk can reach the gate twice for one product in a single pass: once
+    from ranked[:_MAX_EXAMINED], once as the neighbour of an accepted chunk.
+    The ledger used to absorb that by accident -- 15 repeats in cycle 1's cold
+    run, enough to move Acao 23's score -- so the coherence has to come from
+    code and hold with no ledger configured."""
+    answers = iter([_RELEVANT_YES, _RELEVANT_NO])
+    _set_gate(lambda s, u: next(answers))
+    memo: dict = {}
+    args = ("mesmo texto", "mesma intencao", [])
+    first = es._gate_chunk(*args, memo=memo)
+    second = es._gate_chunk(*args, memo=memo)
+    assert first.verdict.relevant is True
+    assert second.verdict.relevant is True  # the memo answered, not the model
+    assert len(eval_cfg._gate_client.calls) == 1
+
+
+def test_without_a_memo_the_repeated_question_reaches_the_model_again():
+    """The control for the test above: the memo is what fixes the repeat, and
+    omitting it leaves every other caller's behaviour untouched."""
+    answers = iter([_RELEVANT_YES, _RELEVANT_NO])
+    _set_gate(lambda s, u: next(answers))
+    args = ("mesmo texto", "mesma intencao", [])
+    assert es._gate_chunk(*args).verdict.relevant is True
+    assert es._gate_chunk(*args).verdict.relevant is False
+    assert len(eval_cfg._gate_client.calls) == 2
+
+
+def test_a_failed_gate_call_is_not_memoised():
+    """Same rule as the ledger (ADR-0060/0067): a broken call is not an answer,
+    so it must not be frozen for the rest of the pass."""
+    answers = iter(["isto nao e json", _RELEVANT_YES])
+    _set_gate(lambda s, u: next(answers))
+    memo: dict = {}
+    args = ("mesmo texto", "mesma intencao", [])
+    assert es._gate_chunk(*args, memo=memo).verdict.parse_failed is True
+    second = es._gate_chunk(*args, memo=memo)
+    assert second.verdict.parse_failed is False
+    assert second.verdict.relevant is True
+    assert len(eval_cfg._gate_client.calls) == 2
+
+
 @pytest.fixture(autouse=True)
 def _reset_gate_config():
     yield
@@ -84,6 +126,13 @@ def _profile_with_evidence_intent(product_id: str, evidence_intent: str) -> Retr
 
 def _no_neighbors(monkeypatch):
     monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (None, None))
+
+
+def _with_expansion(monkeypatch):
+    """Neighbour expansion is off in production since 2026-10-06 (the question
+    it asks depends on a verdict), but the mechanism is kept switchable for
+    diagnostics -- so the tests that cover it turn it on explicitly."""
+    monkeypatch.setattr(es, "EXPANSION_ENABLED", True)
 
 
 def test_relevant_chunk_is_accepted_as_anchor(monkeypatch):
@@ -148,6 +197,51 @@ def test_anchor_target_caps_at_five(monkeypatch):
     assert len(result.accepted) == 5
 
 
+def test_the_whole_examined_pool_is_gated_whatever_the_verdicts(monkeypatch):
+    """The list of questions must not depend on the answers. The loop used to
+    stop at _ANCHOR_TARGET accepts, so whether candidate #13 was asked at all
+    depended on how many of #1-#12 had been accepted -- and since an accept is
+    close to a coin (38.5% of them changed between two independent passes), a
+    single flip moved the question list itself."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    _no_neighbors(monkeypatch)
+
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    chunks = [
+        (1.0 - i * 0.01, make_chunk(page_number=i, chunk_index=0, text=f"texto distinto {i}"))
+        for i in range(20)
+    ]
+    result = select_evidence(1, "P001", {"1a": chunks})
+
+    assert len(stub.calls) == es._MAX_EXAMINED       # asked, not cut short
+    assert len(result.accepted) == es._ANCHOR_TARGET  # kept, exactly as before
+
+
+def test_the_anchors_kept_are_the_first_accepts_in_rank_order(monkeypatch):
+    """The cap moved from the loop to the accept path, so which chunks are KEPT
+    must not have changed: still the first _ANCHOR_TARGET accepts by rank."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    _no_neighbors(monkeypatch)
+
+    # The two best-ranked candidates are rejected; everything after is accepted.
+    def responder(system, user):
+        return _RELEVANT_NO if ("texto 0" in user or "texto 1" in user) else _RELEVANT_YES
+
+    _set_gate(responder)
+    chunks = [
+        (1.0 - i * 0.01, make_chunk(page_number=i, chunk_index=0, text=f"texto {i}"))
+        for i in range(20)
+    ]
+    result = select_evidence(1, "P001", {"1a": chunks})
+
+    assert [c.page_number for c in result.accepted] == [2, 3, 4, 5, 6]
+    assert len(eval_cfg._gate_client.calls) == es._MAX_EXAMINED
+
+
 def test_max_examined_caps_gate_calls_when_model_keeps_rejecting(monkeypatch):
     """A strict gate model that rejects everything must not traverse the full
     candidate pool — worst-case call count per product is bounded by
@@ -173,6 +267,7 @@ def test_max_examined_caps_gate_calls_when_model_keeps_rejecting(monkeypatch):
 def test_relevant_anchor_triggers_neighbor_expansion(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
+    _with_expansion(monkeypatch)
 
     prev_chunk = make_chunk(page_number=1, chunk_index=0, text="anterior")
     next_chunk = make_chunk(page_number=1, chunk_index=2, text="seguinte")
@@ -190,17 +285,15 @@ def test_relevant_anchor_triggers_neighbor_expansion(monkeypatch):
 def test_rejected_neighbor_is_recorded(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
+    _with_expansion(monkeypatch)
 
     prev_chunk = make_chunk(page_number=1, chunk_index=0, text="anterior irrelevante")
     monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (prev_chunk, None))
 
-    calls = {"n": 0}
-
+    # Keyed on the chunk text rather than the call index, so the test states
+    # which CHUNK is relevant instead of relying on gate call ordering.
     def responder(system, user):
-        calls["n"] += 1
-        if calls["n"] == 1:
-            return _RELEVANT_YES
-        return _RELEVANT_NO
+        return _RELEVANT_YES if "ancora" in user else _RELEVANT_NO
 
     _set_gate(responder)
 
@@ -213,6 +306,7 @@ def test_rejected_neighbor_is_recorded(monkeypatch):
 def test_expansion_target_caps_at_five_per_product(monkeypatch):
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidência de X"))
+    _with_expansion(monkeypatch)
 
     # Each anchor contributes up to 2 neighbors (prev+next); 5 anchors -> up to
     # 10 candidate neighbors, but expansion must cap at 5 total for the product.
@@ -302,6 +396,7 @@ def test_anchor_wins_over_expansion_for_same_physical_chunk(monkeypatch):
     import ingestion.retrieval_profile as _rp
 
     monkeypatch.setattr(_rp, "_store", _two_product_profile())
+    _with_expansion(monkeypatch)
 
     shared_chunk = make_chunk(page_number=5, chunk_index=1, text="ancora e vizinho")
 
@@ -544,6 +639,7 @@ def test_expand_anchors_passes_negative_evidence_patterns_to_gate(monkeypatch):
     )
 
     neighbor = make_chunk(page_number=1, chunk_index=0, text="vizinho")
+    _with_expansion(monkeypatch)
     monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (neighbor, None))
 
     captured = []
@@ -877,3 +973,196 @@ def test_rejected_chunk_carries_matched_concepts(monkeypatch):
 
     assert len(result.rejected) == 1
     assert "viability" in result.rejected[0].matched_concepts
+
+
+def test_gate_receives_sibling_contrast_and_product_tag(monkeypatch):
+    """V5 (ADR-0064) end to end: the production gate call carries the sibling
+    list in the system prompt and the product id next to the chunk in the user
+    prompt. Uses the real IPMP store for Ação 1 (1a..1d), as the other tests here
+    do; the profile is stubbed to a single product."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1c", "objetivos estratégicos"))
+    _no_neighbors(monkeypatch)
+
+    captured = []
+
+    def responder(system, user):
+        captured.append((system, user))
+        return _RELEVANT_YES
+
+    _set_gate(responder)
+    select_evidence(1, "P001", {"1c": [(0.05, make_chunk(text="metas e objetivos"))]})
+
+    system, user = captured[0]
+    assert "Produto Esperado 1c, um dos 4 Produtos Esperados avaliados nesta Ação." in system
+    assert "Os demais Produtos Esperados desta Ação, que NÃO estão em avaliação aqui" in system
+    assert "- 1a — " in system and "- 1b — " in system and "- 1d — " in system
+    assert "- 1c — " not in system
+    assert user.startswith("[Produto Esperado 1c — avalie SOMENTE este critério]\n[Trecho a avaliar]\n")
+
+
+# --- serial, fixed-order gate (ADR-0065) ---
+
+def _profile_1a_1b() -> RetrievalProfileStore:
+    return RetrievalProfileStore(
+        acoes={
+            1: AcaoRetrievalProfile(
+                acao_id=1,
+                profile_maturity="seed",
+                expected_products={
+                    "1a": ExpectedProductProfile(
+                        evidence_intent="evidência de A", retrieval_signal_concepts=[], query_terms=[],
+                    ),
+                    "1b": ExpectedProductProfile(
+                        evidence_intent="evidência de B", retrieval_signal_concepts=[], query_terms=[],
+                    ),
+                },
+            )
+        }
+    )
+
+
+def test_gate_default_is_one_call_in_flight():
+    """ADR-0065: the production default is a serial gate. main.py hands the
+    gate client the same number as its request semaphore."""
+    assert es.GATE_MAX_IN_FLIGHT == 1
+
+
+def test_serial_gate_calls_in_scored_product_order_then_rank_order(monkeypatch):
+    """With one call in flight the call sequence is fixed: products in the
+    order hybrid.py produced them, each product's candidates by RRF rank. The
+    2026-10-02 measurements that found 0/80 unstable chunks used exactly this
+    sequence; a thread pool would interleave it differently on every run."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_1a_1b())
+    _no_neighbors(monkeypatch)
+    monkeypatch.setattr(es, "GATE_MAX_IN_FLIGHT", 1)
+
+    stub = StubGateClient(lambda system, user: _RELEVANT_NO)
+    eval_cfg._gate_client = stub
+
+    cands = {
+        "1a": [(0.9, make_chunk(page_number=1, chunk_index=0, text="a-primeiro")),
+               (0.8, make_chunk(page_number=2, chunk_index=0, text="a-segundo"))],
+        "1b": [(0.95, make_chunk(page_number=3, chunk_index=0, text="b-primeiro")),
+               (0.7, make_chunk(page_number=4, chunk_index=0, text="b-segundo"))],
+    }
+    select_evidence(1, "P001", cands)
+
+    seen = [(("1a" if "Produto Esperado 1a" in u else "1b"), u.split("[Trecho a avaliar]\n")[1])
+            for _, u in stub.calls]
+    assert seen == [("1a", "a-primeiro"), ("1a", "a-segundo"), ("1b", "b-primeiro"), ("1b", "b-segundo")]
+
+
+def test_pooled_gate_gives_the_same_evidence_as_the_serial_gate(monkeypatch):
+    """GATE_MAX_IN_FLIGHT > 1 keeps the thread pool for anyone who wants it
+    back; the selected evidence must not depend on the mode, only its order
+    of calls does."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_1a_1b())
+    _no_neighbors(monkeypatch)
+
+    def responder(system, user):
+        return _RELEVANT_YES if "aceita" in user else _RELEVANT_NO
+
+    cands = {
+        "1a": [(0.9, make_chunk(page_number=1, chunk_index=0, text="aceita isto")),
+               (0.8, make_chunk(page_number=2, chunk_index=0, text="rejeita isto"))],
+        "1b": [(0.95, make_chunk(page_number=3, chunk_index=0, text="rejeita aquilo")),
+               (0.7, make_chunk(page_number=4, chunk_index=0, text="aceita aquilo"))],
+    }
+
+    def run(in_flight: int):
+        monkeypatch.setattr(es, "GATE_MAX_IN_FLIGHT", in_flight)
+        eval_cfg._gate_client = StubGateClient(responder)
+        r = select_evidence(1, "P001", cands)
+        return (
+            sorted((c.page_number, tuple(c.expected_product_ids)) for c in r.accepted),
+            sorted((c.page_number, c.expected_product_id) for c in r.rejected),
+        )
+
+    assert run(1) == run(4)
+    accepted, rejected = run(1)
+    assert accepted == [(1, ("1a",)), (4, ("1b",))]
+    assert rejected == [(2, "1a"), (3, "1b")]
+
+
+# --- expansao de vizinhos desligada em producao (2026-10-06) ---
+
+def test_expansion_is_off_by_default_so_no_question_depends_on_a_verdict(monkeypatch):
+    """With expansion on, a flip on an accept changed WHICH chunks were gated,
+    not just how one was judged. Measured over three clean passes with it off:
+    the per-product n_examined vector repeated 46/46, against 26/46 with it on."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+
+    vizinho = make_chunk(page_number=1, chunk_index=0, text="vizinho do aceito")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    anchor = make_chunk(page_number=1, chunk_index=1, text="ancora aceita")
+    result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+
+    assert len(stub.calls) == 1                                   # so a ancora foi perguntada
+    assert [c.chunk_index for c in result.accepted] == [1]
+    assert not any("vizinho" in c.text for c in result.accepted)
+
+
+def test_expansion_can_be_switched_back_on_for_a_diagnostic(monkeypatch):
+    """The mechanism stays in the tree and switchable: the 23 products that used
+    neighbours were just as unstable without them, so this removed the cascade,
+    not the ambiguity -- and the output with expansion still has to be measurable."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    _with_expansion(monkeypatch)
+
+    vizinho = make_chunk(page_number=1, chunk_index=0, text="vizinho do aceito")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
+    _set_gate(lambda system, user: _RELEVANT_YES)
+
+    anchor = make_chunk(page_number=1, chunk_index=1, text="ancora aceita")
+    result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+
+    assert any("vizinho" in c.text for c in result.accepted)
+
+
+# --- dedup semantico por produto, nao pela Acao inteira (2026-10-06) ---
+
+def test_near_duplicate_is_kept_for_each_product_that_accepted_it(monkeypatch):
+    """The 0.70 dedup ran over the whole Acao and dropped the later chunk
+    without transferring its attribution, so a product could lose its only
+    evidence to a similar chunk accepted by a DIFFERENT product -- and since the
+    score counts evidenced products (ADR-0058), that silently turned a bit off."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _two_product_profile())
+    _no_neighbors(monkeypatch)
+    _set_gate(lambda system, user: _RELEVANT_YES)
+
+    base = "O estudo conclui que ha viabilidade economico-financeira para o projeto " * 3
+    um = make_chunk(page_number=10, chunk_index=0, text=base + "assinado em janeiro.")
+    outro = make_chunk(page_number=77, chunk_index=0, text=base + "assinado em janeiro!")
+
+    result = select_evidence(1, "P001", {"1a": [(0.9, um)], "1c": [(0.8, outro)]})
+
+    paginas = {c.page_number: c.expected_product_ids for c in result.accepted}
+    assert set(paginas) == {10, 77}          # nenhum produto perdeu sua evidencia
+    assert paginas[10] == ["1a"]
+    assert paginas[77] == ["1c"]
+
+
+def test_near_duplicate_within_a_single_product_is_still_dropped(monkeypatch):
+    """Repetition inside one product's own block is still waste: same clause on
+    three pages tells the scorer nothing the first copy did not."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    _no_neighbors(monkeypatch)
+    _set_gate(lambda system, user: _RELEVANT_YES)
+
+    base = "O estudo conclui que ha viabilidade economico-financeira para o projeto " * 3
+    a = make_chunk(page_number=10, chunk_index=0, text=base + "assinado em janeiro.")
+    b = make_chunk(page_number=77, chunk_index=0, text=base + "assinado em janeiro!")
+
+    result = select_evidence(1, "P001", {"1a": [(0.9, a), (0.8, b)]})
+
+    assert [c.page_number for c in result.accepted] == [10]

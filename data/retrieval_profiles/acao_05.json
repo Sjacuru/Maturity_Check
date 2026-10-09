@@ -53,7 +53,12 @@
         },
         {
           "encoding": "near",
-          "tokens": ["declaração", "formal", "fatores", "críticos"],
+          "tokens": [
+            "declaração",
+            "formal",
+            "fatores",
+            "críticos"
+          ],
           "distance": 6,
           "type": "C",
           "provenance": "canonical",
@@ -62,7 +67,12 @@
         },
         {
           "encoding": "near",
-          "tokens": ["listagem", "fatores", "críticos", "sucesso"],
+          "tokens": [
+            "listagem",
+            "fatores",
+            "críticos",
+            "sucesso"
+          ],
           "distance": 6,
           "type": "C",
           "provenance": "canonical",
@@ -79,7 +89,12 @@
         },
         {
           "encoding": "near",
-          "tokens": ["seção", "específica", "fatores", "críticos"],
+          "tokens": [
+            "seção",
+            "específica",
+            "fatores",
+            "críticos"
+          ],
           "distance": 6,
           "type": "C",
           "provenance": "canonical",
@@ -96,7 +111,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["registro", "explícito", "estruturado"],
+          "tokens": [
+            "registro",
+            "explícito",
+            "estruturado"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "canonical",
@@ -105,7 +124,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["estruturada", "objetiva", "fatores"],
+          "tokens": [
+            "estruturada",
+            "objetiva",
+            "fatores"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -114,7 +137,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["FCS", "adaptados", "especificidades"],
+          "tokens": [
+            "FCS",
+            "adaptados",
+            "especificidades"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -131,7 +158,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["fatores", "genéricos", "adaptados"],
+          "tokens": [
+            "fatores",
+            "genéricos",
+            "adaptados"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -140,7 +171,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["gargalo", "projeto"],
+          "tokens": [
+            "gargalo",
+            "projeto"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "canonical",
@@ -165,7 +199,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["cenário", "hipotético", "fracasso"],
+          "tokens": [
+            "cenário",
+            "hipotético",
+            "fracasso"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -174,7 +212,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["fracasso", "empreendimento"],
+          "tokens": [
+            "fracasso",
+            "empreendimento"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "canonical",
@@ -247,7 +288,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["necessidades", "operacionais"],
+          "tokens": [
+            "necessidades",
+            "operacionais"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "canonical",
@@ -256,7 +300,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["alinhamento", "estratégico", "necessidades"],
+          "tokens": [
+            "alinhamento",
+            "estratégico",
+            "necessidades"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -273,7 +321,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["custo-benefício", "alternativas"],
+          "tokens": [
+            "custo-benefício",
+            "alternativas"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "canonical",
@@ -306,7 +357,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["capacidade", "custear"],
+          "tokens": [
+            "capacidade",
+            "custear"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "canonical",
@@ -317,13 +371,17 @@
           "encoding": "phrase",
           "text": "sustentabilidade financeira",
           "type": "A",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "experimental",
           "concept_ref": "funding_capacity"
         },
         {
           "encoding": "near",
-          "tokens": ["capacidade", "pagamento", "tarifa"],
+          "tokens": [
+            "capacidade",
+            "pagamento",
+            "tarifa"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "synthetic",
@@ -333,7 +391,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["subsídio", "governamental", "custeio"],
+          "tokens": [
+            "subsídio",
+            "governamental",
+            "custeio"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "synthetic",
@@ -351,7 +413,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["remoção", "tempestiva", "interferências"],
+          "tokens": [
+            "remoção",
+            "tempestiva",
+            "interferências"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -360,7 +426,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["riscos", "desapropriação"],
+          "tokens": [
+            "riscos",
+            "desapropriação"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "canonical",
@@ -369,7 +438,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["prazos", "responsáveis", "definidos"],
+          "tokens": [
+            "prazos",
+            "responsáveis",
+            "definidos"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -391,12 +464,18 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "systemic_risk",
-          "shared_with_acao": [4],
+          "shared_with_acao": [
+            4
+          ],
           "shared_with_acao_note": "Semanticamente próximo de 'riscos estratégicos' da Ação 4 (produto 4b), mas com função distinta: 4b cataloga sistematicamente os riscos que o projeto pode enfrentar como produto em si; 5b usa 'riscos sistêmicos' apenas como um dos fatores críticos de sucesso a serem descritos e usados na comparação de alternativas — ver negative_evidence_patterns deste produto."
         },
         {
           "encoding": "near",
-          "tokens": ["riscos", "sistêmicos", "projeto"],
+          "tokens": [
+            "riscos",
+            "sistêmicos",
+            "projeto"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "canonical",
@@ -405,7 +484,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["tempo", "capacidade", "executado"],
+          "tokens": [
+            "tempo",
+            "capacidade",
+            "executado"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -422,7 +505,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["enquadramento", "prazo", "capacidade"],
+          "tokens": [
+            "enquadramento",
+            "prazo",
+            "capacidade"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -431,7 +518,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["otimiza", "fatores", "ambientais"],
+          "tokens": [
+            "otimiza",
+            "fatores",
+            "ambientais"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -440,7 +531,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["menor", "interferência", "possível"],
+          "tokens": [
+            "menor",
+            "interferência",
+            "possível"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "canonical",
@@ -462,12 +557,17 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "licensing_expropriation_cost_schedule_impact",
-          "shared_with_acao": [4],
+          "shared_with_acao": [
+            4
+          ],
           "shared_with_acao_note": "Mesmo termo do concept_ref environmental_risk da Ação 4 (produto 4b), com sentido distinto: 4b identifica licenciamento como um RISCO estratégico a ser catalogado; 5b trata licenciamento como um fator que impacta custo/prazo, usado para descrever a capacidade de entrega (FCS) na comparação de alternativas."
         },
         {
           "encoding": "near",
-          "tokens": ["remoção", "interferências"],
+          "tokens": [
+            "remoção",
+            "interferências"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "canonical",
@@ -484,7 +584,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["impactar", "custo", "prazo"],
+          "tokens": [
+            "impactar",
+            "custo",
+            "prazo"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "canonical",
@@ -493,7 +597,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["desapropriação", "custo", "prazo"],
+          "tokens": [
+            "desapropriação",
+            "custo",
+            "prazo"
+          ],
           "distance": 5,
           "type": "C",
           "provenance": "canonical",
@@ -502,7 +610,10 @@
         },
         {
           "encoding": "near",
-          "tokens": ["reassentamento", "involuntário"],
+          "tokens": [
+            "reassentamento",
+            "involuntário"
+          ],
           "distance": 3,
           "type": "C",
           "provenance": "synthetic",
@@ -512,7 +623,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["desapropriação", "faixa", "domínio"],
+          "tokens": [
+            "desapropriação",
+            "faixa",
+            "domínio"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "synthetic",
@@ -522,7 +637,11 @@
         },
         {
           "encoding": "near",
-          "tokens": ["outorga", "recursos", "hídricos"],
+          "tokens": [
+            "outorga",
+            "recursos",
+            "hídricos"
+          ],
           "distance": 4,
           "type": "C",
           "provenance": "synthetic",

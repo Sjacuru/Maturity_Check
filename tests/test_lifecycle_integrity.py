@@ -13,6 +13,7 @@ First-class regression targets:
 from __future__ import annotations
 
 import io
+import json
 import sqlite3
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -379,3 +380,126 @@ def test_get_evaluation_returns_latest_after_force_rerun_adr0026(client, db_path
     # Confirm results match loaded store actions (one per action)
     all_results = client.get("/api/cases/P001/evaluations").json()
     assert len(all_results) == len(get_ipmp_store().acoes)
+
+
+# ── 6. new per-product fields round-trip, old rows still read (2026-09-27) ────
+
+def test_new_per_product_fields_survive_the_raw_json_round_trip(client, db_path):
+    """product_verdicts / product_gate_reports / score_source must reach the API.
+
+    raw_json is the canonical read path (ADR-0025/ADR-0031): the routes return
+    json.loads(raw_json) verbatim, so anything the auditor is meant to see has to
+    be inside that blob, not only on the in-memory model.
+    """
+    _assess(client, "P001")
+
+    stored = json.loads(_get_raw_json(db_path, "P001", 1))
+    assert "product_verdicts" in stored
+    assert "product_gate_reports" in stored
+    assert "score_source" in stored
+
+    served = client.get("/api/cases/P001/evaluations/1").json()
+    assert served["score_source"] == stored["score_source"]
+    assert served["product_verdicts"] == stored["product_verdicts"]
+    assert served["product_gate_reports"] == stored["product_gate_reports"]
+
+
+def test_stub_without_products_is_recorded_as_a_model_sourced_score(client, db_path):
+    """The lifecycle stub returns the pre-2026-09-27 shape, so the fallback path
+    is what this suite exercises — it must be labelled, not silently accepted."""
+    _assess(client, "P001")
+    stored = json.loads(_get_raw_json(db_path, "P001", 1))
+    assert stored["score_source"] == "model"
+    assert stored["product_verdicts"] == []
+    assert stored["uncertainty_flag"] is True
+
+
+def test_evaluation_persisted_before_the_new_fields_still_reads_back(client, db_path):
+    """A raw_json blob with none of the new keys must still be served as-is.
+
+    Nothing migrates these rows and the read path does not re-validate them, so
+    this guards the one way the change could break existing cases.
+    """
+    _assess(client, "P001")
+
+    legacy = json.loads(_get_raw_json(db_path, "P001", 1))
+    for key in ("product_verdicts", "product_gate_reports", "score_source"):
+        legacy.pop(key, None)
+    con = sqlite3.connect(str(db_path))
+    try:
+        con.execute(
+            "UPDATE evaluation_results SET raw_json = ? "
+            "WHERE process_number = ? AND acao_id = ?",
+            (json.dumps(legacy), "P001", 1),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+    resp = client.get("/api/cases/P001/evaluations/1")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "product_verdicts" not in body
+    assert body["proposed_score"] == legacy["proposed_score"]
+
+    listed = client.get("/api/cases/P001/evaluations")
+    assert listed.status_code == 200
+    assert len(listed.json()) >= 1
+
+
+# ── gate verdict overrides (ADR-0067) ─────────────────────────────────────────
+
+def _override(client: TestClient, process_number: str, acao_id: int, **body):
+    payload = {"prompt_hash": "0" * 64, "relevant": True, "justification": "trata do critério"}
+    payload.update(body)
+    return client.post(
+        f"/api/cases/{process_number}/evaluations/{acao_id}/gate-overrides", json=payload
+    )
+
+
+def test_gate_override_503_when_no_ledger_is_configured(client):
+    from evaluation._config import configure_gate_ledger
+
+    configure_gate_ledger(None)
+    _assess(client, "P001")
+    assert _override(client, "P001", 1).status_code == 503
+
+
+def test_gate_override_404_for_unknown_hash_and_422_without_justification(client, db_path):
+    from evaluation._config import configure_gate_ledger
+    from evaluation.gate_ledger import GateLedger
+
+    configure_gate_ledger(GateLedger(db_path))
+    try:
+        _assess(client, "P001")
+        assert _override(client, "P001", 1).status_code == 404
+        assert _override(client, "P001", 1, justification="  ").status_code == 422
+        assert _override(client, "P001", 1, prompt_hash="xyz").status_code == 422
+        assert _override(client, "P999", 1).status_code == 404  # no evaluation for that case
+    finally:
+        configure_gate_ledger(None)
+
+
+def test_gate_override_flips_a_recorded_verdict(client, db_path):
+    from evaluation._config import configure_gate_ledger
+    from evaluation.gate_ledger import GateLedger, prompt_hash
+
+    ledger = GateLedger(db_path)
+    configure_gate_ledger(ledger)
+    try:
+        _assess(client, "P001")
+        key = prompt_hash("m", "low", "sys", "usr")
+        ledger.record(key, relevant=False, reasoning="r", model="m", reasoning_effort="low",
+                      acao_id=1, product_id="1a", process_number="P001")
+        resp = _override(client, "P001", 1, prompt_hash=key, justification="evidência direta")
+        assert resp.status_code == 200, resp.text
+        body = resp.json()
+        assert body["relevant"] is True and body["source"] == "auditor"
+        assert body["override_justification"] == "evidência direta"
+        assert ledger.lookup(key).source == "auditor"
+        # a row recorded for another Ação cannot be overridden through this Ação's route
+        other = prompt_hash("m", "low", "sys2", "usr2")
+        ledger.record(other, relevant=False, reasoning=None, model="m", reasoning_effort="low", acao_id=2)
+        assert _override(client, "P001", 1, prompt_hash=other).status_code == 404
+    finally:
+        configure_gate_ledger(None)

@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-07-01",
+    "last_updated": "2026-10-03",
     "population_stages_completed": [
       "A",
       "B",
@@ -10,6 +10,12 @@
     "stage_b_sources": [
       "SMG-040_101607_2024_1.pdf (Vol.1 — Edital e Memorando de Justificativa)",
       "SMG-040_101607_2024_2.pdf (Vol.2 — Estudo Econômico de Referência, Anexo III)"
+    ],
+    "revisions": [
+      {
+        "date": "2026-10-03",
+        "summary": "1a neg#1: referência a id de produto irmão reescrita como descrição de conteúdo (ADR-0064)."
+      }
     ],
     "scope": "Retrieval profile for IPMP Ação 1. Query terms are in Portuguese to match Brazilian public procurement case documents. Terms derived via Stage A (IPMP concept extraction), Stage B (real-document observation of SMG-040), and Stage C (Rio Manual and acronym cross-reference)."
   },
@@ -49,7 +55,7 @@
           "encoding": "phrase",
           "text": "obsolescência",
           "type": "B",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -149,7 +155,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -161,7 +167,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -173,7 +179,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -185,7 +191,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -193,7 +199,7 @@
           "encoding": "phrase",
           "text": "requalificação",
           "type": "B",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "experimental",
           "concept_ref": "existing_problem"
         },
@@ -249,7 +255,7 @@
           ],
           "distance": 3,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "public_demand"
         },
@@ -305,7 +311,7 @@
           "encoding": "phrase",
           "text": "harmonização contratual",
           "type": "B",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "contract_governance_context"
         },
@@ -325,7 +331,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "contract_governance_context"
         },
@@ -361,7 +367,7 @@
           "encoding": "phrase",
           "text": "término da vigência",
           "type": "B",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -401,7 +407,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -413,7 +419,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -425,7 +431,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -449,7 +455,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "canonical",
+          "provenance": "real_world",
           "status": "experimental",
           "concept_ref": "trigger_event"
         }
@@ -462,7 +468,7 @@
       ],
       "negative_evidence_patterns": [
         "Seções que descrevem apenas características técnicas da solução proposta sem explicar a razão de ser do projeto",
-        "Seções de objetivos estratégicos que descrevem o que o projeto pretende alcançar, e não o problema atual que justifica a intervenção (evidência de produto 1c, não 1a)",
+        "Seções de objetivos estratégicos que descrevem o que o projeto pretende alcançar, e não o problema atual que justifica a intervenção — isso é evidência do produto sobre os objetivos estratégicos, não deste",
         "Passagens que citam 'contrato vigente' apenas em referência às obrigações contratuais em curso, sem relação com vencimento ou gatilho de nova licitação",
         "Itens de matriz de responsabilidades ou riscos contratuais (danos a bens vinculados à concessão, encargos trabalhistas inadimplidos, risco regulatório) que atribuem responsabilidade por eventos entre as partes contratantes — descrevem alocação de risco, não diagnóstico de deficiência operacional ou capacidade insuficiente do serviço existente"
       ]
@@ -631,7 +637,7 @@
       ]
     },
     "1c": {
-      "evidence_intent": "Seção que define explicitamente os objetivos estratégicos do projeto — o conjunto de metas ou propósitos que o projeto visa atingir além da solução técnica imediata.",
+      "evidence_intent": "Seção que define explicitamente os objetivos estratégicos do projeto — o conjunto de metas ou propósitos que o projeto visa atingir além da solução técnica imediata, em questões sociais, ambientais, culturais, geográficas, éticas e/ou políticas.",
       "retrieval_signal_concepts": [
         {
           "key": "strategic_objectives",
@@ -639,11 +645,7 @@
         },
         {
           "key": "public_interest_goals",
-          "text": "Metas de interesse público: segurança, modernização tecnológica, inclusão social, cobertura geográfica"
-        },
-        {
-          "key": "risk_framework",
-          "text": "Matriz de riscos e alocação de responsabilidades entre as partes"
+          "text": "Metas de interesse público em questões sociais, ambientais, culturais, geográficas, éticas ou políticas: segurança, modernização tecnológica, inclusão social, cobertura geográfica"
         },
         {
           "key": "policy_compliance",
@@ -700,14 +702,6 @@
           "concept_ref": "public_interest_goals"
         },
         {
-          "encoding": "phrase",
-          "text": "matriz de risco",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "risk_framework"
-        },
-        {
           "encoding": "near",
           "tokens": [
             "objetivos",
@@ -730,23 +724,10 @@
           "provenance": "real_world",
           "status": "active",
           "concept_ref": "public_interest_goals"
-        },
-        {
-          "encoding": "near",
-          "tokens": [
-            "alocação",
-            "risco"
-          ],
-          "distance": 5,
-          "type": "C",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "risk_framework"
         }
       ],
       "evidence_logic_patterns": [
         "Seção que lista os objetivos que o projeto busca alcançar além da solução técnica: segurança pública, modernização tecnológica, cobertura geográfica, inclusão social",
-        "Matriz ou tabela de riscos com definição dos riscos contratuais e sua alocação entre as partes (concessionária, poder concedente, compartilhado)",
         "Referência explícita à conformidade com políticas gerais do município ou diretrizes governamentais"
       ],
       "negative_evidence_patterns": [
@@ -754,7 +735,7 @@
       ]
     },
     "1d": {
-      "evidence_intent": "Seção que demonstra alinhamento do projeto com instrumentos de planejamento formais: PPA, LOA, LDO, Plano Estratégico Municipal, legislação de concessões, ou programas governamentais vigentes.",
+      "evidence_intent": "Seção que demonstra alinhamento e aderência do projeto às políticas públicas e às estratégias do setor em médio e longo prazos, nos níveis internacional, nacional, regional, local e setorial: instrumentos oficiais de planejamento federal (PNL, PDE, Plansab, PNLP, Plano Aeroviário Nacional, PNH, entre outros, quando aplicável), PPA, LOA, LDO, Plano Estratégico Municipal, legislação de concessões ou programas governamentais vigentes.",
       "retrieval_signal_concepts": [
         {
           "key": "municipal_planning_alignment",
@@ -771,6 +752,10 @@
         {
           "key": "sectoral_program_alignment",
           "text": "Integração com programas setoriais municipais de mobilidade urbana ou infraestrutura urbana"
+        },
+        {
+          "key": "federal_sectoral_planning_instruments",
+          "text": "Aderência a instrumentos oficiais de planejamento federal e setorial nomeados pelo critério: Plano Nacional de Logística (PNL), Plano Decenal de Expansão de Energia (PDE), Plano Nacional de Saneamento Básico (Plansab), Plano Nacional de Logística Portuária (PNLP), Plano Aeroviário Nacional, Plano Nacional de Hidrovias (PNH)"
         }
       ],
       "query_terms": [
@@ -866,6 +851,94 @@
           "provenance": "real_world",
           "status": "active",
           "concept_ref": "legal_framework"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plano Nacional de Logística",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plano Decenal de Expansão de Energia",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plano Nacional de Saneamento Básico",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plano Nacional de Logística Portuária",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plano Aeroviário Nacional",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plano Nacional de Hidrovias",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "Plansab",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "PNL",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "PDE",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "PNLP",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "federal_sectoral_planning_instruments"
+        },
+        {
+          "encoding": "phrase",
+          "text": "PNH",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "experimental",
+          "concept_ref": "federal_sectoral_planning_instruments"
         }
       ],
       "evidence_logic_patterns": [
@@ -875,7 +948,8 @@
         "Nota: para concessões de mobiliário urbano, o alinhamento é com planejamento municipal — a ausência de referências a planos nacionais setoriais (PNL, PDE, Plansab) é esperada e não configura não atendimento"
       ],
       "negative_evidence_patterns": [
-        "Citação isolada de planos nacionais setoriais sem correspondência com o setor de mobiliário urbano (PNL, PDE, Plansab, PNLP são inaplicáveis a este setor)"
+        "Citação isolada de planos nacionais setoriais sem correspondência com o setor de mobiliário urbano (PNL, PDE, Plansab, PNLP são inaplicáveis a este setor)",
+        "Sigla de instrumento federal usada em outro sentido no documento — notadamente PDE como Plano Diretor Estratégico municipal, e não como Plano Decenal de Expansão de Energia"
       ]
     }
   }

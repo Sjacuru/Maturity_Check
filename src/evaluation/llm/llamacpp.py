@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from dataclasses import dataclass
 
 from evaluation.progress import report
 
@@ -50,6 +51,38 @@ class LlamaCppTimeout(Exception):
     """
 
 
+@dataclass(frozen=True)
+class LlamaCppCompletion:
+    """One chat completion with the fields the audit trail keeps besides the
+    answer. `reasoning` is gpt-oss's analysis channel as the server returns it
+    (`message.reasoning_content`): produced BEFORE the schema-constrained
+    answer, so reading it changes nothing about the generation. For the
+    relevance gate it is the only justification that exists — the schema has
+    one boolean (ADR-0053), and a free-text reason inside the schema is what
+    ADR-0053 abandoned. None when the server sends no such field."""
+
+    content: str
+    reasoning: str | None = None
+    finish_reason: str | None = None
+    completion_tokens: int | None = None
+    model: str | None = None
+
+
+class LlamaCppTruncated(Exception):
+    """The server stopped because it hit the token cap (finish_reason="length").
+
+    Distinct from the availability failures above: the server answered, it just
+    could not finish. For gpt-oss the grammar-constrained JSON is emitted on the
+    final channel AFTER an unconstrained reasoning channel, so a cap that fires
+    mid-reasoning yields empty or partial content — which json.loads() then
+    rejects. Before this exception existed, that outcome reached
+    parse_relevance_response() and became relevant=False: a truncated call was
+    indistinguishable from a genuine "not relevant" verdict, silently, with no
+    log and no counter (2026-09-27 diagnosis). Deliberately NOT one of
+    _PRIMARY_FAILURES in fallback.py — swapping providers cannot fix a token cap.
+    """
+
+
 class LlamaCppBusy(Exception):
     """HTTP 429/503 — server explicitly reports it cannot serve the request
     right now (e.g. all inference slots occupied). Not retried inside
@@ -76,10 +109,30 @@ class LlamaCppClient:
         retry_interval: float = _RETRY_INTERVAL_SECONDS,
         max_concurrent_requests: int = _DEFAULT_MAX_CONCURRENT_REQUESTS,
         max_tokens: int | None = None,
+        reasoning_effort: str | None = None,
+        cache_prompt: bool | None = None,
         transport=None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._model = model
+        # gpt-oss reasoning level ("low" / "medium" / "high"), a MODEL setting
+        # passed through the chat template, not a server internal. None sends
+        # nothing and leaves the server's default (medium). The gate runs at
+        # "low" since ADR-0065: at medium, one prompt had up to 8 distinct
+        # verdict trajectories in 8 passes under 4 concurrent calls and still
+        # 2-3 states with one call in flight; at low with one call in flight
+        # the same chunks were 0/80 unstable across Acoes 14, 22 and 3, with
+        # every true positive kept and ~2.5x fewer completion tokens.
+        self.reasoning_effort = reasoning_effort
+        # Server-internal KV-prefix reuse. None (the default, and what
+        # production runs) sends no key at all, so the request is byte-identical
+        # to the frozen configuration and the server's own default applies.
+        # False is for a diagnostic that was explicitly asked to run with no
+        # cache of anything; it costs prefill time and was measured on
+        # 2026-10-02 NOT to improve stability in this cell (serial + low:
+        # 0/40 oscillating either way).
+        self.cache_prompt = cache_prompt
+        self.max_concurrent_requests = max_concurrent_requests
         self._connect_timeout = connect_timeout
         self._read_timeout = read_timeout
         self._max_timeout_retries = max_timeout_retries
@@ -102,13 +155,49 @@ class LlamaCppClient:
         # in production — httpx.Client uses its normal transport.
         self._transport = transport
         self.model_label = model
+        # Provider label for per-call audit trails. A bare client (the GPU-only
+        # wiring in main.py) is read via getattr by callers that also accept a
+        # FallbackLLMClient's last_provider_used.
+        self.provider_label = "llamacpp"
         self.last_model_used: str | None = None
 
+    def health_check(self, timeout: float | None = None) -> None:
+        """Probe /health. Raises LlamaCppUnavailable/LlamaCppTimeout if the
+        server is not ready.
+
+        Used as a run preflight: with the GPU-only wiring there is no fallback,
+        so a full assessment must fail in seconds with a clear message rather
+        than paying a connect timeout per Ação on a server that is switched off.
+        """
+        import httpx
+
+        probe = timeout if timeout is not None else self._connect_timeout
+        try:
+            with httpx.Client(timeout=probe, transport=self._transport) as client:
+                response = client.get(f"{self._base_url}/health")
+        except httpx.ConnectError as exc:
+            raise LlamaCppUnavailable(str(exc)) from exc
+        except (httpx.ConnectTimeout, httpx.ReadTimeout) as exc:
+            raise LlamaCppTimeout(str(exc)) from exc
+        if response.status_code in (429, 503):
+            raise LlamaCppBusy(f"HTTP {response.status_code}")
+        response.raise_for_status()
+
     def complete(self, system: str, user: str, schema: dict | None = None) -> str:
+        return self.complete_detailed(system, user, schema).content
+
+    def complete_detailed(
+        self, system: str, user: str, schema: dict | None = None
+    ) -> LlamaCppCompletion:
+        """Same call as complete(), returning the answer together with the
+        model's reasoning channel and the usage fields (see LlamaCppCompletion).
+        Callers that only need the answer keep using complete()."""
         with self._semaphore:
             return self._complete_locked(system, user, schema)
 
-    def _complete_locked(self, system: str, user: str, schema: dict | None) -> str:
+    def _complete_locked(
+        self, system: str, user: str, schema: dict | None
+    ) -> LlamaCppCompletion:
         import httpx
 
         payload: dict = {
@@ -127,6 +216,10 @@ class LlamaCppClient:
             }
         if self._max_tokens is not None:
             payload["max_tokens"] = self._max_tokens
+        if self.reasoning_effort is not None:
+            payload["chat_template_kwargs"] = {"reasoning_effort": self.reasoning_effort}
+        if self.cache_prompt is not None:
+            payload["cache_prompt"] = self.cache_prompt
 
         timeout = httpx.Timeout(
             connect=self._connect_timeout,
@@ -184,7 +277,42 @@ class LlamaCppClient:
 
             body = response.json()
             self.last_model_used = body.get("model") or self._model
-            return body["choices"][0]["message"]["content"]
+            choice = body["choices"][0]
+            finish_reason = choice.get("finish_reason")
+            message = choice["message"]
+            content = message["content"]
+            # llama.cpp puts gpt-oss's analysis channel in reasoning_content;
+            # older builds used "reasoning". Absent for models without one.
+            reasoning = message.get("reasoning_content")
+            if reasoning is None:
+                reasoning = message.get("reasoning")
+            usage = body.get("usage") or {}
+            if finish_reason == "length":
+                logger.warning(
+                    "llama.cpp stopped at the token cap (finish_reason=length): "
+                    "max_tokens=%s completion_tokens=%s content_chars=%d — the "
+                    "response is incomplete and must not be parsed as a verdict.",
+                    self._max_tokens,
+                    usage.get("completion_tokens"),
+                    len(content or ""),
+                )
+                report(
+                    "chamando_llm",
+                    f"Resposta truncada no limite de tokens "
+                    f"(max_tokens={self._max_tokens}) — descartada.",
+                    "warning",
+                )
+                raise LlamaCppTruncated(
+                    f"finish_reason=length (max_tokens={self._max_tokens}, "
+                    f"completion_tokens={usage.get('completion_tokens')})"
+                )
+            return LlamaCppCompletion(
+                content=content,
+                reasoning=reasoning if isinstance(reasoning, str) else None,
+                finish_reason=finish_reason,
+                completion_tokens=usage.get("completion_tokens"),
+                model=self.last_model_used,
+            )
 
         # Unreachable — the loop above always returns or raises — kept only
         # to satisfy static analysis that complete() always returns/raises.
