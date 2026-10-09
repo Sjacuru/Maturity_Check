@@ -40,6 +40,12 @@
               <span v-if="evaluation.score_source === 'computed'">· score contado em código</span>
               <span v-else class="text-warning">· score informado pelo modelo</span>
             </div>
+            <!-- ADR-0070: a counted 3 capped to 1 because a prerequisite Ação
+                 came out 0 / sem evidência in this run. The count stays visible. -->
+            <div v-if="dependencyCap && dependencyCap.applied" class="text-caption font-weight-medium">
+              Score contado: {{ dependencyCap.score_before_cap }} · limitado a
+              {{ evaluation.proposed_score }} por dependência não atendida
+            </div>
             <!-- The deterministic interval: same input gives the same score AND
                  the same interval, so showing it costs no reproducibility. -->
             <div v-if="showScoreInterval" class="text-caption font-weight-medium">
@@ -116,23 +122,51 @@
         não pôde ser contada em código — o score exibido é o que o próprio modelo informou.
       </v-alert>
 
+      <!-- ADR-0070: the dependency cap. The citing Ação cannot receive 3 when
+           a prerequisite Ação was found in 0 / sem evidência — "não há revisão
+           ou confirmação do que não foi feito". Arithmetic over this run's own
+           scores; the scorer never sees it. -->
+      <v-alert
+        v-if="dependencyCap && dependencyCap.applied"
+        type="warning"
+        variant="tonal"
+        density="compact"
+        class="mb-4"
+        title="Score limitado por dependência"
+      >
+        {{ dependencyCap.explanation }}
+        <div class="text-caption mt-2">
+          O score contado ({{ dependencyCap.score_before_cap }}) e os vereditos por produto
+          continuam visíveis abaixo. Se a Ação citada for revisada, este teto não muda
+          sozinho — decida na revisão desta Ação.
+        </div>
+      </v-alert>
+
       <!-- The auditor signal (decided 2026-10-05): review is OPTIONAL. The
            system states what happened inside its own process and the auditor
            decides whether to touch the score. Deliberately NOT an action on the
            gate — the only intervention point is the final score, below. -->
       <v-alert
-        v-if="scoreMargin && scoreMargin.review_recommended"
+        v-if="reviewRecommended"
         type="info"
         variant="tonal"
         density="compact"
         class="mb-4"
         title="Revisão sugerida (opcional)"
       >
-        {{ scoreMargin.explanation }}
-        <div class="text-caption mt-2">
-          Aceites do gate não são constantes entre passadas, e um produto sustentado por um
-          único trecho perde seu veredito se aquele trecho não for aceito. A decisão é sua:
-          mantenha ou altere o score na revisão abaixo.
+        <div v-if="scoreMargin && scoreMargin.review_recommended">
+          {{ scoreMargin.explanation }}
+          <div class="text-caption mt-2">
+            Aceites do gate não são constantes entre passadas, e um produto sustentado por um
+            único trecho perde seu veredito se aquele trecho não for aceito. A decisão é sua:
+            mantenha ou altere o score na revisão abaixo.
+          </div>
+        </div>
+        <!-- ADR-0070: the citing Ação is a later version of the same document
+             whose initial version was not evidenced — a gate inconsistency to
+             look at, never a cap. -->
+        <div v-if="dependencyCap && dependencyCap.review_recommended" :class="{ 'mt-2': scoreMargin && scoreMargin.review_recommended }">
+          {{ dependencyCap.explanation }}
         </div>
       </v-alert>
 
@@ -535,6 +569,16 @@ const evidencedCount = computed(() => productVerdicts.value.filter((v) => v.evid
 // Deterministic score margin (2026-10-05). Absent on rows persisted earlier, so
 // every read goes through this guard and the whole block stays hidden for them.
 const scoreMargin = computed(() => props.evaluation.score_margin ?? null)
+
+// Dependency cap (ADR-0070). Absent on rows persisted before 2026-10-09 and on
+// the no-evidence exit, so every read goes through this guard.
+const dependencyCap = computed(() => props.evaluation.dependency_cap ?? null)
+
+const reviewRecommended = computed(
+  () =>
+    Boolean(scoreMargin.value?.review_recommended) ||
+    Boolean(dependencyCap.value?.review_recommended)
+)
 
 const marginByProduct = computed(() => {
   const map = new Map()

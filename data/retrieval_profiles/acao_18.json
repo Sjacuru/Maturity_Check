@@ -13,11 +13,11 @@
   "profile_maturity": "seed",
   "expected_products": {
     "18a": {
-      "evidence_intent": "Seção que revisita a lista de opções desenvolvida na Ação 6 (Proposta Inicial de Investimento), confirmando-a ou ajustando-a, como ponto de partida direto para a análise econômica detalhada desta Ação.",
+      "evidence_intent": "Seção que revisita a lista de opções desenvolvida na Proposta Inicial de Investimento (Estrutura de Opções), confirmando-a ou ajustando-a, como ponto de partida direto para a análise econômica detalhada desta Ação.",
       "retrieval_signal_concepts": [
         {
           "key": "options_list_revision",
-          "text": "Revisão da lista de opções desenvolvida na Proposta Inicial de Investimento (Ação 6), com confirmação ou ajustes"
+          "text": "Revisão da lista de opções desenvolvida na Proposta Inicial de Investimento (Estrutura de Opções), com confirmação ou ajustes"
         },
         {
           "key": "retained_options_as_basis",

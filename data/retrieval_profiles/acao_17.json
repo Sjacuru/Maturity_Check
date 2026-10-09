@@ -18,7 +18,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "17a": {
-      "evidence_intent": "Seção que identifica alterações no contexto estratégico do projeto desde a avaliação inicial (Ações 1 a 4) — mudanças em políticas públicas, no ambiente socioeconômico, ou o surgimento de novas necessidades que impactam a justificativa originalmente estabelecida.",
+      "evidence_intent": "Seção que identifica alterações no contexto estratégico do projeto desde a avaliação estratégica inicial (contexto, objetivos, escopo potencial, benefícios e riscos) — mudanças em políticas públicas, no ambiente socioeconômico, ou o surgimento de novas necessidades que impactam a justificativa originalmente estabelecida.",
       "retrieval_signal_concepts": [
         {
           "key": "formal_revision_document_anchor",
@@ -325,7 +325,7 @@
       ]
     },
     "17c": {
-      "evidence_intent": "Conclusão fundamentada e documentada de que não houve modificação no cenário estratégico desde a avaliação inicial, reiterando-se as convicções estabelecidas nas Ações 1 a 4.",
+      "evidence_intent": "Conclusão fundamentada e documentada de que não houve modificação no cenário estratégico desde a avaliação inicial, reiterando-se as convicções estabelecidas na avaliação estratégica inicial.",
       "retrieval_signal_concepts": [
         {
           "key": "no_change_confirmation",

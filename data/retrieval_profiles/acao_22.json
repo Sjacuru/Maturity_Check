@@ -15,7 +15,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "22.1": {
-      "evidence_intent": "Documento com definição fundamentada da estrutura contratual final para a alternativa selecionada na Ação 20, indicando tipo de contratação, critérios de julgamento, formas de apresentação de preços e regime de contratação (NLLC) definitivamente adotado, formalizados em documento preparatório (ETP ou termo de referência).",
+      "evidence_intent": "Documento com definição fundamentada da estrutura contratual final para a alternativa selecionada como Opção Mais Vantajosa, indicando tipo de contratação, critérios de julgamento, formas de apresentação de preços e regime de contratação (NLLC) definitivamente adotado, formalizados em documento preparatório (ETP ou termo de referência).",
       "retrieval_signal_concepts": [
         {
           "key": "final_contractual_structure_definition",

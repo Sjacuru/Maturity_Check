@@ -165,6 +165,12 @@ _Avoid_: distance to threshold, slack, headroom
 **Score Interval**: The pair `[score_floor, score_ceiling]` reported with a **Proposed Score**. The ceiling is the proposed score — no upward claim is made, since a new accept appearing depends on the scorer. The floor is the score that would result if every **Fragile Product**'s bit turned off at once, and is absent (not 0) when no accepted chunk would remain, because the Ação would then come out `no_evidence_found`.
 _Avoid_: score range, min/max score, error bar
 
+**Dependência**: A typed edge from a citing Ação to an Ação its IPMP text names, recorded in `data/ipmp/dependencias.json` with the citing sentence. Only two of the eight types have an effect: `pre` (the cited Ação is an input the citing one builds on) raises the **Dependency Cap**; `artefato` (the citing Ação is the later version of the same document) raises a review signal. `fraco`, `sucessora`, `contraste`, `delega`, `sequencia` and `lacuna` document the reading and do nothing (ADR-0070).
+_Avoid_: cross-reference, citation, prerequisite (that is the `pre` type, not the edge in general), link
+
+**Dependency Cap**: The rule that an Ação whose `pre` **Dependência** was found in 0 / `no_evidence_found` in the same run cannot receive 3: a counted 3 becomes 1, with the counted score kept in `score_before_cap`. Arithmetic over the run's own proposed scores, applied after the counted score and never sent to the scorer; a **Review Outcome** on the cited Ação does not propagate (ADR-0070).
+_Avoid_: penalty, downgrade, cascade, dependency check (the gate does no such check)
+
 **Operational continuity**: The property of the ingestion module that allows the system to start and run even when individual source-of-truth artifacts have non-fatal Pydantic validation failures, provided fatal integrity errors are absent.
 _Avoid_: fault tolerance, resilience, degraded mode, graceful degradation
 
@@ -202,6 +208,7 @@ _Avoid_: manual override, correction, human correction
 - An **EvaluationResult** carries the proposed **Maturity Score**, full audit trail, and three orthogonal status flags for the **Auditor**
 - An **EvaluationResult** also carries one **Score Margin**: one entry per **Expected Product**, the Ação's **Band Margin**, and the **Score Interval** around the proposed score
 - A **Fragile Product** is the unit the **Score Interval**'s floor is computed from; an Ação is signalled for optional **Auditor** review only when a Fragile Product's fall would change the band
+- An **EvaluationResult** may carry one **Dependency Cap**, derived from the **EvaluationResult**s of the Ações its `pre` and `artefato` **Dependência**s cite, which precede it in the run; an `artefato` dependência found empty while its later version is evidenced only adds to the optional review signal
 - The **Auditor** validates the system's proposed **Maturity Score** for each **Ação** before it is accepted
 - The **assessment module** orchestrates extraction, retrieval, and evaluation for one Case and returns an **EvaluationResult** per Ação
 - The **Auditor** produces one **Review Outcome** per **EvaluationResult**, carrying the **Final Score**

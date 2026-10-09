@@ -22,7 +22,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "14a": {
-      "evidence_intent": "Benefícios públicos esperados do projeto (econômicos, sociais e ambientais), categorizados e ilustrados com exemplos concretos, como primeira entrada de um documento/tabela dedicado à gestão dos benefícios que retoma os benefícios já identificados na Ação 4.",
+      "evidence_intent": "Benefícios públicos esperados do projeto (econômicos, sociais e ambientais), categorizados e ilustrados com exemplos concretos, como primeira entrada de um documento/tabela dedicado à gestão dos benefícios que retoma os benefícios estratégicos já identificados na fase de diagnóstico.",
       "retrieval_signal_concepts": [
         {
           "key": "expected_public_benefit_categories",

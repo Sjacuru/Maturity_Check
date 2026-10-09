@@ -15,11 +15,11 @@
   "profile_maturity": "observed",
   "expected_products": {
     "33a": {
-      "evidence_intent": "Partes interessadas já identificadas na Ação 13 e novas que podem ter surgido, que poderão ser afetadas pela alternativa escolhida, com nível de influência atualizado, incluindo categorias específicas de grupos vulneráveis (povos originários, quilombolas, famílias a reassentar, proprietários desapropriados, sítios arqueológicos, áreas de preservação ambiental).",
+      "evidence_intent": "Partes interessadas já identificadas no levantamento inicial e novas que podem ter surgido, que poderão ser afetadas pela alternativa escolhida, com nível de influência atualizado, incluindo categorias específicas de grupos vulneráveis (povos originários, quilombolas, famílias a reassentar, proprietários desapropriados, sítios arqueológicos, áreas de preservação ambiental).",
       "retrieval_signal_concepts": [
         {
           "key": "finalized_stakeholder_identification_with_new_groups",
-          "text": "Partes interessadas já identificadas na Ação 13 e novas que podem ter surgido, que poderão ser afetadas pela alternativa escolhida, com nível de influência"
+          "text": "Partes interessadas já identificadas no levantamento inicial e novas que podem ter surgido, que poderão ser afetadas pela alternativa escolhida, com nível de influência"
         },
         {
           "key": "expanded_vulnerable_group_categories",

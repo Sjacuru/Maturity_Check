@@ -457,7 +457,7 @@
         },
         {
           "key": "fcs_alignment_check",
-          "text": "Verificação de que as opções selecionadas atendem aos Fatores Críticos de Sucesso previamente declarados (Ação 5)"
+          "text": "Verificação de que as opções selecionadas atendem aos Fatores Críticos de Sucesso previamente declarados para o projeto"
         }
       ],
       "query_terms": [

@@ -15,7 +15,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "2a": {
-      "evidence_intent": "Seção que define objetivos específicos vinculados aos objetivos estratégicos da Ação 1, com justificativa do gasto de recursos públicos associado a cada objetivo.",
+      "evidence_intent": "Seção que define objetivos específicos vinculados aos objetivos estratégicos definidos para o projeto, com justificativa do gasto de recursos públicos associado a cada objetivo.",
       "retrieval_signal_concepts": [
         {
           "key": "specific_objectives",
@@ -213,7 +213,7 @@
       ]
     },
     "2b": {
-      "evidence_intent": "Seção que descreve, para cada objetivo específico, o resultado esperado e como ele evidencia a resolução do problema identificado na Ação 1.",
+      "evidence_intent": "Seção que descreve, para cada objetivo específico, o resultado esperado e como ele evidencia a resolução do problema que motivou o projeto.",
       "retrieval_signal_concepts": [
         {
           "key": "expected_results",

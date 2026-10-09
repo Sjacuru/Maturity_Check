@@ -29,7 +29,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "4a": {
-      "evidence_intent": "Seção que descreve os benefícios estratégicos que o projeto poderá gerar, diretamente relacionados às necessidades (Ação 2) e ao escopo potencial (Ação 3) já delineados — inclui benefícios econômicos, sociais, ambientais e/ou operacionais.",
+      "evidence_intent": "Seção que descreve os benefícios estratégicos que o projeto poderá gerar, diretamente relacionados às necessidades diagnosticadas e ao escopo potencial já delineados para o projeto — inclui benefícios econômicos, sociais, ambientais e/ou operacionais.",
       "retrieval_signal_concepts": [
         {
           "key": "economic_benefits",
@@ -49,7 +49,7 @@
         },
         {
           "key": "benefit_traceability",
-          "text": "Vínculo explícito entre os benefícios descritos e as necessidades/escopo potencial já definidos nas ações anteriores"
+          "text": "Vínculo explícito entre os benefícios descritos e as necessidades/escopo potencial já definidos para o projeto"
         }
       ],
       "query_terms": [

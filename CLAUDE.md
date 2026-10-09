@@ -87,7 +87,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (69 filled, next: 0070-)
+│   ├── adr/                     ← Architecture Decision Records (70 filled, next: 0071-)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -138,7 +138,8 @@ Maturity_Check/
 │   │   ├── __init__.py          ← sole public surface
 │   │   ├── ipmp.py              ← IPMP models + get_ipmp_store()
 │   │   ├── rio_manual.py        ← Rio Manual models + get_rio_manual_store()
-│   │   └── acronyms.py          ← get_acronym_store()
+│   │   ├── acronyms.py          ← get_acronym_store()
+│   │   └── dependencias.py      ← get_dependency_store(): typed cross-Ação edges (ADR-0070)
 │   ├── extraction/              ← Module 2 (COMPLETE — issues #6–10)
 │   │   ├── __init__.py          ← sole public surface: Chunk, extract_document
 │   │   ├── chunk.py             ← Chunk pydantic.BaseModel (9 fields)
@@ -165,6 +166,7 @@ Maturity_Check/
 │   │   ├── evidence_selection.py ← select_evidence(): relevance gate, serial (GATE_MAX_IN_FLIGHT=1), _MAX_EXAMINED=16
 │   │   ├── gate_ledger.py       ← GateLedger: gate_verdicts table, first verdict wins, auditor override (ADR-0067)
 │   │   ├── margin.py           ← compute_score_margin(): band_margin + score floor, deterministic (2026-10-05)
+│   │   ├── dependency_cap.py   ← compute/apply_dependency_cap(): no 3 when a `pre` dependency was not done (ADR-0070)
 │   │   ├── interfaces/
 │   │   │   └── contracts.py     ← EvaluationResult (21 fields, 3 flag invariants) + ScoreMargin/ProductMargin
 │   │   ├── llm/
@@ -192,6 +194,7 @@ Maturity_Check/
 ├── main.py                      ← runtime entry point: configure → init_db → create_app
 └── data/
     ├── ipmp/
+    │   ├── dependencias.json    ← 54 typed citation edges between Ações, with the IPMP sentence (ADR-0070)
     │   ├── acao_01.json         ← complete (Phase 1 scope)
     │   └── acao_02.json         ← complete (scaling test case, 2026-08-21)
     ├── rio_manual/
@@ -206,6 +209,17 @@ Maturity_Check/
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-09 (58th pass) — THE DEPENDENCY CAP BUILT AND MEASURED (ADR-0070) on the user's decisions; the 25 dangling cross-Ação references in profiles and the 6 in IPMP product texts REWRITTEN AS CONTENT (P1c, text only); P1a sibling-text measurement STILL IN FLIGHT on the GPU (ETA ~14:30). Fast suite 629 (587 + 42). Nothing committed since `d7b9311`. Portuguese from here.**
+
+- **User decisions (message B, 2026-10-09), each applied as stated**: 1.4/P1c → *"ok para alteração de texto proposta, sem GPU"*, *"reescrever as PRÉ como conteúdo, só texto"*; 2.6 → *"pode implementar, à exceção de 'Intervalo do ADR-0068 estendido'"* (cosmetic — NOT done); (i) adopt the cap → *"Sim"*; (ii) FRACO edges → *"Não"*; (iii) same-artefact pairs → *"Revisão"*; (iv) 39/44 dependencies → *"pode ser"*; (v) basis → *"Ambos, medir consequências e risco de acréscimo excessivo"*; and *"Verifique se o processo que acessa a GPU realmente vai demorar todo esse tempo"* → verified: the 0.85 s/call came from item 4 on THIS GPU server (2026-10-07), the live rate is 0.58–0.71 s/call; the drift is prompt size (later Ações have more siblings), ETA moved from ~15:00 to ~14:30.
+- **P1c done, text only, no GPU**: `$W/reescreve_refs.py` (idempotent; asserts occurrence counts; re-parses JSON) rewrote 25 references in 16 profiles (`acao_{02,03,04,06,08,14,15,17,18,19,20,21,22,33,34,35}.json` — intents and concepts only; negative patterns that name an Ação as a CONTRAST were left, e.g. 19b's pattern at line 235) and 6 parenthetical glosses in `data/ipmp/acao_{02,03,04,33,34,35}.json` (e.g. 2a "da ação anterior (os objetivos estratégicos definidos para o projeto)"). Dangling occurrences 130 → 106 (QUOTE 7, CRIT/negativo 84, IRMAO 15); intent/concept = 0. Not measured: the ledger pre-screen had shown the gate engaging them in 1.4 % with 0 accepts, so the expected effect is below what a measurement could see.
+- **ADR-0070 — the cap, built end to end**: `data/ipmp/dependencias.json` (54 typed edges with the IPMP sentence: `pre` 18, `artefato` 19, `fraco` 6, `sucessora` 3, `contraste` 3, `delega` 2, `sequencia` 1, `lacuna` 2 — 43's two edges, because the IPMP's own Atendido example for 43 has 28 NOT done and 43 doing it); `src/ingestion/dependencias.py` (`Dependencia`/`DependencyStore`/`get_dependency_store()`; the loader refuses self-edges, duplicates, forward `pre`/`artefato` edges and a product scope outside the citing Ação); `src/evaluation/dependency_cap.py` (`compute_dependency_cap` → `DependencyCap{applied, score_before_cap, review_recommended, dependencies[], explanation}`, `apply_dependency_cap` clips the ADR-0068 interval to ≤ 1 and never raises a score); `EvaluationResult.dependency_cap` (default None, ADR-0031 read path untouched — legacy-row test extended); `evaluate(..., prior_results=)` applies it AFTER the counted score and never touches a prompt byte (tested by byte identity with/without priors — the IPMP's own text for Ação 3 legitimately says "na Ação 2", so a word-absence test was wrong); `AssessmentService` and `reproducibility.py` pass the run's prior results; `AcaoPanel.vue` shows "Score contado 3 · limitado a 1 por dependência", a warning alert with the explanation, and the artefato line inside the existing "Revisão sugerida (opcional)" alert (`npm run build` clean). Unknown cited state (not evaluated, parse_failed, absent) never caps.
+- **Measured "ambos" (no GPU, `$W/teto_ambos.py` → `$W/acc/teto_ambos.txt`, 13 real runs of SMG-040 = d1–d3 + acc_run1–10)**: base PROPOSTA → the cap bites in **1/13 runs, only Ação 3** (3→2 `pre`, when Ação 2 oscillates to 0). Base FINAL (cascade) → one review of Ação 2 upward frees Ação 3 (+2) in that run; one review of Ação 2 DOWNWARD would cap 3 in 12/13 runs and of 25 would cap 37 in 4/13; static fan-out: Ação 2 → {3, 17} `pre` + 39 `artefato` (up to 4 points moved by one review the auditor of 3/17 never opened); 6, 7, 20 have fan-out 2; 3, 6, 18, 20 are both citing and cited. **Decision recorded in ADR-0070: base proposta, no cascade** — a ReviewOutcome of the cited never changes a persisted proposed score; the citing Ação's panel says so.
+- **A false signal caught by the measurement and fixed before shipping**: at Ação level the `artefato` review 35→14 fired in **13/13 runs** while **35.1 was never evidenced** (the accepts were 35.2e/35.2f, the later version of Ação **15**). Edges now take an optional `produtos_citante` scope, read only by the review signal (the cap needs every product evidenced, so scope is moot there): 35→14 = [35.1], 35→15 = [35.2a–g]. With the scope the signal is silent in d1–d3 (the runs that carry per-product verdicts); acc_run1–10 predate the harness's `gate` field, so there it is undecidable, marked `14?`. The only remaining signal in this case is 31→12 in r6 (Ação 12 sem evidência, 31 at ≥ 1 — legitimate).
+- **Tests**: new `tests/test_dependency_cap.py` (42: shipped file invariants incl. ascending Ação order and 43's exemption; loader refusals; the rule per type/state; apply never raises; `evaluate()` integration with the real graph and a stub scorer; prompt byte identity; no-evidence exit; round-trip). Fast suite **629**.
+- **P1a — still running** (PID 24352, `scratchpad/acc/p1a_siblings.{log,json}`; 42/80 products, 9 105/17 190 calls at 12:53, 0.71 s/call, 0 errors; GPU `/health` ok). When it ends: `$W/analisa_p1a.py` → judge by the item-4 bit rule → recommend `integral` vs `rotulado` for `relevance_builder.py`; **nothing applied before the user's decision**. The background waiter (`b0nt3v7m5`, 2 h) expires ~12:57 and must be re-armed.
+- **Pending commit (nothing committed this pass)**: `data/ipmp/dependencias.json` (new), `src/ingestion/{dependencias.py (new), __init__.py}`, `src/evaluation/{dependency_cap.py (new), evaluator.py, interfaces/contracts.py}`, `src/assessment/service.py`, `scripts/diagnostics/{reproducibility,measure_sibling_text}.py`, `tests/{test_dependency_cap.py (new), test_lifecycle_integrity.py}`, `frontend/src/components/AcaoPanel.vue` + `frontend/dist`, `docs/adr/0070-*.md` (new), 16 profiles + 6 IPMP files (P1c), `CLAUDE.md`, `CONTEXT.md`. Still open for the user: P1a outcome; 31.1g; 42c; port 8080; loopback health-check step in `.secrets/`; whether to commit.
 
 **Session 2026-10-07/09 (57th pass) — ITEM 4 MEASURED AND JUDGED (1 330 calls, nothing applied); "WHAT CHANGED VS HEAD" answered exactly; CROSS-AÇÃO REFERENCE ANALYSIS (which Ações cite which, how they behave); the user's five questions on the gate prompt answered with measurements (truncation, `partial_ratio`, V4, dangling references, V5); a NEW DEFECT found in the ledger's own reasoning (target-product confusion, 3.5 %); the user's SCORE-CAP RULE for citing Ações analysed against the IPMP text and the data; P1a measured IN FLIGHT with three conditions; FIRST CHECKPOINT COMMIT since `37ec747`. Fast suite 587. Language from here: Portuguese.**
 
@@ -968,7 +982,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (updated 2026-06-18: Retrieval Profile, Evidence Ontology, Evidence Intent, Retrieval Signal Concept, Query Term, Evidence Logic Pattern, Profile Maturity, Term Status)
-- `docs/adr/` — 69 ADRs, next is `0070-`
+- `docs/adr/` — 70 ADRs, next is `0071-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1

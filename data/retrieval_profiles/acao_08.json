@@ -15,7 +15,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "8a": {
-      "evidence_intent": "Justificativa fundamentada sobre o formato de contratação mais adequado (obra pública direta, concessão, PPP etc.) para a opção mais vantajosa identificada na Ação 6, ainda não definitivamente escolhida.",
+      "evidence_intent": "Justificativa fundamentada sobre o formato de contratação mais adequado (obra pública direta, concessão, PPP etc.) para a opção mais vantajosa identificada na lista preliminar de opções, ainda não definitivamente escolhida.",
       "retrieval_signal_concepts": [
         {
           "key": "contracting_format_justification",
@@ -27,7 +27,7 @@
         },
         {
           "key": "shortlisted_option_basis",
-          "text": "Estrutura contratual desenvolvida para a opção mais vantajosa identificada na lista de opções da Ação 6, ainda não escolhida definitivamente"
+          "text": "Estrutura contratual desenvolvida para a opção mais vantajosa identificada na lista preliminar de opções, ainda não escolhida definitivamente"
         },
         {
           "key": "greenfield_brownfield_distinction",

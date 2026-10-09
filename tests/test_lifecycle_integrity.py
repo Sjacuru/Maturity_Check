@@ -423,7 +423,8 @@ def test_evaluation_persisted_before_the_new_fields_still_reads_back(client, db_
     _assess(client, "P001")
 
     legacy = json.loads(_get_raw_json(db_path, "P001", 1))
-    for key in ("product_verdicts", "product_gate_reports", "score_source"):
+    for key in ("product_verdicts", "product_gate_reports", "score_source",
+                "score_margin", "dependency_cap"):
         legacy.pop(key, None)
     con = sqlite3.connect(str(db_path))
     try:

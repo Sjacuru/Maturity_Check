@@ -159,6 +159,36 @@ class ScoreMargin(BaseModel):
     explanation: str = ""
 
 
+class DependencyOutcome(BaseModel):
+    """One dependency of this Ação and the state the cited Ação was found in."""
+
+    acao_id: int
+    tipo: str                     # "pre" | "artefato"
+    # "baixa" (0 or sem evidência), "ok" (>= 1), "desconhecida" (not evaluated,
+    # parse failure, or absent from the run).
+    estado: str
+    proposed_score: int | None = None
+
+
+class DependencyCap(BaseModel):
+    """ADR-0070: the score cap derived from the cited Ações' outcomes.
+
+    Deterministic arithmetic over scores that already exist when this Ação is
+    evaluated (the run walks the Ações in order 1..46): an Ação with a `pre`
+    dependency found in 0 / sem evidência cannot receive 3, so a counted 3 is
+    recorded in `score_before_cap` and `proposed_score` becomes 1. An `artefato`
+    dependency in that state does NOT cap — the citing Ação is a later version
+    of the same document and the corpus has no time axis — it recommends review
+    instead. Nothing here reaches the scorer prompt.
+    """
+
+    applied: bool = False
+    score_before_cap: int | None = None
+    review_recommended: bool = False
+    dependencies: list[DependencyOutcome] = []
+    explanation: str = ""
+
+
 class EvaluationResult(BaseModel):
     acao_id: int
     process_number: str
@@ -183,6 +213,9 @@ class EvaluationResult(BaseModel):
     # before 2026-10-05; the read path is json.loads(raw_json) (ADR-0031) and
     # does not re-validate, so older rows keep serving unchanged.
     score_margin: ScoreMargin | None = None
+    # ADR-0070. None for rows persisted before 2026-10-09, for the no-evidence
+    # exit, and when the caller had no prior results to derive it from.
+    dependency_cap: DependencyCap | None = None
 
     # How many scorer calls were combined, and on how many Expected Products
     # they disagreed. A split is the auditor's signal that the model did not

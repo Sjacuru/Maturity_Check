@@ -104,6 +104,10 @@ class AssessmentService:
                     accepted,
                     rejected_chunks=rejected,
                     product_gate_reports=gate_reports,
+                    # ADR-0070: the Ações already scored in this run, in order —
+                    # every dependency with effect points backwards, so the
+                    # cited result exists here or failed (then: unknown, no cap).
+                    prior_results={r.acao_id: r for r in results},
                 )
             except _INFRASTRUCTURE_FAILURES as exc:
                 # Server gone mid-run: stop immediately rather than producing 40+

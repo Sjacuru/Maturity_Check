@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import logging
+from collections.abc import Mapping
 
-from ingestion import get_ipmp_store
+from ingestion import get_dependency_store, get_ipmp_store
 from retrieval.interfaces.contracts import RetrievedChunk
 
 from evaluation._config import get_llm_client, get_model, get_provider
+from evaluation.dependency_cap import apply_dependency_cap, compute_dependency_cap
 from evaluation.interfaces.contracts import (
     EvaluationResult,
     ProductGateReport,
@@ -148,7 +150,16 @@ def evaluate(
     chunks: list[RetrievedChunk],
     rejected_chunks: list[RejectedChunk] | None = None,
     product_gate_reports: list[ProductGateReport] | None = None,
+    prior_results: Mapping[int, EvaluationResult] | None = None,
 ) -> EvaluationResult:
+    """Evaluate one Ação.
+
+    `prior_results` are the Ações already evaluated in this run, keyed by id;
+    the dependency cap (ADR-0070) is derived from them. Callers that evaluate a
+    single Ação in isolation may omit it — the cap is then not computed and the
+    result says so (`dependency_cap is None`), which is NOT the same as "no cap
+    applied": a measurement that must reproduce production has to pass them.
+    """
     client = get_llm_client()  # raises if configure_llm() not called
     provider = get_provider()
     model = get_model()
@@ -264,6 +275,21 @@ def evaluate(
         expected_product_ids=expected_product_ids,
         proposed_score=parsed.proposed_score,
     )
+    # ADR-0070: the cap is arithmetic over the scores already produced in this
+    # run; it is applied AFTER the counted score and never touches the prompt.
+    dependency_cap = None
+    final_score = parsed.proposed_score
+    if prior_results is not None and not parsed.parse_failed:
+        dependency_cap = compute_dependency_cap(
+            acao_id,
+            parsed.proposed_score,
+            prior_results,
+            get_dependency_store(),
+            product_verdicts=product_verdicts,
+        )
+        final_score, score_margin = apply_dependency_cap(
+            parsed.proposed_score, score_margin, dependency_cap
+        )
     if parsed.parse_failed:
         report(
             "validando_resposta",
@@ -291,9 +317,13 @@ def evaluate(
                 f"; {score_margin.n_fragile} produto(s) com margem 1 — o score cairia "
                 f"para {floor} se não tivessem se sustentado (revisão sugerida)"
             )
+        if dependency_cap is not None and (
+            dependency_cap.applied or dependency_cap.review_recommended
+        ):
+            detail += f"; {dependency_cap.explanation}"
         report(
             "validando_resposta",
-            f"Ação {acao_id} avaliada — score {parsed.proposed_score}{detail}"
+            f"Ação {acao_id} avaliada — score {final_score}{detail}"
             f"{' (incerteza sinalizada)' if parsed.uncertainty_flag else ''}.",
             "success",
         )
@@ -309,6 +339,7 @@ def evaluate(
         product_verdicts=product_verdicts,
         score_source=parsed.score_source,
         score_margin=score_margin,
+        dependency_cap=dependency_cap,
         n_scorer_votes=len(candidates),
         n_verdict_splits=n_verdict_splits,
         evidence_char_count=evidence_char_count,
@@ -316,7 +347,7 @@ def evaluate(
         user_prompt=user_prompt,
         raw_llm_response=parsed.raw_llm_response,
         reasoning=parsed.reasoning,
-        proposed_score=parsed.proposed_score,
+        proposed_score=final_score,
         uncertainty_flag=parsed.uncertainty_flag,
         parse_failed=parsed.parse_failed,
         no_evidence_found=False,

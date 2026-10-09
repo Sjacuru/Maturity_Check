@@ -18,7 +18,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "20a": {
-      "evidence_intent": "Identificação clara e nomeada da Opção Mais Vantajosa (OMV) dentre as alternativas analisadas, com justificativa detalhada da seleção fundamentada nos resultados consolidados das análises econômica quantitativa (Ação 18) e qualitativa (Ação 19), incluindo verificação de aderência aos fatores críticos de sucesso e aos objetivos estratégicos do projeto.",
+      "evidence_intent": "Identificação clara e nomeada da Opção Mais Vantajosa (OMV) dentre as alternativas analisadas, com justificativa detalhada da seleção fundamentada nos resultados consolidados das análises econômica quantitativa e qualitativa, incluindo verificação de aderência aos fatores críticos de sucesso e aos objetivos estratégicos do projeto.",
       "retrieval_signal_concepts": [
         {
           "key": "omv_identification",

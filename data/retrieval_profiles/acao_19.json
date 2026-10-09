@@ -102,11 +102,11 @@
       ]
     },
     "19b": {
-      "evidence_intent": "Análise qualitativa dos riscos públicos de cada opção, identificando impactos negativos NÃO financeiros e sua probabilidade de ocorrência, incluindo riscos sistêmicos e de implementação ainda não capturados na quantificação da Ação 18, com ênfase nos riscos de licenciamento ambiental, remoção de interferências e desapropriação, e considerando a perspectiva de diferentes grupos de partes interessadas.",
+      "evidence_intent": "Análise qualitativa dos riscos públicos de cada opção, identificando impactos negativos NÃO financeiros e sua probabilidade de ocorrência, incluindo riscos sistêmicos e de implementação ainda não capturados na análise econômica quantitativa (monetizada), com ênfase nos riscos de licenciamento ambiental, remoção de interferências e desapropriação, e considerando a perspectiva de diferentes grupos de partes interessadas.",
       "retrieval_signal_concepts": [
         {
           "key": "non_financial_risk_identification",
-          "text": "Identificação de riscos públicos não financeiros, com probabilidade de ocorrência, incluindo riscos sistêmicos e de implementação ainda não capturados na Ação 18"
+          "text": "Identificação de riscos públicos não financeiros, com probabilidade de ocorrência, incluindo riscos sistêmicos e de implementação ainda não capturados na análise econômica quantitativa"
         },
         {
           "key": "licensing_expropriation_interference_qualitative_risk",

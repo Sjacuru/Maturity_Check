@@ -228,7 +228,7 @@
       "negative_evidence_patterns": []
     },
     "35.2d": {
-      "evidence_intent": "Atribuição de responsabilidades para supervisão e ação sobre cada risco, distinta da alocação contratual de responsabilidades entre as partes (Ação 22) -- aqui o foco é a gestão operacional pela equipe de projeto.",
+      "evidence_intent": "Atribuição de responsabilidades para supervisão e ação sobre cada risco, distinta da alocação contratual de responsabilidades entre as partes (matriz de riscos do contrato) -- aqui o foco é a gestão operacional pela equipe de projeto.",
       "retrieval_signal_concepts": [
         {
           "key": "risk_supervision_responsibility_assignment",
@@ -277,7 +277,7 @@
       ]
     },
     "35.2e": {
-      "evidence_intent": "Estratégia de resposta ao risco (evitar, mitigar, transferir, aceitar) com ações específicas de gerenciamento, aprofundando as estratégias preliminares de mitigação da Ação 15.",
+      "evidence_intent": "Estratégia de resposta ao risco (evitar, mitigar, transferir, aceitar) com ações específicas de gerenciamento, aprofundando as estratégias preliminares de mitigação do plano inicial de gestão de riscos.",
       "retrieval_signal_concepts": [
         {
           "key": "structured_risk_response_strategy",

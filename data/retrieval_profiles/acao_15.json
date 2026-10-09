@@ -15,7 +15,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "15a": {
-      "evidence_intent": "Riscos potenciais identificados até o momento que podem impactar a contratação e a execução do projeto (ambientais, sociais, técnicos, financeiros e regulatórios, incluindo desafios de obtenção de licenças), partindo dos riscos já identificados na Ação 4.",
+      "evidence_intent": "Riscos potenciais identificados até o momento que podem impactar a contratação e a execução do projeto (ambientais, sociais, técnicos, financeiros e regulatórios, incluindo desafios de obtenção de licenças), partindo dos riscos estratégicos já identificados na fase de diagnóstico.",
       "retrieval_signal_concepts": [
         {
           "key": "preliminary_risk_identification",

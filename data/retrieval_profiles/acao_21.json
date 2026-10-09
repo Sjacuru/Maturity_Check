@@ -12,7 +12,7 @@
   "profile_maturity": "seed",
   "expected_products": {
     "21a": {
-      "evidence_intent": "Revisão detalhada dos estudos sobre a Avaliação de Impacto Ambiental e Social (AIAS) e outros estudos técnicos realizados para cada uma das opções pré-listadas, conforme o escopo definido na Ação 7, com destaque para as conclusões mais relevantes para a tomada de decisão sobre a Opção Mais Vantajosa.",
+      "evidence_intent": "Revisão detalhada dos estudos sobre a Avaliação de Impacto Ambiental e Social (AIAS) e outros estudos técnicos realizados para cada uma das opções pré-listadas, conforme o escopo de estudos previamente definido (termos de referência da AIAS), com destaque para as conclusões mais relevantes para a tomada de decisão sobre a Opção Mais Vantajosa.",
       "retrieval_signal_concepts": [
         {
           "key": "aias_review_completeness",

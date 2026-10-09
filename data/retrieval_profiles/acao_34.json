@@ -133,11 +133,11 @@
       ]
     },
     "34b": {
-      "evidence_intent": "Ações e estratégias de gerenciamento de mudanças sincronizadas ao cronograma gerencial da Ação 31, para gerenciar as mudanças decorrentes da implementação da alternativa escolhida, contendo prazos, marcos e responsabilidades.",
+      "evidence_intent": "Ações e estratégias de gerenciamento de mudanças sincronizadas ao cronograma gerencial do projeto, para gerenciar as mudanças decorrentes da implementação da alternativa escolhida, contendo prazos, marcos e responsabilidades.",
       "retrieval_signal_concepts": [
         {
           "key": "change_management_actions_synced_to_schedule",
-          "text": "Ações e estratégias de gerenciamento de mudanças sincronizadas ao cronograma gerencial da Ação 31, contendo prazos, marcos e responsabilidades"
+          "text": "Ações e estratégias de gerenciamento de mudanças sincronizadas ao cronograma gerencial do projeto, contendo prazos, marcos e responsabilidades"
         }
       ],
       "query_terms": [

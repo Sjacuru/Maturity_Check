@@ -193,8 +193,14 @@ def main() -> int:
         for pid, labels in por_produto.items():
             if not labels:
                 continue
+            # entra no plano o produto cujo prompt muda com o TEXTO dos irmaos
+            # (integral/ids). 'rotulado' sozinho altera o titulo do criterio em
+            # todos os 164 e nao pode ser o filtro: a comparacao de C e feita
+            # nos mesmos produtos em que B e medida.
+            filtro = ([c for c in conds if c in ("integral", "ids")]
+                      or [c for c in conds if c != "hoje"])
             difere = {c: base[labels[0]][0] != por_cond[c][labels[0]][0]
-                      for c in conds if c != "hoje"}
+                      for c in filtro}
             if not any(difere.values()):
                 continue
             plano.append({

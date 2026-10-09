@@ -170,6 +170,10 @@ def main() -> int:
 
     for run in range(1, args.runs + 1):
         started = time.monotonic()
+        # ADR-0070: production derives the dependency cap from the Ações already
+        # scored in the run; a subset run (--acoes) sees only the subset, like
+        # a production run that failed on the missing ones (unknown -> no cap).
+        prior: dict[int, object] = {}
         for acao_id in acao_ids:
             try:
                 accepted, rejected, gate_reports = _retrieve_and_select(acao_id, args.process)
@@ -179,7 +183,9 @@ def main() -> int:
                     accepted,
                     rejected_chunks=rejected,
                     product_gate_reports=gate_reports,
+                    prior_results=prior,
                 )
+                prior[acao_id] = result
             except Exception as exc:  # a run must not die on one Ação
                 errors[acao_id].append(f"{type(exc).__name__}: {exc}")
                 outcomes[acao_id].append("erro")
