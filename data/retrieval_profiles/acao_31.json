@@ -1,13 +1,16 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-09",
     "population_stages_completed": [
       "A",
       "B"
     ],
     "stage_b_sources": [
       "SMG-040_101607_2024 (full case, 1429 chunks, live /assess run + targeted isolated gate re-tests, real llama.cpp GPU server)"
+    ],
+    "changelog": [
+      {"date": "2026-10-09", "summary": "31.1g neg#3 (item 4, 2026-10-07, aplicado 2026-10-09 com aprovação do usuário): especificação técnica de produto/equipamento não é padrão de qualidade por etapa. Medido em memória sobre o pool de produção (16 chunks × 2 condições × 5 passadas, gate serial a low, ledger off): alvo _2 p.595 FTFFF→FFFFF, bit do produto constante, nenhum controle moveu; auditoria de sobreajuste limpa (nenhum n-grama do padrão ausente do IPMP e presente no corpus)."}
     ],
     "validation_notes": [
       {"product": "31.1g", "negative_pattern_index": 1, "moved_on": "2026-10-03", "note": "Validado 2026-09-08: chunk real de objetivo/meta genérica do contrato — SMG-040_101607_2024_2.pdf p.33 — instável mesmo em teste isolado sequencial sem este padrão [1/5 aceito, sinal de ambiguidade de conteúdo genuína, não apenas ruído de concorrência], estabilizado em 0/5 aceito com este padrão."},
@@ -449,7 +452,8 @@
       "evidence_logic_patterns": [],
       "negative_evidence_patterns": [
         "Menções genéricas à palavra 'qualidade' em objetivos/metas amplos do projeto ou do contrato (ex.: 'aprimorar a gestão e a qualidade dos equipamentos', 'melhorar a qualidade de vida da população') — presentes como retórica genérica de justificativa em praticamente qualquer documento de concessão — NÃO constituem um PADRÃO DE QUALIDADE definido (uma métrica, especificação técnica ou critério de aceite concreto a ser alcançado em uma etapa específica do projeto). O texto precisa especificar QUAL padrão, métrica ou especificação técnica deve ser atingido, não apenas usar a palavra 'qualidade' como objetivo genérico.",
-        "Uma cláusula de risco contratual genérico (ex.: 'Anulação da concessão por falhas de naturezas diversas', obstrução da concessão, ações de órgãos de controle) ou uma obrigação rotineira de fiscalização/relatório presente no texto padrão do contrato — mesmo que mencione 'acompanhamento', 'monitoramento' ou 'observância de processo legal' — NÃO constitui um PADRÃO DE QUALIDADE (uma métrica, especificação técnica ou critério de aceite concreto) para uma etapa específica do projeto. O texto precisa especificar QUAL padrão técnico deve ser atingido, não descrever como um risco contratual genérico será administrado."
+        "Uma cláusula de risco contratual genérico (ex.: 'Anulação da concessão por falhas de naturezas diversas', obstrução da concessão, ações de órgãos de controle) ou uma obrigação rotineira de fiscalização/relatório presente no texto padrão do contrato — mesmo que mencione 'acompanhamento', 'monitoramento' ou 'observância de processo legal' — NÃO constitui um PADRÃO DE QUALIDADE (uma métrica, especificação técnica ou critério de aceite concreto) para uma etapa específica do projeto. O texto precisa especificar QUAL padrão técnico deve ser atingido, não descrever como um risco contratual genérico será administrado.",
+        "Especificação técnica de produto ou equipamento — materiais, dimensões, modelos, desenhos, fotos — não é padrão de qualidade por etapa. O critério pede o padrão a ser ALCANÇADO em uma etapa do projeto, o que exige que o trecho vincule o padrão a uma etapa, fase ou marco e indique como o seu atendimento será verificado ou aprovado."
       ]
     },
     "31.1h": {

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from evaluation.progress import report
 
@@ -27,6 +29,30 @@ _RETRY_INTERVAL_SECONDS = 3.0
 # the old 90s/5-retry ~7.7min worst case, generous enough that a 120s/
 # single-attempt diagnostic run saw zero timeouts on the same case.
 _DEFAULT_MAX_CONCURRENT_REQUESTS = 4
+# Name of the variable that carries the server's --api-key, when the owner
+# enables one on llama-server. Nothing about generation changes with it: the
+# key travels in an Authorization header, the body stays byte-identical.
+_API_KEY_ENV = "LLAMACPP_API_KEY"
+
+
+def _default_api_key() -> str | None:
+    """The llama-server --api-key, if one is configured: LLAMACPP_API_KEY in
+    the environment, else in the repository's .env. The .env fallback exists
+    because the diagnostics scripts build this client directly, without
+    main.py's load_dotenv(); they must reach the server with the same key
+    production uses. None (no key anywhere) sends no header at all."""
+    key = os.environ.get(_API_KEY_ENV)
+    if key:
+        return key
+    try:
+        from dotenv import dotenv_values
+
+        env_file = Path(__file__).resolve().parents[3] / ".env"
+        if env_file.is_file():
+            return dotenv_values(env_file).get(_API_KEY_ENV) or None
+    except Exception:  # dotenv missing or unreadable file: behave as "no key"
+        return None
+    return None
 
 
 class LlamaCppUnavailable(Exception):
@@ -112,6 +138,7 @@ class LlamaCppClient:
         reasoning_effort: str | None = None,
         cache_prompt: bool | None = None,
         transport=None,
+        api_key: str | None = None,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._model = model
@@ -154,6 +181,13 @@ class LlamaCppClient:
         # retry/error-mapping logic below without a real network call. None
         # in production — httpx.Client uses its normal transport.
         self._transport = transport
+        # Authorization header for a llama-server started with --api-key.
+        # None resolves LLAMACPP_API_KEY (environment, then .env); an explicit
+        # "" pins "no key". A wrong or missing key is a hard, explicit failure
+        # (HTTP 401/403 -> LlamaCppUnavailable), never a silent degradation
+        # (ADR-0059).
+        self._api_key = api_key if api_key is not None else _default_api_key()
+        self._headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
         self.model_label = model
         # Provider label for per-call audit trails. A bare client (the GPU-only
         # wiring in main.py) is read via getattr by callers that also accept a
@@ -174,14 +208,24 @@ class LlamaCppClient:
         probe = timeout if timeout is not None else self._connect_timeout
         try:
             with httpx.Client(timeout=probe, transport=self._transport) as client:
-                response = client.get(f"{self._base_url}/health")
+                response = client.get(f"{self._base_url}/health", headers=self._headers)
         except httpx.ConnectError as exc:
             raise LlamaCppUnavailable(str(exc)) from exc
         except (httpx.ConnectTimeout, httpx.ReadTimeout) as exc:
             raise LlamaCppTimeout(str(exc)) from exc
         if response.status_code in (429, 503):
             raise LlamaCppBusy(f"HTTP {response.status_code}")
+        if response.status_code in (401, 403):
+            raise LlamaCppUnavailable(self._auth_failure_message(response.status_code))
         response.raise_for_status()
+
+    def _auth_failure_message(self, status: int) -> str:
+        enviada = "enviada" if self._api_key else "NÃO enviada"
+        return (
+            f"HTTP {status}: o servidor exige chave de API (--api-key) e a chave "
+            f"{enviada} foi recusada — defina {_API_KEY_ENV} (no ambiente ou em .env) "
+            f"com a chave configurada no servidor GPU."
+        )
 
     def complete(self, system: str, user: str, schema: dict | None = None) -> str:
         return self.complete_detailed(system, user, schema).content
@@ -233,7 +277,7 @@ class LlamaCppClient:
         for attempt in range(1, self._max_timeout_retries + 1):
             try:
                 with httpx.Client(timeout=timeout, transport=self._transport) as client:
-                    response = client.post(url, json=payload)
+                    response = client.post(url, json=payload, headers=self._headers)
             except httpx.ConnectError as exc:
                 logger.warning(
                     "llama.cpp primary unreachable (connection refused/DNS): %s", exc
@@ -273,6 +317,11 @@ class LlamaCppClient:
                     "warning",
                 )
                 raise LlamaCppBusy(f"HTTP {response.status_code}")
+            if response.status_code in (401, 403):
+                msg = self._auth_failure_message(response.status_code)
+                logger.error("llama.cpp primary rejected the API key: %s", msg)
+                report("chamando_llm", msg, "error")
+                raise LlamaCppUnavailable(msg)
             response.raise_for_status()
 
             body = response.json()

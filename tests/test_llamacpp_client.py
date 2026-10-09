@@ -439,3 +439,69 @@ def test_complete_detailed_accepts_the_older_reasoning_field_name():
             "model": "m", "choices": [{"message": {"content": "x", "reasoning": "antigo"}}],
         })
     assert _client(handler).complete_detailed("sys", "usr").reasoning == "antigo"
+
+
+# --- API key (llama-server --api-key), 2026-10-09 ---
+# The key is an Authorization header only: the request body — and therefore
+# every prompt byte and every ledger key — is identical with and without it.
+
+def test_api_key_travels_as_a_bearer_header_on_completions_and_health():
+    seen: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers.get("Authorization"))
+        if request.url.path == "/health":
+            return httpx.Response(200, json={"status": "ok"})
+        return _ok_response(request)
+
+    client = _client(handler, api_key="k-123")
+    client.health_check()
+    client.complete("sys", "usr")
+    assert seen == ["Bearer k-123", "Bearer k-123"]
+
+
+def test_explicit_empty_api_key_sends_no_authorization_header(monkeypatch):
+    monkeypatch.setenv("LLAMACPP_API_KEY", "from-env")
+    seen: list[bool] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append("Authorization" in request.headers)
+        return _ok_response(request)
+
+    _client(handler, api_key="").complete("sys", "usr")
+    assert seen == [False]
+
+
+def test_api_key_defaults_to_the_environment_variable(monkeypatch):
+    monkeypatch.setenv("LLAMACPP_API_KEY", "from-env")
+    seen: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers.get("Authorization"))
+        return _ok_response(request)
+
+    _client(handler).complete("sys", "usr")
+    assert seen == ["Bearer from-env"]
+
+
+def test_api_key_does_not_touch_the_request_body(monkeypatch):
+    bodies: list[bytes] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(request.content)
+        return _ok_response(request)
+
+    _client(handler, api_key="").complete("sys", "usr")
+    _client(handler, api_key="k").complete("sys", "usr")
+    assert bodies[0] == bodies[1]
+
+
+@pytest.mark.parametrize("status", [401, 403])
+def test_rejected_api_key_is_an_explicit_unavailable_error(status):
+    """ADR-0059: a server that refuses the key must stop the run with a message
+    that names the variable to fix, never look like a substantive answer."""
+    client = _client(lambda req: httpx.Response(status, text="Unauthorized"), api_key="wrong")
+    with pytest.raises(LlamaCppUnavailable, match="LLAMACPP_API_KEY"):
+        client.complete("sys", "usr")
+    with pytest.raises(LlamaCppUnavailable, match="LLAMACPP_API_KEY"):
+        _client(lambda req: httpx.Response(status), api_key="wrong").health_check()
