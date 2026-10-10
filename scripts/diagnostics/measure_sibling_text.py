@@ -10,8 +10,8 @@ de uma palavra). Custo do texto integral: +3,1 % na média, máximo inalterado.
 O que este script mede é o que o custo não responde: se o texto integral muda
 VEREDITOS, em que direção, e se mexe na constância. Condições:
 
-  hoje      _SIBLING_TEXT_MAX = 140 (produção)
-  integral  _SIBLING_TEXT_MAX = sem limite
+  hoje      _SIBLING_TEXT_MAX = 140 (produção até 2026-10-09)
+  integral  _SIBLING_TEXT_MAX = sem limite (produção desde 2026-10-09, ADR-0071)
   rotulado  integral + o produto EM AVALIAÇÃO identificado como os irmãos
             (id na linha do texto; id no título do critério) — ver rotula_alvo()
   ids       lista de irmãos só com os ids, sem texto (opcional)

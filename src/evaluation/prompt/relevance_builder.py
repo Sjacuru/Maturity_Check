@@ -42,10 +42,18 @@ O trecho só é relevante se for evidência DESTE Produto Esperado. Evidência q
 sirva a outro Produto Esperado da mesma Ação, ou à Ação em geral, não conta aqui.\
 """
 
-# Sibling product texts are quoted whole up to this length; the IPMP's longer
-# ones (14a runs to ~300 chars) are cut so a 9-product Ação (31, 35) does not
-# triple the prompt. The id and the opening clause carry the contrast.
-_SIBLING_TEXT_MAX = 140
+# Sibling product texts are quoted WHOLE (ADR-0071). Until 2026-10-09 they were
+# cut at 140 chars so a 9-product Ação (31, 35) would not triple the prompt;
+# measured (P1a, 17 190 calls, 80 products, 5 passes), the cut kept the generic
+# opening clause and dropped the enumeration that actually tells one sibling
+# from another (52/164 texts; 18b lost 571 of 710 chars). The whole text costs
+# +3.2 % mean prompt size (maximum unchanged) and, across independent runs,
+# changes no run-to-run constancy figure either way — it is a fidelity fix,
+# not a stability lever. The lexical-match accepts it created live in the
+# retrieval profiles as negative patterns (31.1h, 33b, 22.2a), each measured
+# under the whole-text prompt first.
+# None = no limit; the diagnostics set a number to reproduce the old prompt.
+_SIBLING_TEXT_MAX: int | None = None
 
 
 # A retrieval profile's evidence_intent is an operationalisation of the IPMP's
@@ -127,7 +135,7 @@ def _sibling_contrast(scored: list, product_id: str) -> str:
     lines = []
     for p in siblings:
         text = " ".join(p.texto.split())
-        if len(text) > _SIBLING_TEXT_MAX:
+        if _SIBLING_TEXT_MAX is not None and len(text) > _SIBLING_TEXT_MAX:
             text = text[: _SIBLING_TEXT_MAX - 1].rstrip() + "…"
         lines.append(f"- {p.id} — {text}")
     return (

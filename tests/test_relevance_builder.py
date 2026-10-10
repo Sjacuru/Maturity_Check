@@ -126,14 +126,29 @@ def test_identity_block_single_product_has_no_sibling_list():
     assert "Os demais Produtos Esperados" not in prompt
 
 
-def test_sibling_text_is_truncated_at_the_limit():
+def test_sibling_text_is_quoted_whole_by_default():
+    # ADR-0071: the enumeration at the end of a long product text is what tells
+    # one sibling from another, so nothing is cut unless a limit is set.
+    long_text = "palavra " * 60 + "ENUMERAÇÃO FINAL"  # ~500 chars
+    acao = _acao([("7a", long_text, True), ("7b", "curto", True)])
+    prompt = build_relevance_system_prompt("critério", acao=acao, product_id="7b")
+    line = next(l for l in prompt.splitlines() if l.startswith("- 7a — "))
+    body = line[len("- 7a — "):]
+    assert rb._SIBLING_TEXT_MAX is None
+    assert body == " ".join(long_text.split())
+    assert body.endswith("ENUMERAÇÃO FINAL") and "…" not in body
+
+
+def test_sibling_text_limit_still_truncates_when_set(monkeypatch):
+    # The diagnostics reproduce the pre-2026-10-09 prompt by setting the limit.
+    monkeypatch.setattr(rb, "_SIBLING_TEXT_MAX", 140)
     long_text = "palavra " * 60  # ~480 chars
     acao = _acao([("7a", long_text, True), ("7b", "curto", True)])
     prompt = build_relevance_system_prompt("critério", acao=acao, product_id="7b")
     line = next(l for l in prompt.splitlines() if l.startswith("- 7a — "))
     body = line[len("- 7a — "):]
     assert body.endswith("…")
-    assert len(body) <= rb._SIBLING_TEXT_MAX
+    assert len(body) <= 140
     assert "palavra palavra" in body
 
 

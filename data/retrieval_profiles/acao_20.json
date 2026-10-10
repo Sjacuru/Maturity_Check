@@ -1,13 +1,16 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A",
       "B"
     ],
     "stage_b_sources": [
       "SMG-040_101607_2024 (full case, 1429 chunks, live /assess run + targeted isolated gate re-tests, real llama.cpp GPU server)"
+    ],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 1 termo NEAR alinhado citante<-citada em 20a — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."}
     ],
     "revisions": [
       {"date": "2026-10-03", "summary": "20c intent: referência a id de produto irmão reescrita como descrição de conteúdo (ADR-0064)."}
@@ -169,6 +172,16 @@
           "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "omv_identification"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["valor", "público", "opção", "selecionada"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [18],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'Valor Público' (18b) + marcador 'seleção' (20a)."
         }
       ],
       "evidence_logic_patterns": [

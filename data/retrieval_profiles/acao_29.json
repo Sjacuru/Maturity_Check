@@ -1,11 +1,14 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A"
     ],
     "stage_b_sources": [],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 5 termos NEAR alinhados citante<-citada em 29.1, 29.2 — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."}
+    ],
     "revisions": [
       {"date": "2026-10-03", "summary": "29.1/29.2 intent: referência a id de produto irmão reescrita como descrição de conteúdo (ADR-0064)."}
     ],
@@ -148,6 +151,36 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "workload_based_team_resizing"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["organograma", "revisado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [11],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'organograma' (11a) + marcador 'revisar e finalizar' (29); a versão revisada, não o organograma inicial."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["organograma", "finalizado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [11],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, forma 'finalizado'."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["estrutura", "governança", "revisada"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [11],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'estrutura de gestão e governança' (11) + marcador 'revisar' (29)."
         }
       ],
       "evidence_logic_patterns": [
@@ -229,6 +262,26 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "external_consultant_need_identification"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["estrutura", "pessoal", "alternativa", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [11],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'estrutura de pessoal' (11b) + marcador 'alternativa escolhida' (29)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["estrutura", "pessoal", "revisada"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [11],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'revisar'."
         }
       ],
       "evidence_logic_patterns": [

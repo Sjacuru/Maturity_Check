@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-09",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A",
       "B"
@@ -10,6 +10,8 @@
       "SMG-040_101607_2024 (full case, 1429 chunks, live /assess run + targeted isolated gate re-tests, real llama.cpp GPU server)"
     ],
     "changelog": [
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 12 termos NEAR alinhados citante<-citada em 31.1a, 31.1b, 31.1c, 31.1d, 31.1e, 31.1f, 31.1g, 31.1h, 31.2 — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."},
+      {"date": "2026-10-09", "summary": "31.1h padrão negativo (rota A, 2026-10-09, aprovada pelo usuário): rotina de inspeção/manutenção listada como resposta a risco ou dever operacional corrente não é procedimento de controle de qualidade do projeto. Medido em memória SOB O PROMPT INTEGRAL (irmãos sem corte de 140 chars, ADR-0071) sobre o pool de produção, 2 condições × 5 passadas, gate serial a low, ledger off: alvo _1 p.194 base TTTTT -> cand FFFFF, bit do produto TTTTT -> FFFFF, 13 controles sem movimento (0 regressão, 0 ruído); confirmado na sequência hoje->integral->cand; auditoria de sobreajuste limpa."},
       {"date": "2026-10-09", "summary": "31.1g neg#3 (item 4, 2026-10-07, aplicado 2026-10-09 com aprovação do usuário): especificação técnica de produto/equipamento não é padrão de qualidade por etapa. Medido em memória sobre o pool de produção (16 chunks × 2 condições × 5 passadas, gate serial a low, ledger off): alvo _2 p.595 FTFFF→FFFFF, bit do produto constante, nenhum controle moveu; auditoria de sobreajuste limpa (nenhum n-grama do padrão ausente do IPMP e presente no corpus)."}
     ],
     "validation_notes": [
@@ -78,6 +80,26 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "lifecycle_wide_schedule_with_milestones"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["cronograma", "aprofundado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'cronograma' (12a) + marcador 'aprofundar' (31)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["cronograma", "opção", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'cronograma' (12a) + marcador 'a partir da opção escolhida' (31)."
         }
       ],
       "evidence_logic_patterns": [
@@ -128,6 +150,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "work_breakdown_structure"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["etapas", "assinatura", "contrato", "detalhadas"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'etapas até a assinatura do contrato' (12b) + marcador 'detalhar' (31)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -162,6 +194,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "task_dependency_identification"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["dependências", "etapas", "cronograma"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'etapas'/'cronograma' (12a/12b) + conteúdo próprio 'dependências' (31.1c)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -274,6 +316,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "land_licensing_interference_management_method"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["processos", "fundiários", "ambientais", "detalhado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'andamento dos processos fundiários e ambientais' (12a) + marcador 'detalhar' (31)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -338,6 +390,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "resource_allocation_by_activity"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["recursos", "necessários", "opção", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'recursos necessários' (12d) + marcador 'opção escolhida' (31)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -379,6 +441,26 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "stagewise_responsibility_assignment"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["atribuições", "responsabilidades", "etapa", "detalhadas"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'atribuições de responsabilidades' (12c) + marcador 'detalhar' (31)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["responsáveis", "etapa", "opção", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'opção escolhida'."
         }
       ],
       "evidence_logic_patterns": [],
@@ -447,6 +529,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "quality_standards_per_stage"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["plano", "controle", "qualidade", "padrões", "etapa"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'plano de controle de qualidade' (12e) + conteúdo próprio 'padrões por etapa' (31.1g)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -529,13 +621,34 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "quality_control_procedures"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["plano", "controle", "qualidade", "aprofundado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'plano de controle de qualidade' (12e) + marcador 'aprofundar' (31)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["pontos", "controle", "aprovações", "detalhados"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'pontos de controle e aprovações' (12e) + marcador 'detalhar' (31)."
         }
       ],
       "evidence_logic_patterns": [
         "O plano de controle de qualidade ausente por completo -- sem parâmetros, etapas críticas ou responsáveis definidos -- compromete a governança do projeto desde o início da execução (padrão do exemplo Não Atendido)."
       ],
       "negative_evidence_patterns": [
-        "Cláusulas contratuais padrão sobre BENS REVERSÍVEIS ao final da CONCESSÃO — obrigação de manutenção/conservação dos bens (ex.: '45.2. Manutenção e Conservação dos Bens Reversíveis'), regras de alienação/substituição, elaboração da relação anual de bens reversíveis, programa de desmobilização operacional ao término do contrato, comissão de recebimento de bens, ou entrega de softwares/cópias de segurança ao PODER CONCEDENTE — tratam da TRANSFERÊNCIA/DEVOLUÇÃO PATRIMONIAL dos ativos ao poder concedente no fim da concessão, presentes com redação padrão em praticamente qualquer contrato de concessão. Isso NÃO é evidência de procedimentos de CONTROLE DE QUALIDADE do projeto (inspeções, revisões, testes, aprovações e tratamento de não conformidades ao longo da execução) — são obrigações de fim de contrato/patrimoniais, não um plano de controle de qualidade."
+        "Cláusulas contratuais padrão sobre BENS REVERSÍVEIS ao final da CONCESSÃO — obrigação de manutenção/conservação dos bens (ex.: '45.2. Manutenção e Conservação dos Bens Reversíveis'), regras de alienação/substituição, elaboração da relação anual de bens reversíveis, programa de desmobilização operacional ao término do contrato, comissão de recebimento de bens, ou entrega de softwares/cópias de segurança ao PODER CONCEDENTE — tratam da TRANSFERÊNCIA/DEVOLUÇÃO PATRIMONIAL dos ativos ao poder concedente no fim da concessão, presentes com redação padrão em praticamente qualquer contrato de concessão. Isso NÃO é evidência de procedimentos de CONTROLE DE QUALIDADE do projeto (inspeções, revisões, testes, aprovações e tratamento de não conformidades ao longo da execução) — são obrigações de fim de contrato/patrimoniais, não um plano de controle de qualidade.",
+        "Rotina de inspeção, manutenção ou conservação listada como resposta a um risco, ou como obrigação operacional corrente da contratada, não é procedimento de controle de qualidade do projeto. O critério pede como os produtos técnicos e as entregas serão verificados — inspeções, revisões, testes e aprovações — com critérios de qualidade e conformidade, responsáveis por revisar e aprovar, marcos de revisão e tratamento de não conformidades; uma ação de resposta a risco ou um dever de manutenção do ativo não define quem verifica o quê, com que critério, nem o que ocorre quando há não conformidade."
       ]
     },
     "31.2": {
@@ -597,6 +710,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "partial_delivery_prioritization"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["plano", "ataque", "cronograma", "etapas"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [12],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'etapas'/'cronograma' (12) + conteúdo próprio 'plano de ataque' (31.2)."
         }
       ],
       "evidence_logic_patterns": [

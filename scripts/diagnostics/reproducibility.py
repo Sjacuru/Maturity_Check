@@ -30,6 +30,7 @@ Usage:
     python scripts/diagnostics/reproducibility.py --runs 10 --acoes 31,37,40,43
     python scripts/diagnostics/reproducibility.py --runs 10 --ledger scratchpad/acc/ledger.sqlite
     python scripts/diagnostics/reproducibility.py --runs 1 --no-prompt-cache
+    python scripts/diagnostics/reproducibility.py --runs 1 --acoes 35 --apply 35.2e,35.2f --candidates scripts/diagnostics/candidates_acao35_round5.py
 """
 
 from __future__ import annotations
@@ -85,6 +86,23 @@ def _accepted_signature(result) -> tuple:
     )
 
 
+RECORD_REASONING = False
+
+
+def _reasoning_detail(result) -> list:
+    """Every gate verdict's reasoning (accepted and rejected), for --record-reasoning."""
+    rows = [
+        [c.filename, c.page_number, c.chunk_index, pid, True, txt]
+        for c in result.retrieved_chunks
+        for pid, txt in (c.gate_reasoning or {}).items()
+    ]
+    rows += [
+        [r.filename, r.page_number, r.chunk_index, r.expected_product_id, False, r.gate_reasoning]
+        for r in result.rejected_chunks
+    ]
+    return rows
+
+
 def _gate_detail(result) -> dict:
     """What the gate and the scorer decided, beyond the final evidence set.
 
@@ -109,7 +127,72 @@ def _gate_detail(result) -> dict:
         },
         "verdicts": {v.product_id: v.evidenced for v in result.product_verdicts},
         "score_source": result.score_source,
+        # ADR-0068: the deterministic margin and the optional-review signal, so a
+        # measurement can say which runs the auditor would have been pointed at.
+        "margin": (
+            {
+                "review": result.score_margin.review_recommended,
+                "floor": result.score_margin.score_floor,
+                "band": result.score_margin.band_margin,
+                "fragile": [m.product_id for m in result.score_margin.products if m.fragile],
+            }
+            if result.score_margin is not None else None
+        ),
+        **({"reasoning": _reasoning_detail(result)} if RECORD_REASONING else {}),
     }
+
+
+def _install_gate_variant(name: str) -> None:
+    """Swap the gate system-prompt builder for a measured variant, in memory.
+
+    'rotulado' (P1a, 2026-10-09): the product under evaluation is labelled the
+    way its siblings are, `- 1b (EM AVALIAÇÃO) — texto`, and the criterion
+    heading carries its id. Nothing else changes. Uses measure_sibling_text's
+    own rotula_alvo(), so the bytes are the ones P1a measured inside one process
+    — here they are measured across independent processes.
+    """
+    sys.path.insert(0, str(ROOT / "scripts" / "diagnostics"))
+    import measure_sibling_text as mst
+
+    from evaluation import evidence_selection as es
+
+    if name != "rotulado":
+        raise SystemExit(f"unknown gate variant: {name}")
+    original = es.build_relevance_system_prompt
+
+    def labelled(evidence_intent, concepts=None, negative_patterns=None, *, acao=None, product_id=None):
+        system = original(evidence_intent, concepts, negative_patterns, acao=acao, product_id=product_id)
+        texto = next(p.texto for p in acao.produtos_esperados if p.id == product_id)
+        return mst.rotula_alvo(system, product_id, texto)
+
+    es.build_relevance_system_prompt = labelled
+    print(f"gate variant '{name}' installed in memory")
+
+
+def _apply_candidates(path: str, products: str | None) -> dict:
+    """Append each named candidate's patch to the in-memory profile store."""
+    import importlib.util
+
+    from ingestion import get_retrieval_profile_store
+
+    if not products:
+        raise SystemExit("--candidates needs --apply with the product ids to patch")
+    spec = importlib.util.spec_from_file_location("_candidates", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    store = get_retrieval_profile_store()
+    applied = {}
+    for pid in (x.strip() for x in products.split(",")):
+        cand = mod.CANDIDATOS[pid]
+        pp = store.acoes[cand["acao"]].expected_products[pid]
+        if cand.get("intent_add"):
+            pp.evidence_intent = pp.evidence_intent.rstrip() + cand["intent_add"]
+        if cand.get("negativo"):
+            pp.negative_evidence_patterns = list(pp.negative_evidence_patterns) + [cand["negativo"]]
+        applied[pid] = {k: cand[k] for k in ("intent_add", "negativo") if cand.get(k)}
+        print(f"candidate applied in memory: {pid} ({', '.join(applied[pid])})")
+    assert get_retrieval_profile_store() is store
+    return {"file": str(path), "products": applied}
 
 
 def main() -> int:
@@ -137,7 +220,32 @@ def main() -> int:
              "since 2026-10-06 (the question it asks depends on a verdict); this flag "
              "exists to measure the output with it.",
     )
+    ap.add_argument(
+        "--candidates", default=None, metavar="PY_FILE",
+        help="a candidates file (dict CANDIDATOS, the format of measure_integral_candidates.py); "
+             "with --apply, the named products get the candidate's negative pattern / intent "
+             "addition IN MEMORY for this process only. This is how a patch is measured across "
+             "independent processes (the only valid constancy measurement, ADR-0071) before it "
+             "is written to a profile.",
+    )
+    ap.add_argument("--apply", default=None, help="comma-separated product ids from --candidates")
+    ap.add_argument(
+        "--gate-variant", default=None, choices=("rotulado",),
+        help="measure a gate-prompt variant across independent processes, in memory only "
+             "(src/ untouched). 'rotulado': the product under evaluation labelled like its "
+             "siblings (measure_sibling_text.rotula_alvo).",
+    )
+    ap.add_argument(
+        "--record-reasoning", action="store_true",
+        help="store the gate reasoning of every verdict in the JSON (gate.reasoning), so the "
+             "target-product confusion rate can be read across independent processes",
+    )
     args = ap.parse_args()
+    global RECORD_REASONING
+    RECORD_REASONING = args.record_reasoning
+    if args.gate_variant:
+        _install_gate_variant(args.gate_variant)
+    patch = _apply_candidates(args.candidates, args.apply) if args.candidates else {}
     if args.expansion:
         from evaluation import evidence_selection as _es
         _es.EXPANSION_ENABLED = True
@@ -256,6 +364,10 @@ def main() -> int:
             # Gate rejections, per-product counts and scorer verdicts per run
             # (see _gate_detail). Added after the 2026-10-03 acceptance runs.
             "gate": {str(a): details[a] for a in acao_ids},
+            # The in-memory candidate patch this process ran with (empty = the
+            # profiles as they are on disk).
+            "patch": patch,
+            "gate_variant": args.gate_variant,
         }
         Path(args.json_out).write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print(f"\nraw outcomes written to {args.json_out}")

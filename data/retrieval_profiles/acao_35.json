@@ -1,13 +1,19 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A",
       "B"
     ],
     "stage_b_sources": [
       "SMG-040_101607_2024 (full case, 1429 chunks, live /assess run + targeted isolated gate re-tests, real llama.cpp GPU server)"
+    ],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "35.2f padrão negativo #3 (quinta rodada, ADR-0072, 2026-10-10, por instrução do usuário: 'medir uma quinta rodada só em p.776/p.12 e depois deixa o sinal de revisão opcional do ADR-0068 fazer o seu papel'): linha de risco compartilhado numa matriz de riscos do contrato, com acompanhamento a cargo do contratante, é alocação contratual, não o acompanhamento contínuo do plano pela equipe. Medido em processo (measure_integral_candidates.py, 5 passadas, pool 13): alvo _2 p.126 FTTTT -> FFFFF, 12/12 controles inalterados. Entre processos independentes (reproducibility.py --runs 1 --acoes 35, 5 pares intercalados, ledger off): p.126 TFTTT (atual) -> FFFFF (rodada 5), pool examinado idêntico nos 10 processos, nenhum outro aceite da 35.2f em nenhum braço. Auditoria de sobreajuste limpa (estrita 0; 'matriz de riscos' é vocabulário IPMP das Ações 15/22/23/24/25/38/40/42/43/46). A 35.2e da mesma rodada reprovou (p.776 FTTTT -> TTTTT dentro do processo) e não foi aplicada; não há sexta rodada — o que restar fica com o sinal de revisão do ADR-0068."},
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 16 termos NEAR alinhados citante<-citada em 35.1, 35.2a, 35.2b, 35.2c, 35.2d, 35.2e, 35.2f, 35.2g — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."},
+      {"date": "2026-10-10", "summary": "35.2f padrão negativo (bloco A, 2026-10-10 — 'o original não é a revisão', Ações que citam outra Ação; aprovado pelo usuário como bloco medível): monitoramento/fiscalização rotineira citada como mitigação numa linha da matriz de riscos ou numa obrigação contratual não é o acompanhamento contínuo com revisão periódica e atualização das estratégias. Medido em memória sob o prompt de produção (ADR-0071) sobre o pool de produção, 2 condições × 5 passadas, gate serial a low, ledger off: 2ª redação: `_1` p.198 FFTTT→TFFFF, `_2` p.20 TFTFF→FFFFF, `_2` p.497 FTFFF→FFFFF (base era moeda neste processo; TTTTT→FFFFF na 1ª rodada para p.198/p.20); controles `_2` p.126 e `_2` p.493 (linhas de matriz, mesma classe) TTTTT→FFFFF — o reasoning armazenado da base julgava-os pelo critério de 35.2e (confusão de produto-alvo), a redação corrige; 7 controles FFFFF iguais; auditoria de sobreajuste limpa (0 n-gramas corpus-específicos)."},
+      {"date": "2026-10-10", "summary": "35.2e padrão negativo (bloco A, 2026-10-10 — 'o original não é a revisão', Ações que citam outra Ação; aprovado pelo usuário como bloco medível): cláusulas de seguro e linhas da matriz de riscos são alocação contratual entre as partes, não a estratégia de resposta operacional da equipe do projeto a cada risco. Medido em memória sob o prompt de produção (ADR-0071) sobre o pool de produção, 2 condições × 5 passadas, gate serial a low, ledger off: 4ª redação: `_2` p.776 (linhas de matriz sem cabeçalho) TTTTT→FFFFF e `_1` p.3 (justificativa da contratação lida como 'evitar') TTTTT→FFFFF; `_1` p.117/p.251 (cláusulas de seguro) F em ambas as condições neste processo e TTTTT→FFFFF nas rodadas em que eram T; 10 controles FFFFF iguais; auditoria de sobreajuste limpa (0 n-gramas corpus-específicos)."}
     ],
     "validation_notes": [
       {"product": "35.2d", "negative_pattern_index": 2, "moved_on": "2026-10-03", "note": "Reformulação 2026-09-08: a versão original deste padrão, embora conceitualmente correta, falhou 5/5 vezes num teste isolado contra o chunk real 'Danos advindos de vício ou defeito nos bens vinculados à CONCESSÃO...' — este texto substitui critério abstrato por marcadores textuais concretos, validado 0/5 no mesmo teste."}
@@ -96,6 +102,36 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "benefit_specific_indicators"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["benefícios", "públicos", "atualizado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [14],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'benefícios públicos' (14a) + marcador 'atualize' (35)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["benefícios", "públicos", "aprofundado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [14],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'aprofunde'."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["benefícios", "públicos", "revisado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [14],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'revisar'."
         }
       ],
       "evidence_logic_patterns": [
@@ -143,6 +179,26 @@
           "shared_with_acao": [
             15
           ]
+        },
+        {
+          "encoding": "near",
+          "tokens": ["probabilidade", "impacto", "atualizada"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'impacto e probabilidade' (15b) + marcador 'atualize' (35)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["classificação", "riscos", "revisada"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'classificação' (15b) + marcador 'revisar' (35)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -181,6 +237,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "risk_cause_and_consequence_analysis"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["causas", "consequências", "alternativa", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): conteúdo próprio 'causas e consequências' + marcador 'alternativa escolhida' (35)."
         }
       ],
       "evidence_logic_patterns": [],
@@ -222,6 +288,26 @@
             15
           ],
           "shared_with_acao_note": "Ação 15a já usa uma lista de categorias de risco muito próxima (ambiental, social, técnico, financeiro, regulatório) em sentido preliminar/identificação. Aqui (35.2c), o mesmo agrupamento é usado para ESTRUTURAR o plano definitivo, pós-seleção, para fins de análise e mitigação."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["categorias", "riscos", "alternativa", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'riscos ambientais, sociais, técnicos, financeiros' (15a) + marcador 'alternativa escolhida' (35)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["riscos", "categorias", "atualizado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'atualize'."
         }
       ],
       "evidence_logic_patterns": [],
@@ -266,6 +352,26 @@
             22
           ],
           "shared_with_acao_note": "A própria IPMP (excecoes desta Ação) distingue explicitamente Ações 22 e 35 por número: 'a primeira trata das responsabilidades contratuais entre as partes, enquanto a segunda foca a gestão operacional'. Ação 22.2 aloca risco CONTRATUALMENTE entre contratante/contratada; aqui (35.2d), a atribuição é de supervisão/ação OPERACIONAL pela equipe de gestão do projeto -- disambiguação explícita do próprio texto-fonte, primeira ocorrência desse tipo neste projeto."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["responsáveis", "gerenciamento", "riscos", "atualizado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'responsáveis pelo gerenciamento' (15f) + marcador 'atualize' (35)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["responsáveis", "riscos", "alternativa", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'alternativa escolhida'."
         }
       ],
       "evidence_logic_patterns": [
@@ -318,10 +424,42 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "structured_risk_response_strategy"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["estratégias", "mitigação", "aprofundadas"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'estratégias de mitigação' (15c) + marcador 'aprofunde' (35)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["estratégias", "mitigação", "atualizadas"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): idem, marcador 'atualize'."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["resposta", "risco", "alternativa", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): conteúdo próprio 'estratégia de resposta' + marcador 'alternativa escolhida' (35)."
         }
       ],
       "evidence_logic_patterns": [],
-      "negative_evidence_patterns": []
+      "negative_evidence_patterns": [
+        "Cláusulas contratuais que impõem à contratada a obrigação de manter seguros (coberturas, limites, vigência) e listas de ações de mitigação associadas a riscos atribuídos à contratada ou ao poder concedente — seguros, inspeções, manutenção, comunicação ao contratante, com ou sem o cabeçalho da matriz de riscos — são o instrumento de alocação contratual de riscos entre as partes: responsabilidades contratuais, que o IPMP distingue expressamente da gestão operacional pela equipe de projeto tratada aqui. Não são a estratégia de resposta ao risco. O critério pede o plano de gestão de riscos da equipe do projeto, aprofundado a partir da alternativa escolhida: para cada risco identificado, a resposta escolhida (evitar, mitigar, transferir ou aceitar) e as ações específicas de gerenciamento que a concretizam — o que a equipe fará, quando e com que meio, para reduzir a probabilidade ou o impacto durante a execução. Ações cujo executor é a outra parte por força do contrato descrevem obrigações dela, não a resposta da equipe; transferir um risco à contratada ou a uma seguradora por cláusula só conta quando apresentado como escolha de resposta no próprio plano, ao lado das demais ações de gerenciamento. O texto que motiva a própria contratação — por que licitar, por que agora, o que se perderia sem ela — também não é o plano: não registra um risco identificado, não escolhe entre evitar, mitigar, transferir ou aceitar e não designa ação de gerenciamento da equipe."
+      ]
     },
     "35.2f": {
       "evidence_intent": "Acompanhamento contínuo dos riscos, com revisão periódica e atualização das estratégias de mitigação.",
@@ -361,11 +499,33 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "continuous_risk_monitoring_and_periodic_review"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["plano", "riscos", "atualização", "periódica"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'plano de gestão de riscos' (15) + conteúdo próprio 'atualização periódica' (35.2f)."
+        },
+        {
+          "encoding": "near",
+          "tokens": ["monitoramento", "riscos", "revisado"],
+          "distance": 12,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'riscos' (15) + marcador 'revisar' + conteúdo 'monitoramento' (35.2f)."
         }
       ],
       "evidence_logic_patterns": [],
       "negative_evidence_patterns": [
-        "Rotina de atualização periódica ausente, mesmo com fatores operacionais relevantes abordados e medidas de mitigação coerentes apresentadas, compromete parcialmente a efetividade do plano (padrão do próprio exemplo Parcialmente Atendido)."
+        "Rotina de atualização periódica ausente, mesmo com fatores operacionais relevantes abordados e medidas de mitigação coerentes apresentadas, compromete parcialmente a efetividade do plano (padrão do próprio exemplo Parcialmente Atendido).",
+        "A menção, numa linha da matriz de riscos do contrato ou numa cláusula de obrigação da contratada, a monitoramento rotineiro, acompanhamento periódico ou fiscalização da execução contratual como ação de mitigação de um risco atribuído a uma das partes é parte do instrumento de alocação contratual de riscos, não o acompanhamento contínuo pedido aqui. Este critério também não é a estratégia de resposta ao risco (evitar, mitigar, transferir, aceitar), que é outro produto: uma lista de ações de mitigação, por si, não o atende. O critério exige que o plano de gestão de riscos, aprofundado a partir da alternativa escolhida, preveja como a equipe do projeto acompanhará os riscos ao longo da execução: periodicidade de revisão do registro de riscos, responsável por essa revisão e atualização das estratégias de mitigação quando os riscos mudarem. Uma obrigação genérica de acompanhar a contratação ou de prestar informações a órgãos de controle não descreve rotina de revisão do plano de riscos nem atualização de suas estratégias.",
+        "Linha de matriz de riscos que atribui o risco às duas partes — o risco compartilhado — continua sendo alocação contratual, mesmo quando a ação listada é acompanhar, monitorar ou fiscalizar, a cargo do contratante ou de quem fiscaliza o contrato. Verifique no texto: cada risco aparece acompanhado da parte que o assume (contratada, contratante ou ambas)? Se sim, é o instrumento que reparte os riscos entre as partes, não o acompanhamento contínuo do plano de gestão de riscos pela equipe do projeto, com revisão periódica e atualização das estratégias de mitigação."
       ]
     },
     "35.2g": {
@@ -398,6 +558,16 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "risk_mitigation_effectiveness_metrics"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["indicadores", "mitigação", "alternativa", "escolhida"],
+          "distance": 15,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [15],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'mitigação' (15c) + conteúdo 'indicadores' (35.2g) + marcador 'alternativa escolhida'."
         }
       ],
       "evidence_logic_patterns": [],

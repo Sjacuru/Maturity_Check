@@ -1,13 +1,16 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A",
       "B"
     ],
     "stage_b_sources": [
       "SMG-040_101607_2024 (full case, 1429 chunks, live /assess run + targeted isolated gate re-tests, real llama.cpp GPU server)"
+    ],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "11a padrão negativo (rota A, aprovada pelo usuário em 2026-10-09; aplicado em 2026-10-10 por instrução do usuário, item 6): exigência de habilitação/qualificação do licitante (organograma societário ou de pessoal do proponente) não é o organograma da equipe do projeto do órgão. O defeito foi visto sob o prompt integral, hoje o de produção (P1a, 2026-10-09: _2 p.214 TTTTT num processo do harness); em nove processos independentes a Ação 11 saiu sem evidência e a p.214 nunca foi aceita, e na medição da rota A o alvo estava FFFFF nas duas condições — padrão inerte neste caso, nenhum controle mudou, auditoria de sobreajuste limpa."}
     ],
     "revisions": [
       {"date": "2026-10-03", "summary": "11a/11b intent: referência a id de produto irmão reescrita como descrição de conteúdo (ADR-0064)."}
@@ -106,7 +109,9 @@
         "Organograma ou estrutura organizacional que nomeia servidores/setores concretos e suas funções/responsabilidades — não uma menção genérica de que 'a equipe será definida'",
         "11a e 11b são formas alternativas de evidência ('e/ou' no texto da própria IPMP) — a presença de apenas uma delas já é suficiente; a ausência de 11b não configura lacuna quando 11a está presente e adequado"
       ],
-      "negative_evidence_patterns": []
+      "negative_evidence_patterns": [
+        "Exigência de habilitação ou de qualificação dirigida ao licitante ou proponente — documentos que ele deve apresentar sobre a própria empresa ou o grupo que integra, inclusive organograma societário ou da estrutura de pessoal do proponente — não é o organograma da equipe do projeto. O critério pede quais servidores ou setores do órgão responsável estarão envolvidos no projeto, com as funções e responsabilidades de cada um e as instâncias de decisão; o organograma de uma empresa candidata à contratação não identifica servidores, setores nem instâncias decisórias do órgão."
+      ]
     },
     "11b": {
       "evidence_intent": "Resposta formal do órgão a questionamento de órgão de controle (TCU, controle externo ou interno) sobre a suficiência e adequação da estrutura de pessoal disponível para gerenciar o projeto — em especial a equipe de análise de projetos e de fiscalização da obra —, incluindo a identificação de consultores externos necessários. Forma alternativa de evidência ao organograma inicial — satisfaz este produto por si só.",

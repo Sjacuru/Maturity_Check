@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import uvicorn
@@ -25,7 +26,12 @@ _DB_PATH = Path("data") / "app.db"
 # The user's personal llama.cpp server, hosted outside the corporate network,
 # serves BOTH the scorer and the gate. It is the ONLY provider — see
 # _bootstrap() for why the ADR-0054 fallback is no longer wired in.
-_LLAMACPP_BASE_URL = "http://189.60.217.20:8080"
+# LLAMACPP_BASE_URL (environment or .env) overrides the address — the same
+# server on another port, or reached through an SSH tunnel; the provider
+# never changes (ADR-0059).
+_LLAMACPP_BASE_URL = os.environ.get(
+    "LLAMACPP_BASE_URL", "http://189.60.217.20:8080"
+).rstrip("/")
 _LLAMACPP_MODEL = "gpt-oss-20b-F16.gguf"
 # gpt-oss reasoning level for the relevance gate only (ADR-0065); the scorer
 # keeps the model default.

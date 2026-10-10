@@ -1,9 +1,12 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": ["A"],
     "stage_b_sources": [],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 1 termo NEAR alinhado citante<-citada em 18a — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."}
+    ],
     "revisions": [
       {"date": "2026-10-03", "summary": "18a concept#2: referência a id de produto irmão reescrita como descrição de conteúdo (ADR-0064)."}
     ],
@@ -77,6 +80,16 @@
           "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "retained_options_as_basis"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["lista", "opções", "revisada"],
+          "distance": 10,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active",
+          "shared_with_acao": [6],
+          "shared_with_acao_note": "Bloco B (2026-10-10, termo alinhado citante<-citada): âncora 'lista de opções' (6) + marcador 'revisão' (18a)."
         }
       ],
       "evidence_logic_patterns": [
