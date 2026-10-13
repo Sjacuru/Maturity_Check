@@ -216,3 +216,81 @@ round: what remains is the signal's and the auditor's, as the user decided.
 Widening the signal (two coin accepts on one product; a 0 resting on a single
 accept the scorer rejected) would change what ADR-0068 claims, not any score,
 and is the user's call.
+
+## 35.2e measured across processes (2026-10-10, at the request of the user)
+
+35.2e had been rejected on the in-process measurement alone. The user asked
+for it to be measured across processes as well, and set the rule for adopting
+anything that day: *"Adotar apenas o que tornou o sistema mais consistente."*
+Five pairs of independent `--acoes 35` processes, interleaved current /
+candidate, ledger off, reasoning recorded (`scratchpad/acc/a35e_{cur,cand}{1..5}`);
+the current arm is the profile on disk (35.2f applied); the examined pool is
+identical in all ten processes.
+
+- **Direction confirmed across processes, the opposite of the in-process
+  verdict.** 35.2e `_2` p.776 was accepted in 7 of 10 current processes (these
+  five plus the five round-5 processes above, which ran byte-identical
+  prompts) and in 1 of 5 under the candidate. In process the same candidate
+  had turned it TTTTT.
+- **Outcome of Ação 35: current 1, 1, sem evidência, 1, 1 → candidate sem
+  evidência, sem evidência, 1, 0, 1.** Changes against the mode 1 of 5 → 3 of
+  5; pairs of processes with the same score 60 % → 20 %. Batch constancy did
+  not move (four distinct batches in five processes in both arms; 10 % of the
+  pairs identical), nor did verdict constancy (98.6 % → 98.8 % per pair). The
+  ADR-0068 signal fired in 4 of 5 current processes and 2 of 5 candidate ones.
+- **Not adopted**, by the rule of the day.
+
+The mechanism is general. When the positive score of an Ação rests on several
+false coins, removing the most frequent one hands the score to the rarer ones
+(here 35.2e `_1` p.3, 2 of 10, and 35.2b `_2` p.810, 3 of 10): the target
+moves the intended way and the outcome becomes less constant. The score is
+constant only at the two ends of that path, with enough coins that one always
+lands (false credit) or with none left (a stable "not met"). A rule that
+accepts a step only when it is more consistent therefore stops on the
+false-credit side. By the same rule 35.2f, applied in the morning under the
+rule then in force, would not have qualified: batch constancy unchanged,
+score 1 in five of five processes before, and over the ten current processes
+now 1 in seven, 0 in two, sem evidência in one. Whether the rule applies to
+35.2f retroactively is the decision of the user.
+
+## R1–R4 closed (2026-10-10)
+
+On 2026-10-08 four reading tasks on the citing Ações were proposed and then
+suspended until the larger questions were decided. ADR-0070, this ADR and
+ADR-0073 decided them. The user accepted the closure below on 2026-10-10.
+
+- **R1** compared the `evidence_intent` of the reconfirmation Ações that
+  evidence against those that do not. Block A's reading answered it: the
+  reconfirmations that "evidence" do so by accepting the cited Ação's original
+  instrument, not through better intents.
+- **R2**, a controlled dependency test on Ação 14, is superseded by ADR-0070's
+  dependency cap and review signal.
+- **R3** asked whether cases 1 and 4 (the citing Ação and the cited one both
+  empty) should be reported as un-evidenceable or have their criterion
+  rewritten. They are reported as `sem evidência`, with no rewrite. The corpus
+  records no performed revision, Block B found 0 hits, and ADR-0073 forbids
+  writing a term or a criterion toward the document.
+- **R4**, case 3 read per product (8 and 42), is absorbed by the item-4
+  measurement: 42c's pattern was applied, 8d's was rejected, and 8b was inert.
+
+## Ação 35, 43b and 42c in full processes (2026-10-11)
+
+The fifth-round and 35.2e series above ran `--acoes 35` processes. The
+2026-10-11 section of ADR-0071 shows that such processes replay and full
+processes do not, so those series give direction only. Test cycle 2 ran ten full
+processes with the current mixed state (35.2f applied, 35.2e not):
+
+- Ação 35 scored 1 in 9 of 10 processes and 0 once, tolerable on the user's
+  scale. The 1 rests on false coins: 35.2e `_2` p.776 accepted 8 of 10 times,
+  `_1` p.3 4 of 10, 35.2b `_2` p.810 3 of 10.
+- 35.2f `_2` p.126 was accepted 0 of 10 times: the round-5 pattern holds in
+  full processes.
+- Block A's 43b `_1` p.105 was accepted 2 of 10 times: it mostly holds.
+- 42c `_1` p.106 was accepted 7 of 10 times. The 42c pattern, applied on
+  2026-10-09 after 3/3 rejections in `--acoes 31,42` processes and rejected in
+  all three A+B+C processes above, does not hold in full processes; those
+  rejections were coin tosses.
+
+The choice for Ação 35 among (i), (ii) and (iii) is still the user's. In full
+processes (iii) is nearly constant at 1, built on the 35.2e coin that (ii)
+would remove.

@@ -95,7 +95,7 @@ def _check_no_review_outcomes(db_path: Path, process_number: str) -> None:
 
 
 def _force_delete(db_path: Path, process_number: str) -> None:
-    from retrieval import invalidate_vector_index
+    from retrieval import invalidate_document_index, invalidate_vector_index
 
     con = sqlite3.connect(str(db_path))
     try:
@@ -115,6 +115,7 @@ def _force_delete(db_path: Path, process_number: str) -> None:
         con.close()
 
     invalidate_vector_index(process_number)
+    invalidate_document_index(process_number)
 
 
 # ── GET /cases/{process_number}/evaluations ──────────────────────────────────

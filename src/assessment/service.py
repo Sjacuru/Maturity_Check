@@ -12,6 +12,7 @@ from evaluation import (
     ProductGateReport,
     RejectedChunk,
     evaluate,
+    filter_focal_document,
     select_evidence,
 )
 from evaluation._config import get_gate_llm_client, get_llm_client
@@ -19,7 +20,12 @@ from evaluation.llm.llamacpp import LlamaCppBusy, LlamaCppTimeout, LlamaCppUnava
 from evaluation.progress import set_reporter
 from extraction import extract_document
 from ingestion import get_ipmp_store
-from retrieval import index, invalidate_vector_index, retrieve_hybrid_candidates_for_acao
+from retrieval import (
+    index,
+    invalidate_document_index,
+    invalidate_vector_index,
+    retrieve_hybrid_candidates_for_acao,
+)
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.query.document import retrieve_document_focused
 
@@ -179,12 +185,25 @@ def _retrieve_and_select(
     reports to return for that route.
 
     Regex (Step D) was removed in ADR-0052 — see cascade.py for reasoning.
+
+    Both routes pass the genre filter (ADR-0074): the focal document through
+    filter_focal_document(), the per-product candidates inside select_evidence().
     """
     progress.emit(
         process_number, "recuperando_evidencias",
         f"Ação {acao_id}: buscando documento focal reconhecido...",
     )
     doc_result = retrieve_document_focused(acao_id, process_number)
+    if doc_result is not None:
+        # ADR-0074: a focal document passes the genre filter too; when only
+        # the per-product route can filter it, it falls through to that route.
+        doc_result = filter_focal_document(acao_id, process_number, doc_result)
+        if doc_result is None:
+            progress.emit(
+                process_number, "selecionando_rota",
+                f"Ação {acao_id}: documento focal é texto de instrumento — seguindo pela "
+                "busca BM25 + vetorial com gate.",
+            )
     if doc_result is not None:
         progress.emit(
             process_number, "selecionando_rota",
@@ -292,6 +311,7 @@ def _process_file(db_path: Path, process_number: str, path: Path) -> str:
     )
     _delete_chunks_for_file(db_path, process_number, filename)
     invalidate_vector_index(process_number)
+    invalidate_document_index(process_number)
     chunks = extract_document(path)
     index(process_number, chunks)
     _upsert_fingerprint(db_path, process_number, filename, sha256)

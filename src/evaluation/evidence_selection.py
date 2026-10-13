@@ -7,9 +7,11 @@ from dataclasses import dataclass, field
 
 from rapidfuzz import fuzz
 
-from ingestion import get_ipmp_store, get_retrieval_profile_store
+from extraction.noise import strip_extraction_noise
+from ingestion import get_genre_exemption_store, get_ipmp_store, get_retrieval_profile_store
 from ingestion.retrieval_profile import ExpectedProductProfile
-from retrieval import fetch_neighbor_chunks
+from retrieval import fetch_neighbor_chunks, get_chunk_genres
+from retrieval.genre import INSTRUMENT
 from retrieval.interfaces.contracts import RetrievedChunk
 
 from evaluation._config import get_gate_ledger, get_gate_llm_client
@@ -32,21 +34,32 @@ _ANCHOR_TARGET = 5
 _EXPANSION_TARGET = 5
 
 # Neighbour expansion: gate the previous/next chunk of each ACCEPTED chunk.
-# Off since 2026-10-06, because the question it asks depends on an answer:
-# a flip on an accept changes WHICH chunks are gated, not just how one is
-# judged. Measured over independent clean passes of the whole case (ledger
-# off, one process per pass):
-#   * with expansion  — the per-product n_examined vector repeats in 26/46
-#     Ações; 27-37 of the differing (chunk, product) pairs are neighbours
-#   * without it      — 46/46 in three passes, zero neighbour differences,
-#     8% fewer gate calls, and no Expected Product lost its evidenced bit
-#     (the 45 neighbour chunks it contributed only ever reinforced products
-#     already evidenced by a chunk from their own top-_MAX_EXAMINED)
-# Kept switchable: the diagnostics turn it back on to measure the output
-# with it (reproducibility.py --expansion), and the 23 products that used
-# neighbours stayed just as unstable without them, so this removes the
-# cascade, not the ambiguity that causes it.
-EXPANSION_ENABLED = False
+# Off from 2026-10-06 to 2026-10-13, because the question it asks depends on
+# an answer: a flip on an accept changes WHICH chunks are gated, not just how
+# one is judged (ADR-0069: with it on, the per-product n_examined vector
+# repeated in 26/46 Ações over clean passes; without it, 46/46).
+# Back on since 2026-10-13 by the user's decision, behind the genre filter
+# (ADR-0074): a neighbour is gated only when its document is NOT instrument
+# text -- the rule the candidates pass through, applied to every product,
+# exempt ones included. The neighbours of an accepted passage are mostly pages
+# of the same document; with instrument text gone, what is left to expand is
+# the passages of studies, opinions and acts. A neighbour already judged for
+# the product in this pass is not asked again. Test cycle 3 measures what this
+# costs in constancy; reproducibility.py --no-expansion turns it off.
+EXPANSION_ENABLED = True
+
+# Genre filter (ADR-0074). For every Expected Product whose IPMP criterion is
+# not the instrument itself (data/ipmp/isencoes_genero.json lists the ones
+# that are), candidates from documents of genre INSTRUMENTO -- contract or
+# minuta, edital, termo de referência and their normative annexes -- are
+# removed BEFORE the near-duplicate prefilter and the _MAX_EXAMINED cut, so the
+# examined pool is filled by the best-ranked candidates that are not
+# instrument text. Over the ten processes of test cycle 2, 90 of the 101
+# confound pairs that the gate accepted at random were contract, edital or TR
+# text. The genre is the DOCUMENT's, read from the canonical document index
+# (retrieval.genre), not a vote of the chunk alone. Switchable for
+# diagnostics: reproducibility.py --no-genre-filter.
+GENRE_FILTER_ENABLED = True
 
 # Worst-case bound on candidates examined per product before giving up, even
 # if fewer than _ANCHOR_TARGET were accepted. Without this, a strict gate
@@ -79,45 +92,10 @@ GATE_MAX_IN_FLIGHT = 1
 # final safety net for any residual overflow (ADR-0050). Raised 21,000 ->
 # 40,000 on 2026-09-28 in lockstep with it; see the derivation in evaluator.py.
 # These two must move together — whichever is lower is the one that actually
-# binds, so raising only one changes nothing.
-_EVIDENCE_BUDGET_CHARS = 40_000
-
-# Deterministic stripping of mechanical PDF-extraction noise (repeated
-# header/address block, digital-signature block, version tag, vertically-
-# rotated watermark) — applied before the chunk text ever reaches the LLM
-# gate. The gate itself no longer attempts any further cleaning (dropped
-# 2026-06-29): regenerating a cleaned copy of the chunk cost 50-86s per accept
-# vs. ~4s for a bare yes/no, and the cleaning was unreliable enough (silent
-# early-stop, few-shot regurgitation — see ADR-0050 amendments) that its
-# output was rarely usable anyway. This deterministic pass is the only
-# cleaning that happens now.
-_HEADER_RE = re.compile(
-    r"PREFEITURA DA CIDADE DO RIO DE JANEIRO\s*\n"
-    r"Secretaria Municipal de Coordena[cç][aã]o Governamental\s*\n"
-    # "Cavalcanti" — PDF ligature extraction sometimes mangles "ti" into a
-    # single substitute glyph (observed: "Ɵ") or a 2-char CJK look-alike
-    # (observed: "琀椀"); match either the clean spelling or 1-2 stand-in chars.
-    r"R\. Afonso Cavalcan(?:ti|\S{1,2}), 455 [–-] Cidade Nova\s*\n"
-    r"Rio de Janeiro - RJ - CEP 20211-110\s*\n?",
-    re.IGNORECASE,
-)
-
-_SIGNATURE_BLOCK_RE = re.compile(
-    r"(SMGPRO\d+V\d+\s*\n(MINUTA\s*\n)?)?"
-    r"Autenticado digitalmente por .+? [aà]s \d{2}:\d{2}:\d{2}\.\s+"
-    r"Documento N[ºo°]:.+?consulta [aà] autenticidade em\s+"
-    r"https?://\S+\s*",
-    re.IGNORECASE | re.DOTALL,
-)
-
-_BARE_VERSION_TAG_RE = re.compile(r"^SMGPRO\d+V\d+\s*\n(MINUTA\s*\n)?", re.MULTILINE)
-
-# Vertically-rotated margin watermark, extracted one glyph per line by the PDF
-# layout parser ("processo.rio Secretaria Municipal de... / SMG###"). Any run
-# of 10+ consecutive single-character (or blank) lines is this artifact, never
-# real prose; the trailing short alphanumeric line is the page-number tail,
-# which doesn't get split the same way as the rest of the stamp.
-_WATERMARK_RUN_RE = re.compile(r"(?:^[^\n]?\n){10,}(?:^[A-Za-z0-9]{1,6}\n?)?", re.MULTILINE)
+# binds, so raising only one changes nothing. evaluator moved to 70,000 on
+# 2026-10-06 while expansion was off, so this one was never reached; it
+# follows now that expansion is back (ADR-0074).
+_EVIDENCE_BUDGET_CHARS = 70_000
 
 # Similarity threshold for near-duplicate removal at the end of select_evidence().
 # Two accepted chunks with SequenceMatcher.ratio() >= this are considered
@@ -139,14 +117,6 @@ _SEMANTIC_DEDUP_WS_RE = re.compile(r"\s+")
 # At 0.92+, texts are so similar (same clause on different pages, same lot
 # repeating the same conclusion) that gating one is equivalent to gating all.
 _PREGATE_DEDUP_THRESHOLD = 0.92
-
-
-def strip_extraction_noise(text: str) -> str:
-    text = _HEADER_RE.sub("", text)
-    text = _SIGNATURE_BLOCK_RE.sub("", text)
-    text = _BARE_VERSION_TAG_RE.sub("", text)
-    text = _WATERMARK_RUN_RE.sub("", text)
-    return text.strip()
 
 
 @dataclass
@@ -183,6 +153,8 @@ class _GateStats:
     n_rejected: int = 0
     n_failures: int = 0
     n_ledger_hits: int = 0
+    n_genre_excluded: int = 0
+    n_neighbors_genre_excluded: int = 0
     providers: set[str] = field(default_factory=set)
     models: set[str] = field(default_factory=set)
 
@@ -212,6 +184,8 @@ class _GateStats:
             providers=sorted(self.providers),
             models=sorted(self.models),
             n_ledger_hits=self.n_ledger_hits,
+            n_genre_excluded=self.n_genre_excluded,
+            n_neighbors_genre_excluded=self.n_neighbors_genre_excluded,
         )
 
 
@@ -339,6 +313,11 @@ def select_evidence(
     # Identity for the gate prompt: which Acao and which Expected Product this
     # judgement belongs to. Resolved once here rather than per call.
     acao = get_ipmp_store().acoes.get(acao_id)
+    # ADR-0074: the genre of every chunk, by its document, resolved once per
+    # Ação before any product is gated -- the index is built or found current
+    # here, never in the middle of a pass.
+    genres = _chunk_genres(process_number) if GENRE_FILTER_ENABLED else {}
+    exempt = get_genre_exemption_store().produtos(acao_id)
 
     gate_client = get_gate_llm_client()
     describe_route = getattr(gate_client, "describe_route", None)
@@ -365,9 +344,13 @@ def select_evidence(
         profile_product = (
             profile_acao.expected_products.get(product_id) if profile_acao else None
         )
+        n_excluded = 0
+        if genres and product_id not in exempt:
+            ranked, n_excluded = _drop_instrument_text(ranked, genres)
         deduped = _prefilter_near_duplicates(ranked)
         return _select_for_product(
-            product_id, deduped, profile_product, process_number, acao, memo=gate_memo
+            product_id, deduped, profile_product, process_number, acao, memo=gate_memo,
+            genres=genres, n_genre_excluded=n_excluded,
         )
 
     if GATE_MAX_IN_FLIGHT <= 1:
@@ -415,6 +398,8 @@ def _select_for_product(
     process_number: str,
     acao=None,
     memo: dict[str, _GateCall] | None = None,
+    genres: dict[tuple[str, int, int], str] | None = None,
+    n_genre_excluded: int = 0,
 ) -> _ProductSelection:
     if profile_product is None or not profile_product.evidence_intent:
         anchors = [
@@ -423,7 +408,9 @@ def _select_for_product(
         ]
         # Ungated degrade path: no gate call was made, so there is nothing to
         # report beyond how many candidates went straight through.
-        stats = _GateStats(n_candidates=len(ranked), n_accepted=len(anchors))
+        stats = _GateStats(
+            n_candidates=len(ranked), n_accepted=len(anchors), n_genre_excluded=n_genre_excluded
+        )
         return _ProductSelection(
             anchors=anchors, expansions=[], rejected=[], report=stats.to_report(product_id)
         )
@@ -432,12 +419,16 @@ def _select_for_product(
     concepts = [c.text for c in profile_product.retrieval_signal_concepts]
     rejected: list[RejectedChunk] = []
     product_anchors: list[tuple[float, RetrievedChunk]] = []
-    stats = _GateStats(n_candidates=len(ranked))
+    stats = _GateStats(n_candidates=len(ranked), n_genre_excluded=n_genre_excluded)
 
     examined_pool = ranked[:_MAX_EXAMINED]
+    excluded = (
+        f" ({n_genre_excluded} de texto de instrumento retirado(s) antes do gate)"
+        if n_genre_excluded else ""
+    )
     report(
         "avaliando_relevancia",
-        f"Produto {product_id}: avaliando até {len(examined_pool)} candidato(s)...",
+        f"Produto {product_id}: avaliando até {len(examined_pool)} candidato(s){excluded}...",
     )
     negative_patterns = profile_product.negative_evidence_patterns
     for score, chunk in examined_pool:
@@ -471,6 +462,7 @@ def _select_for_product(
         _expand_anchors(
             product_anchors, product_id, process_number, evidence_intent, concepts, rejected,
             profile_product=profile_product, stats=stats, acao=acao, memo=memo,
+            genres=genres, skip_keys={_natural_key(chunk) for _, chunk in examined_pool},
         )
         if EXPANSION_ENABLED
         else []
@@ -499,6 +491,61 @@ def _select_for_product(
 
 def _natural_key(chunk: RetrievedChunk) -> tuple[str, int, int]:
     return (chunk.filename, chunk.page_number, chunk.chunk_index)
+
+
+def _chunk_genres(process_number: str) -> dict[tuple[str, int, int], str]:
+    """Genre of every chunk of the process, by its document (ADR-0074).
+
+    The one seam to the canonical document index: tests replace it, production
+    reads (and, when stale, rebuilds) the index next to the chunks.
+    """
+    return get_chunk_genres(process_number)
+
+
+def _drop_instrument_text(
+    ranked: list[tuple[float, RetrievedChunk]],
+    genres: dict[tuple[str, int, int], str],
+) -> tuple[list[tuple[float, RetrievedChunk]], int]:
+    """The candidates whose document is not instrument text, in rank order,
+    and how many were removed. A chunk the index does not know is kept: in
+    doubt, the classifier's rule is OUTRO."""
+    kept = [(score, chunk) for score, chunk in ranked
+            if genres.get(_natural_key(chunk)) != INSTRUMENT]
+    return kept, len(ranked) - len(kept)
+
+
+def filter_focal_document(
+    acao_id: int,
+    process_number: str,
+    chunks: list[RetrievedChunk],
+) -> list[RetrievedChunk] | None:
+    """The Step A/B route (one focal document, ungated) under the genre filter.
+
+    A focal document reaches the scorer unattributed, with no product block of
+    its own, so its instrument text cannot be kept for one product and removed
+    for another. Returns the chunks to use, or None to fall through to the
+    per-product hybrid route:
+      * the filter is off, or the document has no instrument chunk -> as it is
+      * every scored product of the Ação is exempt -> as it is
+      * some products exempt and some not -> None (only the per-product route
+        can keep instrument text for the exempt products alone)
+      * no product exempt -> the document without its instrument chunks, or
+        None when nothing is left
+    """
+    if not GENRE_FILTER_ENABLED or not chunks:
+        return chunks
+    genres = _chunk_genres(process_number)
+    if not any(genres.get(_natural_key(c)) == INSTRUMENT for c in chunks):
+        return chunks
+    acao = get_ipmp_store().acoes.get(acao_id)
+    scored = {p.id for p in acao.produtos_esperados if p.scored} if acao else set()
+    exempt = get_genre_exemption_store().produtos(acao_id) & scored
+    if scored and exempt == scored:
+        return chunks
+    if exempt:
+        return None
+    kept = [c for c in chunks if genres.get(_natural_key(c)) != INSTRUMENT]
+    return kept or None
 
 
 def _deduplicate_across_products(
@@ -577,9 +624,22 @@ def _expand_anchors(
     stats: _GateStats | None = None,
     acao=None,
     memo: dict[str, _GateCall] | None = None,
+    genres: dict[tuple[str, int, int], str] | None = None,
+    skip_keys: set[tuple[str, int, int]] | None = None,
 ) -> list[tuple[float, RetrievedChunk]]:
+    """Gate the previous/next chunk of each anchor, up to _EXPANSION_TARGET
+    accepted neighbours per product.
+
+    A neighbour whose document is instrument text (genres, ADR-0074) is not
+    gated, for any product. A neighbour already judged for this product in
+    this pass -- a member of the examined pool (skip_keys) or the neighbour of
+    an earlier anchor -- is not asked again: its answer is already known, and
+    re-asking only duplicated the rejected rows and spent expansion slots on
+    chunks that were already anchors.
+    """
     negative_patterns = profile_product.negative_evidence_patterns if profile_product else []
     product_expansions: list[tuple[float, RetrievedChunk]] = []
+    seen: set[tuple[str, int, int]] = set(skip_keys or ())
     for anchor_score, anchor in product_anchors:
         if len(product_expansions) >= _EXPANSION_TARGET:
             break
@@ -589,6 +649,14 @@ def _expand_anchors(
         for neighbor in (c for c in (prev_chunk, next_chunk) if c is not None):
             if len(product_expansions) >= _EXPANSION_TARGET:
                 break
+            key = _natural_key(neighbor)
+            if key in seen:
+                continue
+            seen.add(key)
+            if genres and genres.get(key) == INSTRUMENT:
+                if stats is not None:
+                    stats.n_neighbors_genre_excluded += 1
+                continue
             stripped_text = strip_extraction_noise(neighbor.text)
             call = _gate_chunk(
                 stripped_text, evidence_intent, concepts, negative_patterns,

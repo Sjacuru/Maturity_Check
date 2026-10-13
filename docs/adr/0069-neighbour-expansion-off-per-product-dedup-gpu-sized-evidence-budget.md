@@ -66,3 +66,12 @@ encoded in the list, a lane is not a priority signal.
 Reproducibility is untouched by all three: retrieval is deterministic, the
 examined set is now a function of retrieval alone, and both dedup and truncation
 are deterministic functions of the batch.
+
+## Amended 2026-10-13 by ADR-0074
+
+Point 1 is partially superseded. Neighbour expansion is ON again by default, behind the
+genre filter: a neighbour of an accepted chunk is gated only when its document is not
+instrument text, and a neighbour already judged for the product in the pass is not asked
+again. `reproducibility.py --no-expansion` restores the state this ADR measured.
+`_EVIDENCE_BUDGET_CHARS` in evidence_selection now follows the evaluator at 70 000.
+Points 2 and 3 stand.

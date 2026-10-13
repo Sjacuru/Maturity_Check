@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from retrieval._config import configure
+from retrieval.genre import get_chunk_genres, get_document_index, invalidate_document_index
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.indexing.writer import index
 from retrieval.query.cascade import retrieve_for_acao
@@ -16,4 +17,7 @@ __all__ = [
     "fetch_neighbor_chunks",
     "RetrievedChunk",
     "invalidate_vector_index",
+    "get_chunk_genres",
+    "get_document_index",
+    "invalidate_document_index",
 ]

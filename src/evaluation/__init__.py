@@ -12,6 +12,7 @@ from evaluation.evaluator import evaluate
 from evaluation.evidence_selection import (
     GATE_MAX_IN_FLIGHT,
     EvidenceSelectionResult,
+    filter_focal_document,
     select_evidence,
 )
 from evaluation.interfaces.contracts import (
@@ -33,6 +34,7 @@ __all__ = [
     "GateLedger",
     "evaluate",
     "select_evidence",
+    "filter_focal_document",
     "EvidenceSelectionResult",
     "EvaluationResult",
     "ProductGateReport",

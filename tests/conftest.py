@@ -70,3 +70,21 @@ def _stub_gate_llm_client(monkeypatch):
     from evaluation.llm.ollama import OllamaClient
 
     monkeypatch.setattr(_eval_cfg, "_gate_client", OllamaClient(model="mistral"))
+
+
+@pytest.fixture(autouse=True)
+def _stub_document_genres_and_neighbors(monkeypatch):
+    """No genre map and no neighbours unless a test asks for them (ADR-0074).
+
+    select_evidence() reads the canonical document index once per Ação and,
+    with neighbour expansion on by default, fetches the neighbours of every
+    accepted chunk -- both from the retrieval DB, which most unit tests never
+    configure. The empty map means "no chunk is known to be instrument text",
+    so nothing is filtered; tests of the filter pass their own map, and
+    tests/test_genre_index.py builds the real index on a real DB. Tests of the
+    expansion patch fetch_neighbor_chunks themselves, after this fixture.
+    """
+    import evaluation.evidence_selection as _es
+
+    monkeypatch.setattr(_es, "_chunk_genres", lambda process_number: {})
+    monkeypatch.setattr(_es, "fetch_neighbor_chunks", lambda *args, **kwargs: (None, None))

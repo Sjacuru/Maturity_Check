@@ -32,12 +32,63 @@ USING fts5(
 """
 
 
+# Canonical document index (ADR-0074): where each document starts and ends
+# inside each file, and the genre every chunk inherits from its document.
+# Derived data, rebuilt from the chunks whenever they or the rules change.
+_CREATE_DOCUMENT_INDEX = """
+CREATE TABLE IF NOT EXISTS document_index (
+    process_number      TEXT    NOT NULL,
+    filename            TEXT    NOT NULL,
+    segment_index       INTEGER NOT NULL,
+    page_start          INTEGER NOT NULL,
+    page_end            INTEGER NOT NULL,
+    start_reason        TEXT    NOT NULL,
+    doc_type            TEXT,
+    title               TEXT,
+    genre               TEXT    NOT NULL,
+    genre_basis         TEXT    NOT NULL,
+    n_chunks            INTEGER NOT NULL,
+    n_chunks_instrument INTEGER NOT NULL,
+    rules_version       TEXT    NOT NULL,
+    PRIMARY KEY (process_number, filename, segment_index)
+);
+"""
+
+_CREATE_CHUNK_GENRE = """
+CREATE TABLE IF NOT EXISTS chunk_genre (
+    process_number TEXT    NOT NULL,
+    filename       TEXT    NOT NULL,
+    page_number    INTEGER NOT NULL,
+    chunk_index    INTEGER NOT NULL,
+    segment_index  INTEGER NOT NULL,
+    chunk_label    TEXT    NOT NULL,
+    genre          TEXT    NOT NULL,
+    rules_version  TEXT    NOT NULL,
+    PRIMARY KEY (process_number, filename, page_number, chunk_index)
+);
+"""
+
+_CREATE_DOCUMENT_INDEX_STATE = """
+CREATE TABLE IF NOT EXISTS document_index_state (
+    process_number TEXT PRIMARY KEY,
+    rules_version  TEXT    NOT NULL,
+    chunk_count    INTEGER NOT NULL,
+    chunk_checksum TEXT    NOT NULL,
+    built_at       TEXT    NOT NULL
+);
+"""
+
+GENRE_TABLES_DDL = (_CREATE_DOCUMENT_INDEX, _CREATE_CHUNK_GENRE, _CREATE_DOCUMENT_INDEX_STATE)
+
+
 def init_db(db_path: str | Path) -> None:
     con = sqlite3.connect(str(db_path))
     try:
         con.execute("PRAGMA journal_mode=WAL;")
         con.execute(_CREATE_CHUNKS)
         con.execute(_CREATE_CHUNKS_FTS)
+        for ddl in GENRE_TABLES_DDL:
+            con.execute(ddl)
         con.commit()
     finally:
         con.close()

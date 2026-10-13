@@ -320,3 +320,37 @@ def test_per_file_replacement_preserves_other_files(db_path, tmp_path):
     # Total: 1 (DocA new) + 3 (DocB unchanged) = 4
     count_after_second = _chunk_count(db_path, "P001")
     assert count_after_second == 4
+
+
+# -- canonical document index (ADR-0074) ----------------------------------------
+
+def test_the_document_index_is_dropped_for_new_and_replaced_files_only(db_path, tmp_path):
+    """A new or replaced file drops the process's document index, so its next
+    read rebuilds it from the new chunks; a reused file leaves it alone."""
+    svc = AssessmentService()
+    pdf = tmp_path / "EVTEA.pdf"
+    pdf.write_bytes(b"fake pdf content v1")
+    with patch("assessment.service.invalidate_document_index") as dropped, \
+            patch("assessment.service.extract_document", return_value=_make_chunks("EVTEA.pdf")):
+        svc.run_assessment("P001", [pdf])                      # new
+        assert [c.args for c in dropped.call_args_list] == [("P001",)]
+        svc.run_assessment("P001", [pdf])                      # reused
+        assert dropped.call_count == 1
+        pdf.write_bytes(b"fake pdf content v2")
+        svc.run_assessment("P001", [pdf])                      # replaced
+        assert dropped.call_count == 2
+
+
+def test_the_rebuilt_index_describes_the_replacing_chunks(db_path, tmp_path):
+    from retrieval import get_chunk_genres
+
+    svc = AssessmentService()
+    pdf = tmp_path / "EVTEA.pdf"
+    pdf.write_bytes(b"fake pdf content v1")
+    with patch("assessment.service.extract_document", return_value=_make_chunks("EVTEA.pdf", n=3)):
+        svc.run_assessment("P001", [pdf])
+    assert len(get_chunk_genres("P001")) == 3
+    pdf.write_bytes(b"fake pdf content v2")
+    with patch("assessment.service.extract_document", return_value=_make_chunks("EVTEA.pdf", n=1)):
+        svc.run_assessment("P001", [pdf])
+    assert set(get_chunk_genres("P001")) == {("EVTEA.pdf", 1, 0)}

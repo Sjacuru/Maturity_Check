@@ -30,6 +30,7 @@ Usage:
     python scripts/diagnostics/reproducibility.py --runs 10 --acoes 31,37,40,43
     python scripts/diagnostics/reproducibility.py --runs 10 --ledger scratchpad/acc/ledger.sqlite
     python scripts/diagnostics/reproducibility.py --runs 1 --no-prompt-cache
+    python scripts/diagnostics/reproducibility.py --runs 1 --no-expansion --no-genre-filter
     python scripts/diagnostics/reproducibility.py --runs 1 --acoes 35 --apply 35.2e,35.2f --candidates scripts/diagnostics/candidates_acao35_round5.py
 """
 
@@ -63,7 +64,10 @@ from evaluation import GateLedger, configure_gate_ledger  # noqa: E402
 # scratch file so the app DB's own ledger is never touched.
 configure_gate_ledger(None)
 from evaluation import evaluate  # noqa: E402
+from evaluation import evidence_selection as _es  # noqa: E402
 from ingestion import get_ipmp_store  # noqa: E402
+from retrieval import get_document_index  # noqa: E402
+from retrieval.genre import GENRE_RULES_VERSION, INSTRUMENT  # noqa: E402
 
 DEFAULT_PROCESS = "SMG-040_101607_2024"
 
@@ -109,7 +113,9 @@ def _gate_detail(result) -> dict:
     rejected: every explicit negative verdict (and failed call) as
     (filename, page, chunk_index, product, failed). products: per Expected
     Product, candidates / examined / accepted / rejected / failures / ledger
-    hits (the last one is 0 without --ledger). verdicts:
+    hits (0 without --ledger) / candidates removed as instrument text /
+    neighbours not gated as instrument text (ADR-0074; the last two were
+    added on 2026-10-13, older files have six elements). verdicts:
     the scorer's evidenced flag per product, plus score_source. Together with
     the accepted signature this pins each run's gate verdicts: an examined
     chunk that is in neither list was accepted and then dropped by the
@@ -122,7 +128,8 @@ def _gate_detail(result) -> dict:
         ),
         "products": {
             g.expected_product_id: [g.n_candidates, g.n_examined, g.n_accepted, g.n_rejected,
-                                    g.n_gate_failures, g.n_ledger_hits]
+                                    g.n_gate_failures, g.n_ledger_hits, g.n_genre_excluded,
+                                    g.n_neighbors_genre_excluded]
             for g in result.product_gate_reports
         },
         "verdicts": {v.product_id: v.evidenced for v in result.product_verdicts},
@@ -169,6 +176,32 @@ def _install_gate_variant(name: str) -> None:
     print(f"gate variant '{name}' installed in memory")
 
 
+def _term_label(term) -> str:
+    """A query term as the candidates files name it: the phrase, or NEAR(tok, ...)."""
+    return term.text if term.encoding == "phrase" else "NEAR(" + ", ".join(term.tokens) + ")"
+
+
+def _patch_terms(pid: str, terms: list, cand: dict) -> list:
+    """Drop the terms named in remover_termos; turn those in rebaixar_termos
+    into synthetic/experimental (out of BM25, ADR-0056). Every named term must
+    exist, so a typo cannot silently measure the unpatched profile."""
+    remover, rebaixar = set(cand.get("remover_termos", [])), set(cand.get("rebaixar_termos", []))
+    out, seen = [], set()
+    for t in terms:
+        label = _term_label(t)
+        if label in remover:
+            seen.add(label)
+            continue
+        if label in rebaixar:
+            seen.add(label)
+            t = t.model_copy(update={"status": "experimental", "provenance": "synthetic"})
+        out.append(t)
+    missing = (remover | rebaixar) - seen
+    if missing:
+        raise SystemExit(f"{pid}: terms not found in the profile: {sorted(missing)}")
+    return out
+
+
 def _apply_candidates(path: str, products: str | None) -> dict:
     """Append each named candidate's patch to the in-memory profile store."""
     import importlib.util
@@ -189,7 +222,26 @@ def _apply_candidates(path: str, products: str | None) -> dict:
             pp.evidence_intent = pp.evidence_intent.rstrip() + cand["intent_add"]
         if cand.get("negativo"):
             pp.negative_evidence_patterns = list(pp.negative_evidence_patterns) + [cand["negativo"]]
-        applied[pid] = {k: cand[k] for k in ("intent_add", "negativo") if cand.get(k)}
+        if cand.get("negativos_substitui"):
+            trocas = dict(cand["negativos_substitui"])
+            atuais = list(pp.negative_evidence_patterns)
+            faltam = [velho[:60] for velho in trocas if atuais.count(velho) != 1]
+            if faltam:
+                raise SystemExit(f"{pid}: negative patterns to replace not found exactly once: {faltam}")
+            pp.negative_evidence_patterns = [trocas.get(n, n) for n in atuais]
+        if cand.get("remover_termos") or cand.get("rebaixar_termos"):
+            pp.query_terms = _patch_terms(pid, pp.query_terms, cand)
+        if cand.get("conceitos_texto"):
+            novos = dict(cand["conceitos_texto"])
+            missing = set(novos) - {c.key for c in pp.retrieval_signal_concepts}
+            if missing:
+                raise SystemExit(f"{pid}: concepts not found in the profile: {sorted(missing)}")
+            pp.retrieval_signal_concepts = [
+                c.model_copy(update={"text": novos[c.key]}) if c.key in novos else c
+                for c in pp.retrieval_signal_concepts
+            ]
+        chaves = ("intent_add", "negativo", "negativos_substitui", "remover_termos", "rebaixar_termos", "conceitos_texto")
+        applied[pid] = {k: cand[k] for k in chaves if cand.get(k)}
         print(f"candidate applied in memory: {pid} ({', '.join(applied[pid])})")
     assert get_retrieval_profile_store() is store
     return {"file": str(path), "products": applied}
@@ -216,15 +268,27 @@ def main() -> int:
     )
     ap.add_argument(
         "--expansion", action="store_true",
-        help="turn neighbour expansion back ON for this run. It is off in production "
-             "since 2026-10-06 (the question it asks depends on a verdict); this flag "
-             "exists to measure the output with it.",
+        help="kept for old command lines: neighbour expansion is ON by default since "
+             "2026-10-13, behind the genre filter (ADR-0074).",
+    )
+    ap.add_argument(
+        "--no-expansion", action="store_true",
+        help="turn neighbour expansion OFF for this run (the production state from "
+             "2026-10-06 to 2026-10-12, ADR-0069), to measure what the filtered expansion "
+             "costs in constancy.",
+    )
+    ap.add_argument(
+        "--no-genre-filter", action="store_true",
+        help="turn the genre filter OFF for this run (ADR-0074): candidates, neighbours and "
+             "focal documents of instrument text reach the gate and the scorer again.",
     )
     ap.add_argument(
         "--candidates", default=None, metavar="PY_FILE",
         help="a candidates file (dict CANDIDATOS, the format of measure_integral_candidates.py); "
              "with --apply, the named products get the candidate's negative pattern / intent "
-             "addition IN MEMORY for this process only. This is how a patch is measured across "
+             "addition / query-term removal or demotion (remover_termos, rebaixar_termos) / "
+             "concept text replacement (conceitos_texto) / in-place negative-pattern replacement (negativos_substitui) "
+             "IN MEMORY for this process only. This is how a patch is measured across "
              "independent processes (the only valid constancy measurement, ADR-0071) before it "
              "is written to a profile.",
     )
@@ -246,10 +310,16 @@ def main() -> int:
     if args.gate_variant:
         _install_gate_variant(args.gate_variant)
     patch = _apply_candidates(args.candidates, args.apply) if args.candidates else {}
-    if args.expansion:
-        from evaluation import evidence_selection as _es
+    if args.expansion and args.no_expansion:
+        ap.error("--expansion and --no-expansion contradict each other")
+    if args.no_expansion:
+        _es.EXPANSION_ENABLED = False
+        print("neighbour expansion DISABLED for this run")
+    elif args.expansion:
         _es.EXPANSION_ENABLED = True
-        print("neighbour expansion ENABLED for this run")
+    if args.no_genre_filter:
+        _es.GENRE_FILTER_ENABLED = False
+        print("genre filter DISABLED for this run")
     if args.no_prompt_cache:
         from evaluation._config import get_gate_llm_client, get_llm_client
         for _client in (get_llm_client(), get_gate_llm_client()):
@@ -268,6 +338,16 @@ def main() -> int:
         acao_ids = [a for a in acao_ids if a in wanted]
 
     print(f"reproducibility: {args.runs} runs x {len(acao_ids)} Ação(ões), case '{args.process}'")
+    print(f"neighbour expansion: {'on' if _es.EXPANSION_ENABLED else 'off'}; "
+          f"genre filter: {'on' if _es.GENRE_FILTER_ENABLED else 'off'}")
+    if _es.GENRE_FILTER_ENABLED:
+        # Build (or find current) the canonical document index before the first
+        # Acao, so no run pays for it and the log says what it holds.
+        documents = get_document_index(args.process)
+        instrument = [d for d in documents if d.genre == INSTRUMENT]
+        print(f"document index (rules {GENRE_RULES_VERSION}): {len(documents)} documents, "
+              f"{len(instrument)} instrument text, "
+              f"{sum(d.n_chunks for d in instrument)}/{sum(d.n_chunks for d in documents)} chunks")
     print("results are NOT persisted\n")
 
     outcomes: dict[int, list[str]] = collections.defaultdict(list)
@@ -368,6 +448,11 @@ def main() -> int:
             # profiles as they are on disk).
             "patch": patch,
             "gate_variant": args.gate_variant,
+            # ADR-0074: the switches this process ran with and the rules of the
+            # document index, so runs under different filters are never mixed.
+            "expansion": _es.EXPANSION_ENABLED,
+            "genre_filter": _es.GENRE_FILTER_ENABLED,
+            "genre_rules_version": GENRE_RULES_VERSION,
         }
         Path(args.json_out).write_text(json.dumps(payload, indent=2), encoding="utf-8")
         print(f"\nraw outcomes written to {args.json_out}")

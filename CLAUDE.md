@@ -39,7 +39,7 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
    was removed entirely (ADR-0052).
 6. **LLM: temperature=0, fixed prompt per action.** IPMP criteria + scored
    examples embedded in prompt. Human auditor validates every score.
-   **Sole provider: the owner's own GPU server** (`189.60.217.20:8080`, RTX 5070
+   **Sole provider: the owner's own GPU server** (`189.60.217.20`, reached only through an SSH tunnel on port 443 to server port 8083 via `LLAMACPP_BASE_URL`: the server port 8080 serves another, intermittent service and port 8080 is blocked on the client network, per the user on 2026-10-10; RTX 5070
    Ti, `gpt-oss-20b-F16.gguf` served by `llama-server.exe` = llama.cpp), for both
    the scorer and the pre-scoring relevance gate (ADR-0050, ADR-0059). GPU down
    → the run fails loudly; nothing falls back. The Groq/Ollama circuit-breaker
@@ -87,7 +87,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (73 filled, next: 0074-)
+│   ├── adr/                     ← Architecture Decision Records (74 filled, next: 0075-; 0074 = genre filter + document index)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -132,17 +132,20 @@ Maturity_Check/
 │   ├── test_response_parser.py  ← sentinel parsing + parse_failed tests (16 tests)
 │   ├── test_prompt_builder.py   ← system/user prompt assembly + ordering tests (15 tests)
 │   ├── test_evaluate_orchestration.py ← evaluate() full flow with StubLLMClient (12 tests)
-│   └── test_score_margin.py ← ScoreMargin arithmetic: band margin, fragility, score floor (25 tests)
+│   ├── test_score_margin.py ← ScoreMargin arithmetic: band margin, fragility, score floor (25 tests)
+│   └── test_genre_{classifier,segmentation,index,exemptions}.py ← genre classifier, document segments, document index, exemptions (ADR-0074, 39 tests)
 ├── src/
 │   ├── ingestion/               ← Module 1 (COMPLETE)
 │   │   ├── __init__.py          ← sole public surface
 │   │   ├── ipmp.py              ← IPMP models + get_ipmp_store()
 │   │   ├── rio_manual.py        ← Rio Manual models + get_rio_manual_store()
 │   │   ├── acronyms.py          ← get_acronym_store()
-│   │   └── dependencias.py      ← get_dependency_store(): typed cross-Ação edges (ADR-0070)
+│   │   ├── dependencias.py      ← get_dependency_store(): typed cross-Ação edges (ADR-0070)
+│   │   └── genre_exemptions.py  ← get_genre_exemption_store(): products whose criterion is the instrument (ADR-0074)
 │   ├── extraction/              ← Module 2 (COMPLETE — issues #6–10)
 │   │   ├── __init__.py          ← sole public surface: Chunk, extract_document
 │   │   ├── chunk.py             ← Chunk pydantic.BaseModel (9 fields)
+│   │   ├── noise.py             ← strip_extraction_noise(): header/signature/watermark removal (moved here 2026-10-13)
 │   │   └── pdf.py               ← extract_document() — word-count heuristic + OCR
 │   ├── retrieval/               ← Module 3 (COMPLETE — issues #11–15)
 │   │   ├── __init__.py          ← public surface: configure, index, retrieve_for_acao, RetrievedChunk
@@ -150,7 +153,11 @@ Maturity_Check/
 │   │   ├── interfaces/
 │   │   │   └── contracts.py     ← RetrievedChunk Pydantic model (13 fields)
 │   │   ├── schema/
-│   │   │   └── ddl.py           ← init_db(): chunks table + chunks_fts FTS5 virtual table
+│   │   │   └── ddl.py           ← init_db(): chunks table + chunks_fts FTS5 virtual table + the 3 document-index tables
+│   │   ├── genre/               ← canonical document index (ADR-0074)
+│   │   │   ├── classifier.py    ← chunk label INSTRUMENTO/OUTRO from drafting conventions; doubt → OUTRO
+│   │   │   ├── segmentation.py  ← where each document starts/ends in a bundled PDF (title, cover, numbering restart)
+│   │   │   └── index.py         ← get_chunk_genres / get_document_index / invalidate; rebuilt on chunk fingerprint or GENRE_RULES_VERSION
 │   │   ├── indexing/
 │   │   │   └── writer.py        ← index(process_number, chunks) — idempotent INSERT OR IGNORE
 │   │   └── query/
@@ -163,7 +170,7 @@ Maturity_Check/
 │   │   ├── __init__.py          ← public surface: configure_llm, evaluate, EvaluationResult, ScoreMargin
 │   │   ├── _config.py           ← module-level LLMClient: configure_llm() / get_llm_client()
 │   │   ├── evaluator.py         ← evaluate(): full orchestration + EVIDENCE_CHAR_WARN_THRESHOLD
-│   │   ├── evidence_selection.py ← select_evidence(): relevance gate, serial (GATE_MAX_IN_FLIGHT=1), _MAX_EXAMINED=16
+│   │   ├── evidence_selection.py ← select_evidence(): relevance gate, serial (GATE_MAX_IN_FLIGHT=1), _MAX_EXAMINED=16, genre filter + filtered expansion (ADR-0074)
 │   │   ├── gate_ledger.py       ← GateLedger: gate_verdicts table, first verdict wins, auditor override (ADR-0067)
 │   │   ├── margin.py           ← compute_score_margin(): band_margin + score floor, deterministic (2026-10-05)
 │   │   ├── dependency_cap.py   ← compute/apply_dependency_cap(): no 3 when a `pre` dependency was not done (ADR-0070)
@@ -195,6 +202,7 @@ Maturity_Check/
 └── data/
     ├── ipmp/
     │   ├── dependencias.json    ← 54 typed citation edges between Ações, with the IPMP sentence (ADR-0070)
+    │   ├── isencoes_genero.json ← 17 genre-exempt products, each with its IPMP sentence (ADR-0074)
     │   ├── acao_01.json         ← complete (Phase 1 scope)
     │   └── acao_02.json         ← complete (scaling test case, 2026-08-21)
     ├── rio_manual/
@@ -210,7 +218,222 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Session 2026-10-10 (61st pass) — THE USER'S MESSAGE H: explanations first, then items 5→9 of the plan table. A NEW BINDING RULE, ADR-0073: query terms are document-agnostic — the case document tests a profile, it never sources or promotes a term (*"o documento sendo analisado … não pode ser o parâmetro para a criação dos termos das queries … A busca tem que ser agnóstica em relação ao documento. Precisamos poder avaliar qualquer documento de qualquer tipo com as queries aqui criadas."*). Block C of ADR-0072 REVERTED (its three terms came from the dispatch `_3` p.10); 56 legacy `real_world` terms inventoried with the measured cost of removing them (decision A/B pending, the user's). Item 5: fifth wording round on Ação 35's two coins. Item 6: 11a applied. Item 7: batch committed. Item 8: port 8080 reported. Item 9: `rotulado` launched across independent processes after the commit.**
+**Session 2026-10-13 (66th pass) — THE USER'S MESSAGES M and N. M: *"Verifique se a rodada 10 terminou e apresente relatório com diagnóstico"*; cycle 3 was reported (results and diagnosis in the 65th-pass entry and in ADR-0074). N (verbatim): *"Sobre "O prompt já diz que julgar o cumprimento é do scorer (ADR-0066). O gate aplica essa regra de forma diferente em cada processo." o gate sabe quem é o scorer? Se não tiver contexto no prompt como ele vai saber julgar isso? / Sugestoes de $5 aceitas. Pode implementar."* The four recommendations of the report are accepted and recorded in ADR-0074, section "Decisions after cycle 3". The question about the gate is answered below; the change it suggests (G) is a proposal, not applied.**
+
+- **Decisions recorded:**
+  - V: exempt products take no instrument neighbours (the code already does this);
+  - Ações 3, 10, 37 and 45 stay as documented residue: the review signal of ADR-0068 covers 10 and 45, the cap notice covers 3, and 37 is a known gap of the signal (its accepts vanish together);
+  - 35.2e is unchanged; another round is the decision of the user;
+  - the cycle-3 state is committed as the baseline (hash below, recorded after the commit).
+- **The gate does not know the scorer.** Its only cue is one clause of `_INSTRUCTIONS` in `relevance_builder.py`: "julgar o cumprimento é da etapa seguinte, não deste classificador" (ADR-0066). The prompt does not say:
+  - that the accepted passages of every product are read together by a later stage that decides fulfilment per product;
+  - that one passage rarely carries the whole set the criterion asks for;
+  - that a rejected passage never reaches the scorer or the auditor.
+  This model uses abstract rules weakly (the scope rule was engaged in 0.8 % of 640 traces, 2026-10-02), and the cycle-3 rejections that move points read as sufficiency judgements. **Candidate G** (the decision of the user): one concrete paragraph on how the verdict is used, measured in one process on the known borderlines and their controls, then in full processes. It changes all 164 gate prompts (new ledger keys), and its risk is more accepts (`rotulado` gave +11 %).
+- **23.3 and 32a:** canonical negative patterns, measured before writing (direction in one process, then ten full processes). Status below.
+
+**Session 2026-10-12/13 (65th pass) — THE USER'S MESSAGE L (verbatim): *"Liga a expansão de vizinhos e colocar eles para passarem pelo filtro, mas apenas se o classificador de gênero o apontar como não sendo texto de INSTRUMENTO (contrato ou minuta, edital, TR, anexos normativos) / A lista de isenção está certa? Sim / Você aceita as 14 perdas (Ação 4 de 3 para 1; Ações 15 e 36 de 1 para 0)? Sim / A2 ou B? A2 / Gênero por trecho (o descritivo do TR fica) ou documento inteiro? Documento inteiro exige saber onde cada documento começa e termina, e o índice não guarda isso de forma canônica. >>Índice de forma canônica / Posso implementar e depois rodar o ciclo 3 na GPU? Pode implementar e rodar na GPU"*.**
+
+**What was done:**
+- **ADR-0074 implemented:**
+  - a canonical document index in `src/retrieval/genre/`;
+  - the genre filter, variant A2, before the gate;
+  - 17 genre-exempt products in `data/ipmp/isencoes_genero.json`;
+  - neighbour expansion back ON, with instrument neighbours never gated;
+  - the focal route placed under the filter.
+- **Fast suite:** 636 → 691.
+- **Production code vs the A2D projection:** reproduced exactly, with no GPU.
+- **GPU server:** the task was down after the owner's reboots and was started over SSH.
+- **Test cycle 3:** done on 2026-10-13, 11:30 to 14:00, 10 of 10 processes; results below.
+
+**Code (nothing committed):**
+- **`src/retrieval/genre/`:**
+  - `classifier.py` — port of the v3+v4 prototype, with identical labels on 1 429/1 429 chunks. The act dateline that named the case's city now matches any "Cidade, d de mês" (still 84 marks on SMG-040).
+  - `segmentation.py` — port of `segmenta_docs.py`.
+  - `index.py` — three tables in the retrieval DB: `document_index`, `chunk_genre` and `document_index_state`.
+    - Rebuilt on read when the chunk fingerprint changes (count + sha256 over keys and lengths) or when `GENRE_RULES_VERSION = "2026-10-13.1"` changes.
+    - Dropped explicitly by `invalidate_document_index`, called for new or replaced files (`assessment.service._process_file`) and on force-delete (`routes._force_delete`).
+  - Exported through `retrieval` as `get_chunk_genres`, `get_document_index` and `invalidate_document_index`.
+- **Exemptions:** `data/ipmp/isencoes_genero.json` holds 17 entries, each with the verbatim IPMP sentence and a reason. `src/ingestion/genre_exemptions.py` (`get_genre_exemption_store`) refuses a drifted sentence, a non-scored item, a duplicate and a missing file.
+- **`src/evaluation/evidence_selection.py`:**
+  - The genre filter runs before `_prefilter_near_duplicates`, which runs before the cut of 16.
+  - `EXPANSION_ENABLED = True`. Instrument neighbours are never gated, for any product, exempt ones included; already-judged neighbours are skipped (`seen` / `skip_keys`).
+  - `_EVIDENCE_BUDGET_CHARS` 40 000 → 70 000.
+  - New `filter_focal_document`. With no instrument chunk, or every product exempt, the document stays whole. With mixed exemption, the route falls through to the hybrid route. With none exempt, instrument chunks are dropped, and an empty result also falls through.
+  - `GENRE_FILTER_ENABLED` switches it all off.
+- **Telemetry:** `ProductGateReport.n_genre_excluded` and `n_neighbors_genre_excluded`.
+- **`reproducibility.py`:**
+  - new switches `--no-genre-filter` and `--no-expansion` (`--expansion` kept);
+  - the JSON records `expansion`, `genre_filter` and `genre_rules_version`;
+  - the per-product vector has 8 elements (the last two are the genre counters).
+- **Noise stripping:** `strip_extraction_noise` moved to `src/extraction/noise.py`. Its header and signature patterns are still the Rio SMG ones, a pre-existing limitation recorded in ADR-0074.
+- **Tests:**
+  - new: `test_genre_{classifier,segmentation,index,exemptions}.py` (39);
+  - new expansion, filter and focal tests in `test_evidence_selection.py`;
+  - two service tests for invalidation;
+  - `conftest.py` stubs genres and neighbours for every test.
+
+**Verified without GPU** (`$W/confere_pools_producao.py`: real `_retrieve_and_select`, a gate that rejects everything, ledger off):
+- **Pools:** 164 products; none differs in content or order from `scratchpad/acc/pools_filtrados_doc.json["A2D"]`. 71 pools are empty.
+- **Calls:** 464 gate calls; 2 956 candidates removed before the cut; no Ação takes the focal route.
+- **Index:** the index built lazily in `data/app.db` equals the prototype:
+  - 59 documents, 30 of them instrument text, holding 1 257 of the 1 429 chunks (88 %);
+  - state checksum `c587ab83…`.
+- **Ledger:** `gate_verdicts` still has 0 rows.
+
+**GPU:**
+- **Server history:**
+  - The owner shut the server down three times on 12/10, and it has been up since 13/10 06:12.
+  - Task `PDFExtractor_GPTOSS_8083` runs as sshadmin with logon S4U, so it shows no window. It has no trigger and was not running.
+- **Start:** done over SSH at 11:29:26 (`$W/sobe_8083.ps1`):
+  - llama-server PID 24956;
+  - port 8083 listening after 15 s;
+  - 13.4 GB of VRAM.
+- **Conditions at the start:**
+  - the console was at the lock screen;
+  - OCR 8082 was untouched;
+  - the local `AUDITOR` scripts had no network connections.
+
+**Test cycle 3:**
+- **Runner:** `$W/ciclo3_runner.py`, detached as PID 34432.
+  - It opened tunnel PID 38156, re-opens it if port 18083 drops, and closes the tunnels it opened at the end.
+  - Each run is one independent full process: `reproducibility.py --runs 1 --record-reasoning`, ledger off, expansion and genre filter ON.
+- **Outputs:** `scratchpad/acc/ciclo3_run{1..10}.{json,log}`, plus `ciclo3_runner.log` and `ciclo3_vigia.log`.
+- **RESULTS (2026-10-13 14:00; readers `$W/analisa_ciclo3.py`, `$W/analisa_ciclo2.py ciclo3_run ciclo2_run`, `$W/custo_expansao.py`; outputs `$W/acc_ciclo3_{final,atrib,expansao}.txt`):**
+  - **Runs:** 10 of 10, rc=0, 14.5–15.6 min each, 0 errors, 0 gate failures in 4 990 calls. The tunnel never dropped; the runner closed tunnel PID 38156 at 14:00:37 and no ssh.exe of ours is left. llama-server PID 24956 (started by us at 11:29:26) was left running.
+  - **Sanity:** no instrument text accepted for a non-exempt product, and no instrument neighbour gated, in any process.
+  - **Points (`sem` = 0), cycle 2 → cycle 3:**
+    - same points in all ten: 26 → **38**;
+    - same points in 9+ of 10 (the user criterion): **31 → 41** (projection 30–41), one Ação short of 90 % of the 46;
+    - mean agreement with the mode: 87.4 % → 95.7 %;
+    - scale: 26/9/11 → **38/4/4**;
+    - below 90 %: **10 23 35 37 45**; inconsistent: 10 23 35 37.
+  - **Batch and bits:** identical batch per pair 26.0 → 36.5; bits 33.4 → 40.9; points per pair 37.9 → 43.0; gate counters 26.6 → 36.7. In all ten: batch 15 → 31 (projection 30), bits 19 → 34 (projection 32). No hidden dedup coin. Coin pairs 155 → 65; point changes (Ação × pair) 366 → 136.
+  - **Attribution of the 136:** gate 98 (72 %), scorer 29 (21 %), cap 9 (7 %, Ação 3 via Ação 2).
+  - **Cost:** 492–506 gate calls per process (464 pool + 28–42 neighbours) instead of 2 310; 34–45 accepts per process (cycle 2: 62–78).
+  - **Expansion:** per process 5–8 neighbours accepted and 21–34 not gated as instrument text; 11 (product, neighbour) pairs ever accepted, 3 in all ten. Constancy cost: identical batch per pair 37.1 → 36.5 and in all ten 32 → 31, both from Ação 10, whose points do not follow the neighbour.
+  - **The 17 never-judged pairs:** 13 F in all ten, 3 T in all ten (1a `_1` p.3, 1a `_2` p.156, 4a `_1` p.3), 1 coin (2c `_2` p.156, 2/10).
+  - **The 14 accepted losses,** as projected: Ação 4 = 1 in all ten; 15 and 36 = 0 in all ten; 1c keeps its bit through the neighbour `_1` p.3 (10/10).
+  - **The 13 confusions the projection left:** 32a `_1` p.303 and 23.3 `_2` p.145 accepted 10/10; coins 4b `_2` p.163 6/10, 35.2e `_1` p.3 5/10, 2c `_1` p.302 4/10, four more at 1/10; four rejected in all ten.
+  - **Residue by class:**
+    - exempt products hesitating on their own target: 23 (only 23.2; the gate accepts it 5/10 through three pages, the scorer agrees in 3), 37 (six coin pages: edital `_1` p.40, attestation `_3` p.2, opinion and reply `_2` p.145/p.144 and more), 45 (`_2` p.23, 8/10). The exempt Ações (22 23 25 37 45) hold 42 of the 65 coins;
+    - the scorer on an identical batch: 10 (10a 4/10 on `_2` p.763; cycle 2: 1/8 on the same chunk);
+    - one confusion in an OUTRO document: 35 (35.2e `_1` p.3, 5/10);
+    - tolerable: 2 and 3 (process 4: both coins of Ação 2 fell and the cap followed), 32 (the scorer once on the constant false credit 32a `_1` p.303).
+  - **ADR-0068:** signal in at least one process for 6 of the 8 Ações varying in points, always on the highest outcome; misses 3 (the cap) and 37 (accepts vanish together).
+  - **Verdict constancy** 95.5 % (cycle 2 97.9 %): the stable instrument rejections left the pools; the coin count is the comparable figure.
+  - **Observation, not probed:** in Ação 37 the edital page `_1` p.40 was accepted only in processes 1–3 and the reply `_2` p.144 only in 7–9 (cycle 2 also had its 3s early and its 0s late). Server state is the known carrier; its internals are probed only if the user asks.
+  - **Diagnosis** (gate reasoning of every verdict; `$W/raciocinio_moedas.py`, `$W/suficiencia_moedas.py`, `$W/divergencia_ciclo2.py ciclo3_run`, `$W/classes_ciclo2.py ciclo3_run`):
+    - mechanism unchanged: in 44 of 45 pairs the first gate difference is in Ação 1 or 2, at a byte-identical prompt after an identical history; in 25 pairs it is the first coin, 1a `_2` p.157;
+    - the coins that move points are sufficiency judgements on a passage that carries part of the criterion (45 `_2` p.23, 37 pages, 23.2 `_2` p.145, 2d `_1` p.4): the boundary "treats the element / only mentions the theme" that the prompt already states, with sufficiency left to the scorer by ADR-0066;
+    - wording is NOT the class: products whose gate-read texts state sufficiency or completeness coin no more (exempt 15.8 % vs 15.8 %, non-exempt 6.2 % vs 9.6 % of judged pairs);
+    - the class that remains is the exempt products reading instrument text: 15.8 % of their judged pairs are coins vs 8.6 %; 14 of 17 exempt products have a coin vs 12 of 76 non-exempt products with a pool. Class map of the 65 coins: about 40 target, 10 debatable, 15 confusion (cycle 2: 40, 14, 101);
+    - 35.2e already has a justification-class negative pattern with checkable markers and still accepts `_1` p.3 in 5 of 10; 23.3 has no pattern and accepts `_2` p.145 (the grant fee paid to the Poder Concedente read as a payment rule) 10/10, which lets the coin of 23.2 lift Ação 23 to 3; 32a accepts `_1` p.303 (operating staff costs of the concession read as the project team cost) 10/10, no pattern.
+  - Recorded in ADR-0074, new section "Test cycle 3 (2026-10-13)".
+
+**Docs:**
+- ADR-0074 (new);
+- ADR-0069, amended: expansion is back on, and points 2 and 3 stand;
+- CONTEXT.md: Instrument Text, Genre, Document Segment, Document Index, Genre Filter and Genre-Exempt Product; the Relevance Gate now judges what survives the Genre Filter;
+- two flagged ambiguities ("document", "pre-gate filter").
+- ADR-0074, new section "Test cycle 3 (2026-10-13)".
+
+**Commit:** see the 66th pass.
+
+**Open for the user:**
+- the residue of cycle 3 (diagnosis in ADR-0074): 35.2e `_1` p.3 stays a coin (5/10) although a justification-class pattern already exists; the constant false credits 23.3 `_2` p.145 and 32a `_1` p.303 have no pattern and are per-product candidates, adoptable only if a full-process measurement shows no loss of constancy (a pattern can turn a constant accept into a coin);
+- the 1b/3a canonicity question.
+
+The residue, exempt neighbours and the commit were decided in the 66th pass.
+
+**Session 2026-10-12 (64th pass) — THE USER'S MESSAGE K, on the cycle-2 class analysis (90 of 101 confusions are contract, edital or TR text): *"Precisamos eliminar esses chunks da análise. É puro lixo. Até mesmo para os elementos que não oscilam. Retirar esses pedaços antes de chegarem ao GATE … A opção do uso de mapa manual está afastada por enquanto."* A deterministic GENRE classifier was prototyped (session scratchpad only, nothing in `src/`) and its effect projected over the 10 cycle-2 processes without GPU. Nothing applied; the decisions are the user's.**
+
+- **Classifier** (`$W/tipo_texto4.py` over `$W/tipo_texto3.py`). Each chunk is labelled INSTRUMENTO (contract or minuta, edital, TR, normative annexes) or OUTRO (study, ETP, opinion, act, justification).
+  - Instrument markers are general drafting conventions of Brazilian procurement: self-reference ("deste CONTRATO"), a defined party in CAPS with a deontic or future verb, impersonal prescriptive voice, enumerated infinitive obligations, numbered clauses, quoted definitions, form placeholders, risk-matrix rows and risk allocated to a party, bidding-procedure terms, sanction grades, clause cross-references, semicolon lists.
+  - Counter-markers: the analysis voice (estimou-se, parecer, premissas, fluxo de caixa, VPL…) and the administrative-act voice (DESPACHO, AUTORIZO, Certifico…).
+  - Short silent chunks inherit from chunk 0 of the same page or the ±2-page firm majority. Doubt → OUTRO. Corpus: 1 103 instrument, 326 other.
+  - Evaluated three ways, none used to set a rule page by page. Against the process's own document structure (SIGA authentication codes, evaluation only): edital, minutas, matrices and forms 362/365; studies, ETP, opinions, justification and acts 0/150 marked instrument. TRs 34 instrument / 28 other: descriptive sections (context, history, justification) stay by design; equipment drawings and design-requirement lists partly stay. The cycle-2 class map: 114/120 and 17/18. A blind sample read by hand before comparing: 56/58 and 2/2.
+- **Pools** (`$W/lanes_profundas.py` deep lanes, verified to reproduce today's lists; `$W/pools_rapido.py` → `scratchpad/acc/pools_filtrados.json`). 1 807 of the 2 045 examined candidates of the 147 non-exempt products are instrument text (88 %).
+  - Exempt, because the IPMP criterion is the instrument itself (17): 22.1, 22.2, 22.2a, 22.2b, 23.1–23.4, 25a–25e, 37, 42d, 45, 46.1.
+  - A = today's pool minus instrument: 503 gate calls per process instead of 2 310; 52 products end with an empty pool.
+  - A2 = filter before the cut of 16, inside today's candidate window: 531 calls; +28 never-judged pairs in 13 Ações. Recommended.
+  - B = filter inside both lanes with refill: 2 228 calls; 1 726 never-judged pairs on only 134 chunks from vector rank ~108 (the justification `_1` p.3 judged by 80 products, the ETP `_2` p.157 by 78). Not recommended: it concentrates the remaining coins.
+- **Counterfactual** (`$W/contrafactual_genero.py`, `$W/residuo_A.py`, `$W/criterio90.py`). Recorded verdicts are kept; it assumes a verdict does not change because another chunk left, which only a full GPU process measures.
+  - Of the 106 confusion pairs ever accepted, 91 leave. 15 stay: 4 in exempt products, 9 in non-instrument text (economic study, ETP checklist, Procuradoria, justification), 2 classifier misses (`_1` p.199).
+  - Legitimate or debatable evidence lost: 14 pairs in 1c, 4a, 4b, 15a, 15c, 36a.
+  - Batch identical in all 10: 15 → 28; bits 19 → 30. The user's criterion (same points in 9+ of 10): 31 → 35–40 of 46. Inconsistent (>2 changes): 11 → 4 certain (2, 3, 37, 45) + 0–4 (4, 13, 32, 35).
+  - Points: 24 27 28 31 33 42 43 → 0 in all ten; 15 and 36 → 0 (were 1 on contract text); 4 → 1 (was 3); 13 and 35 → 0 with the `_1` p.3 justification coin exposed; 2, 3, 10, 23, 26, 32, 37, 45 unchanged (causes outside instrument text, or exempt).
+- **Neighbours**: the gate brings none today (`EXPANSION_ENABLED = False`, ADR-0069); if re-enabled, the filter must cover them.
+- **Proposed implementation (not started)**: genre computed at indexing time into a retrieval-owned `chunk_genres` table (rules versioned, backfill for indexed processes); an exemption data file with the IPMP sentence per product (ADR-0070 precedent); the filter in `select_evidence` before the examined pool and the ungated path, in the Step A/B focal route and in neighbour expansion; a per-product count of excluded candidates in the gate report; ADR-0074; then test cycle 3 (10 full processes, ledger off, ~531 gate calls each).
+- **Open for the user**: the exemption list; the 14 lost pairs (Ação 4 3→1, 15 and 36 1→0); A2 vs B; per-chunk genre (TR descriptive sections stay) vs whole document; go-ahead for implementation and cycle 3 (GPU, tunnel 443). Ação 35's pending choice mostly loses its object under the filter (its matrix-row coins leave; only `_1` p.3 remains). 1b/3a and the commit are unchanged.
+
+**Session 2026-10-10/11 (63rd pass) — THE USER'S MESSAGE J: *"Vou acatar todas as sugestões, com exceção do 'Porta 8080, opção c' … A porta 8080 desse servidor está com outro serviço em funcionamento intermitente. A porta 8080 do computador é bloqueada. Ambiente corporativo bloqueou provavelmente, por isso saímos pela 443. Levante o servidor e realize os testes."* Accepted and recorded: `sem evidência` ≡ 0 points for the acceptance criterion only; ADR-0068 not widened; R1–R4 closed. NOT adopted: router option (c) — the route is the SSH tunnel on 443. The server was already up (task `PDFExtractor_GPTOSS_8083`); nothing was started on it. The two accepted canonicity fixes of Ação 1 were measured across processes before writing: **1d's negative #1 applied** (inert here, the batch unchanged), **1b's concepts NOT written** (a new false coin, identical batch per pair 100 % → 30 %; the user's call, like the 3a concept). TEST CYCLE 2 = 10 independent full processes, ledger off (2026-10-10 23:35 → 2026-10-11 06:28, 0 errors, 0 gate failures): in points (`sem` = 0) 26/46 Ações identical in all ten and 31/46 at ≥ 90 % (the user's criterion); 83 % of the point changes come from the gate, and 101 of the 155 coin pairs are confounds, 90 of them contract, edital or TR text. NEW METHOD FINDING: single-Ação processes replay, full processes do not (ADR-0071) — constancy is measured only on full 46-Ação processes. The tunnel was closed at the end.**
+
+- **Server** (read-only inspection over SSH 443, `$W/ssh_ps.py` sends a PowerShell file as `-EncodedCommand`): gpt-oss runs as the scheduled task `PDFExtractor_GPTOSS_8083` (llama-server PID 21396, `0.0.0.0:8083`, alias Meme-GPT, 14.6 GB of 16.3 GB); `PDFExtractor_OCR_8082` (surya OCR) exists in state Ready and must never be started alongside; `127.0.0.1:8080` on the server is steamwebhelper (the "other service"). Client tunnel `-L 18083:192.168.0.132:8083 -p 443`, opened by the runners' watchdog. Generation was ~2× slower than in the afternoon with no other client connected (Ação 1 process ~85 s vs ~40 s); nothing on the server was touched. Memory `project_gpu_server_exposure_2026_10_09.md` updated.
+- **1b/1d (ADR-0073, accepted by the user).** New versioned `scripts/diagnostics/candidates_acao01_canonical.py` (docstring holds the rationale, the IPMP quotes and the measurement): 1b's `economic_viability_study`/`benchmarking`/`investment_scale` → the criterion's economic/social/environmental scenarios (same positions; concepts reach the gate and the vector query as text in list order, never by key); 1d negative #1 rewritten on the criterion's own qualifier "quando for aplicável"; the matching dormant `evidence_logic_patterns`. Overfitting audit (`$W/audita_sobreajuste_textos.py`): 0 strict n-grams. Harness: `reproducibility.py --candidates` gained `negativos_substitui` (in-place replacement; the old text must exist exactly once).
+  - **Measured** (`$W/a1can_runner.py` → `scratchpad/acc/a1can_{cur,cand}{1..5}`, 5 + 5 interleaved, `--apply 1b,1d`; `$W/a1d_runner.py` → `a1d_cand{1..5}`, `--apply 1d` alone; readers `$W/compara_bracos.py`, `$W/le_a1can.py`, `$W/le_a1d.py`). The gate walks 1a → 1b → 1c → 1d and every product has its own pool, so the joint run separates the two changes.
+  - **1b, NOT written.** The scenario texts change 1b's vector query and pool (11 chunks in, 10 out). One entrant, the edital's justification of the procurement (`_1` p.2), was accepted for 1b in 1 of 5 processes — the reasoning took 1b for 1a's IPMP text (the target confusion of ADR-0071) — and for 1c in the same process. Score 1 in all ten; identical batch per pair 100 % → 30 %. Less constant → not written under the user's rule. Canonicity against this measured cost is the user's decision, the same one as for 3a.
+  - **1d, APPLIED.** Pool unchanged, 16/16 rejected in every process; alone, the batch was identical in 5/5 and equal to that of the 11 current-state processes. Written with `$W/aplica_canonico_1d.py "<medida>" --grava` (negative #1 + logic notes #3/#4, changelog entry, `last_updated`; asserts 1a/1b/1c and every other field untouched). Per-product digest: only `1|1d` changed; the written profile builds the same 164 gate prompts as the measured candidate (0 differences); audit 164/164, digest `2663212a7b9c87f9` → **`6919edcc672b8027`**, leakage 0; fast suite **636**.
+  - `_2` p.157 (1a's only accept) was rejected once in 21 processes — a byte-identical prompt gated before any changed one: the server-state coin, attributed to neither change.
+  - **Method finding.** `--record-reasoning` keeps only what was delivered or rejected: a gate accept that the per-product dedup removes is invisible in the batch AND in the recorded reasoning (1c: 15 calls, 10–11 records). 1c `_2` p.246 is such a hidden coin — rejected in 2 of 11 current-state processes and in 3 of 5 of the 1d series, never reaching the scorer (1c is gated before 1d, and it already shows in the 2026-10-10 `rotulado` runs). `$W/analisa_ciclo2.py` now also compares the gate's per-product counters (candidates, examined, accepted, rejected), lists products whose accepts vary under an unchanged batch, and leaves an errored Ação out of the pair metrics instead of counting it as instability.
+- **Decisions recorded**: ADR-0068 new section (acceptance criterion read in points, `sem evidência` = 0 for it only, the label kept for the auditor; signal not widened); ADR-0072 new section (R1–R4 closed); ADR-0073 new section (1d applied, 1b measured and not written; "the one older exception" now rewritten).
+- **Test cycle 2** (`$W/ciclo2_runner.py`, detached PID 28888, 23:35:50 → 06:28:28, about 41 min per process; `scratchpad/acc/ciclo2_run{1..10}.{json,log}`, `ciclo2_runner.log`; the tunnel never dropped; waiter `$W/espera_ciclo2.sh`; one-shot reader `$W/final_ciclo2.sh` → `$W/acc_final_*.txt`). Every process sent the same 2 310 gate prompts in the same order; 62–78 accepts per process.
+  - **Points (`sem` = 0)**: identical in all ten 26/46; ≥ 90 % 31/46; mean agreement with the mode 87.4 %; the user's scale 26 consistent / 9 tolerable / 11 inconsistent. Below 90 %: 2 3 11 12 23 24 27 28 31 32 37 40 42 43 45. Labels: 21/46 identical, 30/46 ≥ 90 %.
+  - **Per pair of processes (45)**: identical batch 26.0/46, bits 33.4, points 37.9, gate counters 26.6; verdicts constant 97.9 %. In all ten: batch 15, bits 19. No hidden dedup coin.
+  - **Attribution** of the 366 (Ação × pair) point changes: gate 305 (83 %); scorer on the same batch 40 (11 %, mostly 10, 24, 42); the ADR-0070 cap 21 (6 %, Ação 3 through Ação 2 — the coupling predicted in the 57th pass; 3 of 10 processes capped).
+  - **ADR-0068**: 18 of the 20 Ações that vary in points are flagged in at least one process, always on the highest outcome. The misses are 3 (the cap; its own notice shows it) and 12 (several products; the score moves with which confounds are in the batch).
+  - **Reference, not a target**: the 2026-10-03 acceptance runs (before ADR-0069–0073) give 28/46 identical and 36/46 ≥ 90 % in points by the same code. Of the Ações now below 90 % that were not then: 3 is the cap coupling; 31 and 43 are the coin-removal path after their false credit was removed (31.1g/31.1h, Block A); 2, 11, 12 and 40 are coins with no change of their own.
+  - **Named patches in full processes**: 35.2f `_2` p.126 accepted 0/10 (round 5 holds); 43b `_1` p.105 2/10 (Block A holds, residual coin); 42c `_1` p.106 7/10 (the 42c pattern does not hold; its FFF in `abc_conf` was three coin tosses). Constant or near-constant false credits: 4c `_1` p.409 10/10 and 15e `_2` p.775 9/10 despite patterns that name their class; 12b `_1` p.78 9/10 with no pattern.
+- **Classes of page** (`$W/classes_ciclo2.py`: the 56th-pass page map plus every page read this pass; status per product = legitimate target, debatable, confound; `$W/sempre_aceitos.py` for the pairs accepted in all ten). 155 coin pairs on 120 pages: 101 confounds (57 rare, 29 middle, 15 near-always), 40 legitimate targets, 14 debatable. 90 of the 101 confounds are contract, edital or TR text: MATRIZ 26, OBRIG 15, OPER 12, OBJETO 10, REEQ 10, EDITAL 8, ESPEC 5, GARANT 4. 26 pages carry coins for more than one product. 15 pairs are accepted in all ten: 4 legitimate, 6 debatable, 5 constant false credits (4c `_1` p.409, 13b `_1` p.284, 15a `_1` p.378, 15d `_2` p.54, 32a `_1` p.303). By Ação: confound coins drive 4 11 12 24 27 31 32 33 35 40 42 43; legitimate-target coins drive 2 23 26 28 37 45; the cap drives 3; the scorer drives 10 and part of 24 and 42.
+- **Method finding** (`$W/divergencia_ciclo2.py`, `$W/compara_acao1.py`). In 42 of the 45 pairs the first gate difference is at Ação 1, the first one gated (the other 3 at Ação 2). Ação 1 with the current profile delivered the same batch in 45/45 pairs of ten single-Ação processes (2026-10-10) and in 15/45 pairs of the ten full ones (bits 45/45 vs 29/45; score 1 in all). The prompts and their order are identical, so the carrier is outside the client: server state, a hypothesis not probed (server internals only on the user's request). Consequence (ADR-0071 new section): series of single-Ação processes measure direction and harmlessness only, like in-process passes; constancy comes only from full processes. Affected magnitudes: option B's 10 % → 100 % (full processes: batch 6/15 with the old profile vs 15/45 with the new, bits 7/15 vs 29/45 — ADR-0073 correction: B stands on canonicity); the 1b and 3a costs (direction: a new coin); 35.2e/35.2f round 5 (ADR-0072 note: in full processes Ação 35 is 1 in 9 of 10); the 11a, 22.2a, 31/42 and Block C confirmations. Memory `feedback_within_process_is_not_run_to_run.md` updated.
+- **Item 6 measured without GPU, not a lever.** `$W/posicoes_pool.py` recomputes the 164 positional pools (0 size mismatches against the runs); `$W/corte_pool.py` cuts the recorded batches. Coins sit at pool positions 1–10 (116), 11–12 (19), 13–16 (20). Cut 12: batch per pair 26.0 → 27.1, bits 33.4 → 33.8, all-ten unchanged (15/19); evidenced bits lost in 1a (8 processes), 32a (8), 2d (5). Cut 10: 28.4 and 34.9, all-ten 17/21; also loses 45 (7), 35.2e (9), 23.3 (9), 13c (6). `_MAX_EXAMINED` stays 16.
+- **Option P — a per-product class exclusion before the gate, upper bound** (`$W/teto_classes.py`: the hand class map as a perfect classifier, the other verdicts unchanged, no refill). Batch per pair 26.0 → 37.5, bits 33.4 → 41.4; in all ten batch 15 → 32, bits 19 → 34; Ações with varying bits 27 → 12. Points knowable without the scorer: constant 35/46 (26 recorded), varying 6 (2 3 10 26 37 45), 5 depend on the scorer (4 15 22 23 36). Most of the gain is Ações that become a constant `sem evidência` (11 12 13 24 27 28 31 32 33 35 40 42 43 lose false credit), so it is a correctness change as much as a constancy one; it also removes the 5 constant false credits. What remains is legitimate-target coins, the cap and the scorer. Shipping it needs a canonical classifier (generic PPP contract, edital and TR markers, per-product applicability from the IPMP), validation on a second case, an ADR and test cycle 3. A cheaper first step: the hand map as a pre-gate filter in the harness only, across full processes (a diagnostic, never shipped; about 7 h of GPU), to learn whether the bound survives a changed call sequence. The user's decision.
+- **Pending commit** (nothing committed; push never): this pass — `data/retrieval_profiles/acao_01.json`, `scripts/diagnostics/candidates_acao01_canonical.py` (new), `scripts/diagnostics/reproducibility.py`, ADRs 0068/0071/0072/0073, `CLAUDE.md`; plus the 62nd pass's queue (`data/retrieval_profiles/acao_{01,03,04,05,28}.json`, `scripts/diagnostics/candidates_legacy_terms.py` (new), `scripts/diagnostics/candidates_acao35_round5.py`, ADRs 0071/0073, `CONTEXT.md`, `docs/prompts/04` and `05`).
+- **Open for the user**: option P (class pre-filter: design, second case, cycle 3; or first the harness-only diagnostic); Ação 35 (i) strict / (ii) correctness / (iii) the current mixed state, which stands and is tolerable in full processes (1 in 9 of 10) on a false coin (35.2e `_2` p.776, 8/10); 1b and 3a concepts — canonicity against a new coin (the measured magnitude came from single-Ação series); commit.
+
+**Session 2026-10-10 (62nd pass) — THE USER'S MESSAGE I. The canonicity nuance was recorded: *"os termos de busca não podem ser customizados para o documento onde as informações são buscadas, mas isso não significa que termos fora do IPMP não possam ser usados. A única exigência que se faz é que um novo termo seja canônico"*. 35.2e was re-tested across independent processes through the SSH tunnel on port 443: the direction is right, but Ação 35 became less constant, so 35.2e is NOT adopted. Item 11 ran under the user's rule *"Adotar apenas o que tornou o sistema mais consistente"*. Option B for the 56 legacy terms was classified, measured and ADOPTED: Ação 1's identical batch per process pair went 10 % → 100 %, and 0 `real_world` terms remain. The 3a concept rewrite was measured and NOT adopted (100 % → 60 %). Two more case-derived texts in gate-read fields were found and left to the user (1d negative #1 names the case sector; three of 1b's concepts come from the case's economic study). The next stage was researched in the record. Tunnel closed. Nothing committed.**
+
+- **Canonicity** (CONTEXT.md Provenance; ADR-0073 clarification; `docs/prompts/04` and `05`). A canonical term is general vocabulary of the product's IPMP concept, or of the legislation or official manual that concept relies on, valid for any document of any type. IPMP-literal is sufficient, not necessary. Sector vocabulary becomes `synthetic`/experimental (ADR-0056). Tailored terms are removed.
+- **Why 35.2f was applied and 35.2e rejected (the user's question).** Same rule at the time: direction in-process, then constancy across processes. 35.2e failed in-process (`_2` p.776 FTTTT→TTTTT), so it never reached the cross-process stage. 35.2f passed both stages (p.126 TFTTT→FFFFF across processes).
+- **35.2e across processes** (`$W/a35e_runner.py` → `scratchpad/acc/a35e_{cur,cand}{1..5}`; pools identical; ADR-0072 new section; `candidates_acao35_round5.py` docstring). p.776 went from 7/10 accepted to 1/5 — the in-process verdict was wrong about direction. But Ação 35's outcomes went from 1,1,sem,1,1 to sem,sem,1,0,1. Changes against the mode went 1/5 → 3/5, and pairs with equal score 60 % → 20 %. Batch constancy and verdict constancy were unchanged. ADR-0068 flags went 2/5 → 4/5. **NOT adopted.**
+  - **Mechanism (general, binding for future reading): the coin-removal path.** When a positive score rests on several false coins, removing the most frequent coin hands the score to rarer coins. The outcome gets LESS constant while the target moves the right way. The score is constant only at the two ends: enough coins that one always lands (false credit), or none left (a stable not-met).
+  - Under today's rule 35.2f would not qualify either. Over 10 current processes it gives 1 ×7, 0 ×2 and sem ×1.
+  - Options for Ação 35, the user's call: (i) strict — revert 35.2f and leave 35.2e out → a constant 1 built on false coins; (ii) correctness — keep 35.2f and adopt 35.2e → variable until every coin is gone (no sixth round, the user's decision); (iii) the current mixed state.
+- **Access.** `.env` holds NO SSH data (variable names only: GROQ_API_KEY, SSL_CERT_FILE, GROQ_SSL_VERIFY, HF_HUB_OFFLINE, TRANSFORMERS_OFFLINE). The access is `.secrets/llm_server_access.md` + `~/.ssh/maturity_llmserver`, port 443, user `sshadmin`. The tunnel `-L 18083:192.168.0.132:8083` reaches the owner's 8083 instance, and the client uses `LLAMACPP_BASE_URL=http://127.0.0.1:18083`. **Slip:** while reading the access doc in the previous window, a redaction filter missed one line, and the fallback password appeared in a local tool output only. It was never repeated, sent or written anywhere. Rotation recommended (the doc itself suggests it). Future reads of that file must drop whole lines matching password/senha/backtick values.
+- **Harness** (`scripts/diagnostics/reproducibility.py`). `--candidates` now also accepts `remover_termos`, `rebaixar_termos` (→ synthetic/experimental) and `conceitos_texto` (concept text replacement). Each name must exist in the profile, or the run aborts, so a typo cannot silently measure the unpatched profile.
+- **Item 11 — legacy terms, option B, ADOPTED.**
+  - **Classification** (new `scripts/diagnostics/candidates_legacy_terms.py`, every term with its source):
+    - 37 MANTER → `canonical` with the source named: the IPMP text of some Ação, Lei 14.133 art. 18 §1, Lei 8.987 art. 6, LC 101/2000, DL 25/1937, the Rio Manual, or general re-procurement vocabulary.
+    - 17 REMOVER: 1a "harmonização contratual" ×2; 1b's eleven finance and benchmarking terms; 1c's three case goals; 1d NEAR(concessão, serviço, público).
+    - 2 SETORIAL: "mobilidade urbana" ×2 → synthetic/experimental, sector_hint transporte_publico.
+    - All 15 retrieval-changing terms are in Ação 1.
+  - **Measured** (`$W/a1leg_runner.py` → `scratchpad/acc/a1leg_{cur,cand}{1..5}`, five + five interleaved processes, ledger off; reader `$W/compara_bracos.py`, which takes the six earlier `rota_a_conf`/`abc_conf` processes as reference):
+    - Identical batch per pair 10 % → **100 %** (29 % over 11 current-state processes); bits 40 % → 100 %; verdicts 97.7 % → 100 %; score 1 in all ten.
+    - The 1b coin (`_1` p.192/p.298, the case's economic study brought in by the finance terms, accepted in 4/11 current-state processes) leaves the pool, and 1b is constant not-evidenced (the 2026-07-01 content gap).
+    - 1a rests on `_2` p.157 alone (ETP re-procurement motive, 5/5). `_1` p.3/p.4 fall outside the 16 examined, because they were reached through "harmonização contratual". 1a is fragile, floor 1, no review signal.
+    - 1c keeps p.140/p.211 and swaps p.3/`_2` p.160 for `_2` p.880 (the concession's general guidelines).
+  - **Applied** with `$W/aplica_legado.py … --grava`: textual edit, LF, a `_meta.changelog` entry + `last_updated` per profile, in `acao_{01,03,04,05,28}.json`. 0 `real_world` terms remain.
+  - **Equivalence check** (`$W/confere_legado.py`): the written profiles build the same BM25 query, with the same term labels and statuses, as the measured in-memory candidate for every product of the five Ações (0 differences).
+  - Gate audit 164/164, digest `2663212a7b9c87f9` unchanged (terms never reach the gate prompt), leakage 0; fast suite **636**. **Confirmation on the written profiles** (one independent process, no candidates, `scratchpad/acc/a1leg_gravado1.json`): score 1, accepted batch and examined pools identical to the measured candidate.
+- **Item 11 — 3a concept, NOT adopted.** The only case noun in an intent or concept was "mobiliário" in 3a's `concrete_solution_description`. It was rewritten to 3a's own intent wording and measured (`$W/a3con_runner.py` → `scratchpad/acc/a3con_{cur,cand}{1..5}`). Identical batch per pair went 100 % → 60 % and verdicts 100 % → 97.5 %. The new vector query brings `_1` p.394 (the bike-station lot's characterisation) into the pool, where it is accepted in 1 of 5 processes. Score 3 in all ten. Whether canonicity should prevail over this cost is the user's call (ADR-0073).
+- **Two case-derived texts in gate-read fields, found and NOT changed** (`$W/vazamento_negativos.py` scans the 164 products' negative patterns). (i) 1d negative #1 names the case's sector ("…setor de mobiliário urbano (PNL, PDE, Plansab, PNLP são inaplicáveis a este setor)"). It was written 2026-06-19, before the overfitting audit. For a sanitation case it would make the gate reject the Plansab, which 1d's criterion lists. No other sector noun of the case appears in any negative pattern; the rest are general concession words. (ii) Three of 1b's four concepts come from the case's economic study (`economic_viability_study`, `benchmarking`, `investment_scale`), while the IPMP 1b criterion asks for the panorama of the economic, social and environmental scenarios. Proposal: sector-neutral rewrite of 1d #1, and 1b's concepts replaced by the criterion's three scenarios. Both change a gate prompt, and 1b/1d are constant not-evidenced here, so a measurement can only show no change in this case. The reason is the next document. The user's call.
+- **Suggestions given, not applied.** ADR-0068 widening: not recommended (the alternations it would add carry no point change; the Ação 36 correlated miss is not visible from one process's margin). **sem ≡ 0 for the acceptance criterion only**, in points, with the label kept for the auditor: variable Ações drop from 10 to 7 in A+B+C (27, 40, 43 vary only between sem and 0) and from 8 to 7 in route A (31). This is a metric definition, so it is the user's decision.
+- **Incident (disclosed).** A dry-run patch failed in the same Bash call that then ran `aplica_legado.py` for real. Five profiles were written at 17:04:44 and restored from HEAD at 17:05:16 (32 s). cur3 had already loaded the originals (pools verified). cand3 aborted on the harness guard, and the runner resumed with skip-existing. No measurement was contaminated. `aplica_legado.py` is now dry-run by default with an explicit `--grava`; memory `reference_bash_tool_heredoc_quirks.md` updated.
+- **Next stage, from the record.**
+  - (a) **Close R1–R4** (proposed 2026-10-08, suspended *"até o complexo ser decidido"*; the complex is now decided by ADR-0070/0072/0073).
+    - R1 (compare the `evidence_intent` of the 8 reconfirmations that evidence against the 8 that don't) — answered by Block A's reading: the ones that "evidence" do it by accepting the cited original, not through better intents.
+    - R2 (controlled dependency test on Ação 14) — superseded by ADR-0070.
+    - R3 (cases 1/4: report as un-evidenceable or rewrite the criterion) — report as sem evidência, no rewrite: the corpus records no performed revision, Block B gave 0 hits, and ADR-0073 forbids tailoring.
+    - R4 (case 3 per product, 8/42) — absorbed: 42c applied, 8d rejected, 8b inert.
+  - (b) Then the user's 2026-10-04 directive (*"podemos fazer um ciclo de testes após todas as alterações aplicadas e iniciar um novo ciclo de análise a partir daí"*): **test cycle 2** = 10 independent full processes of the current state, ledger off. That is ~40 min each, ≈7 h on the owner's 8083 instance, and needs the user's OK.
+  - (c) A new analysis cycle by class.
+  - (d) Item 6 (`_MAX_EXAMINED` 16→10/12) only after item 4, per the record.
+- **Tunnel** PID 1108 closed after the last GPU run (0 local ssh processes left); the owner's 8083 instance untouched.
+- **Pending commit**:
+  - this pass: `data/retrieval_profiles/acao_{01,03,04,05,28}.json`, `scripts/diagnostics/candidates_legacy_terms.py` (new), `scripts/diagnostics/reproducibility.py`, `scripts/diagnostics/candidates_acao35_round5.py`, ADRs 0072/0073;
+  - the 61st-pass updates: `CLAUDE.md`, `CONTEXT.md`, ADRs 0068/0071, `docs/prompts/04` and `05`.
+
+**Session 2026-10-10 (61st pass) — THE USER'S MESSAGE H: explanations first, then items 5→9 of the plan table. A NEW BINDING RULE, ADR-0073: query terms are document-agnostic — the case document tests a profile, it never sources or promotes a term (*"o documento sendo analisado … não pode ser o parâmetro para a criação dos termos das queries … A busca tem que ser agnóstica em relação ao documento. Precisamos poder avaliar qualquer documento de qualquer tipo com as queries aqui criadas."*). Block C of ADR-0072 REVERTED (its three terms came from the dispatch `_3` p.10); 56 legacy `real_world` terms inventoried with the measured cost of removing them (decision A/B pending, the user's). Item 5: fifth wording round on Ação 35's two coins. Item 6: 11a applied. Item 7: batch committed. Item 8: port 8080 reported. Item 9: `rotulado` measured across six independent processes. It brought no constancy gain and raised accepts by 11 %, so the recommendation is NOT to adopt it (the user decides). ADR-0068's signal fired on 18 of 19 band-crossing variations. Tunnel closed.**
 
 - **Explanations given (no code)**: NEAR(anchor of the cited, marker of the citing) — the search unit is the whole FTS5 `NEAR(...)` expression, the anchor alone stays experimental (it would find the cited Ação's original instrument); anchor = the artefact noun in the CITED Ação's IPMP text, marker = the CITING Ação's own verb/qualifier from its IPMP text; verified token by token (`$W/origem_termos.py` → `$W/acc/origem_termos.txt`): of Block B's 272 tokens, 159 are literal in both texts, 76 in the citing, 10 in the cited, 27 inflections of IPMP words, **0 outside the IPMP**; the corpus served only as the harmlessness probe. "Chunks nomeados" = hand-written target/control lists of the analysis scripts (`ALVOS`, `alvos`), never labels in the pipeline: the `chunks` table has no label column, retrieval/gate/scorer never read those lists, nothing persists between passes in measurements; the only per-chunk persistence in production is the gate ledger (ADR-0067, keyed on the exact prompt hash; 0 rows in `data/app.db`, off in every measurement). `rotulado` labels the PRODUCT inside the gate prompt, not chunks.
 - **ADR-0073 + Block C reverted** (`$W/reverte_bloco_c.py`, textual edit, changelog entries kept so nobody re-adds them): 37 and 42a lose the three `real_world` terms; retrieval-only, gate digest unchanged by the revert. **Legacy inventory** (`$W/classifica_real_world.py`, `$W/sonda_real_world.py` → `$W/acc/{classifica_real_world,sonda_real_world}.txt`): 56 `real_world` terms (43 active) in 1a–1d, 3a, 4a/4c/4d, 5b, 28.3; 24 also occur in some Ação's IPMP text, 32 have the document as their only source (27 active: "harmonização contratual", "término da vigência", "segurança pública", "Lei Complementar Municipal", "bens tombados", "parcelamento da solução", …). Retrieval-only cost of removing the 43 active ones: out of the examined pool go chunks accepted in 9/9 processes — 1a `_1` p.4, 1c `_1` p.3 + `_2` p.160, 3a `_2` p.159, 4a `_2` p.247, 4c `_1` p.331/409/214 — plus 4d `_2` p.160 (8/9) and 28.3 `_2` p.136 (7/9). Options put to the user: (A) remove all 56; (B) keep the 24 with an IPMP source (relabelled `canonical`, source named), remove the 32 — recommended B, measured across processes before shipping. `docs/prompts/05_retrieval-profile-validation.md` gained the binding rule at the top and Step 8 no longer promotes a term because it appears in the case's accepted chunks. Memory `feedback_document_agnostic_queries.md`.
@@ -220,7 +443,23 @@ Maturity_Check/
 - **Harness** (`scripts/diagnostics/reproducibility.py`): `--candidates FILE --apply PIDS` (a candidate patch in memory, the way to measure it across independent processes before writing it), `--gate-variant rotulado` (P1a's `rotula_alvo` installed over `evidence_selection.build_relevance_system_prompt`, dry-checked on 164/164 prompts), `--record-reasoning` (every verdict's reasoning in `gate.reasoning`), and every run now records ADR-0068's margin (`gate.margin`: review flag, floor, band, fragile products) and the patch/variant it ran with.
 - **Item 7 — commit: one commit, no push** (the user's message H authorised it): the queue of the 59th–61st passes — 21 retrieval profiles (`acao_{03,06,08,11,16,17,18,20,21,22,28,29,31,33,34,35,37,39,42,43,44}.json`), `main.py` (`LLAMACPP_BASE_URL`), `src/evaluation/prompt/relevance_builder.py` + `tests/test_relevance_builder.py` (ADR-0071), `scripts/diagnostics/{reproducibility,measure_sibling_text}.py`, new `scripts/diagnostics/{measure_integral_candidates,candidates_citing_originals,candidates_acao35_round5}.py`, `docs/prompts/05_retrieval-profile-validation.md`, ADRs 0071–0073, `CLAUDE.md`. `.secrets/`, `.env`, `scratchpad/` verified ignored and the content scanned for secrets before staging. The hash is recorded in the item-9 update below, which was written after the commit and is NOT committed.
 - **Item 8 — port 8080, reported, nothing changed**: nothing listens on 8080 now (the scheduled task is down; the owner's instance runs on 8083, which the router does not forward), so the exposure is closed de facto until the 8080 task runs again. Client side is ready for every option (`LLAMACPP_API_KEY`; `LLAMACPP_BASE_URL` + SSH tunnel, used for two nights). The remaining steps are the user's: (a) Norton rule; (b) the server-side `--api-key` (denied to Claude, never retry); (c) drop the router's 8080 forward and use the tunnel — recommended.
-- **Item 9 — `rotulado` across independent processes** launched right after the commit — three full independent processes with `--gate-variant rotulado --record-reasoning`, ledger off (`$W/rot_runner.py` → `scratchpad/acc/rot_conf{1,2,3}.{json,log}`, ~40 min each), compared against A+B+C (`abc_conf1-3`) on the 42 Ações whose prompts and pools this pass did not touch (all but 11, 35, 37, 42; `$W/compara_rotulado.py`). Results: pending at commit time.
+- **Item 9 — `rotulado` across independent processes** launched right after the commit — three full independent processes with `--gate-variant rotulado --record-reasoning`, ledger off (`$W/rot_runner.py` → `scratchpad/acc/rot_conf{1,2,3}.{json,log}`, ~40 min each), compared against A+B+C (`abc_conf1-3`) on the 42 Ações whose prompts and pools this pass did not touch (all but 11, 35, 37, 42; `$W/compara_rotulado.py`). **Done after commit `ae49728`; this update is NOT committed.**
+  - **Runs.** Process 3 was rerun by `$W/rot3b_runner.py`, which watches the tunnel, after the client's SSH tunnel dropped mid-run at about 13:22. The failed run is kept as `scratchpad/acc/rot_conf3_tunel_caiu.*` and not counted. rot1 lost Ação 9 to a `LlamaCppTimeout`, so Ação 9 is excluded.
+  - **Comparison.** The unit is a pair of processes, over the 41 Ações untouched between the arms (`$W/compara_rotulado.py`, `$W/diff_aceites_rotulado.py`; readings in `$W/le_aceites_rot.py` and `$W/le_perdidos_rot.py`). Per pair, A+B+C → rotulado: batch 23.3 → 20.7, bits 28.0 → 25.7, outcome 33.7 → 30.3, verdicts 97.6 → 97.4 %. Over 3 processes, score-variable Ações went 10 → 15 (7 → 12 counting sem ≡ 0). Accepts per process went 69.3 → 77.0 (+11 %). Target confusion was 0 of 6 665 reasoning texts.
+  - **P1a's in-process harms did not reproduce.** 1d p.144 was F×3, so Ação 1 stays at 1. 2d p.4 was T×3. 12c and 12e are 1-in-3 coins.
+  - **35 changed product × chunk pairs, read one by one.**
+    - 12 moved the right way: 23.4 p.355 and 2d `_2` p.157 were gained, and 7 false accepts were removed.
+    - 15 moved the wrong way: annex titles, contract definitions and clauses, matrix rows at 3/3 (28.2 p.193, 15e p.494), 43b p.105 came back, and 45 p.23 was lost once.
+    - 8 are borderline or wait on a profile ruling, including 1b p.192, now 3/3.
+    - Read together, the label makes the gate match the target's own words more literally, and it overrides negative patterns of the same class (8d, 15e, 43b, 12e).
+  - **Recommendation and record.** Do not adopt; the status quo (integral, no label) stays. This is in ADR-0071's new section.
+  - **ADR-0068 coverage over the six processes** (`$W/sinal_seis_processos.py`). The A+B+C margin was recomputed; fidelity against the recorded margin is 137/137.
+    - Of 19 band-crossing Ação × arm variations (sem ≡ 0), 18 were flagged in at least one process, each time on the Ação's highest outcome.
+    - The one miss is Ação 36's correlated drop (36a's 2–5 accepts vanished together).
+    - Six sem ↔ 0 alternations are silent by design.
+    - Signals on Ações with a constant outcome mark scores that hung on one chunk (A+B+C 15/93, label 4/78). Ação 45's and Ação 24's flagged scores fell to `sem evidência` in one labelled process.
+    - This is in ADR-0068's new section. Widening the signal is the user's decision.
+  - **GPU.** Our local tunnel was closed and no local ssh.exe remains. The owner's 8083 instance was never touched.
 
 **Session 2026-10-10 (60th pass, overnight) — CITING AÇÕES TREATED (ADR-0072) on the user's decision *"Vamos de A + C agora (medíveis), B como registro canônico junto. Efetive os testes que tiver que efetivar. Vou dormir, maquina canonica em funcionamento"*: BLOCK A = four "the original is not the revision" negative patterns (43b, 35.2e, 35.2f, 33b), each measured by the item-4 rule in up to four wording rounds and applied; BLOCK C = three `real_world` finalisation terms on 37/42a (the dispatch `_3` p.10 now reaches both pools; two gate-side wordings for 37 measured and REJECTED — they flipped 37's three stable accepts); BLOCK B = 78 aligned `NEAR(anchor of the cited artefact, marker of the citing Ação)` terms on 42 products, canonical, verified retrieval-only to change nothing in this corpus; THREE INDEPENDENT CONFIRMATION PASSES (see bullet). Fast suite 636, audit 164/164, digest `6cadc9d8fc0b3810`, leakage 0. GPU through the 8083 tunnel; nothing committed.**
 
@@ -1018,7 +1257,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (updated 2026-06-18: Retrieval Profile, Evidence Ontology, Evidence Intent, Retrieval Signal Concept, Query Term, Evidence Logic Pattern, Profile Maturity, Term Status)
-- `docs/adr/` — 73 ADRs, next is `0074-`
+- `docs/adr/` — 74 ADRs, next is `0075-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
@@ -1048,7 +1287,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 | Vector DB | LanceDB (co-equal with BM25, always-on, fused via per-product RRF — ADR-0049) |
 | PDF extraction | `unstructured[pdf]` (layout-aware, OCR) |
 | Embeddings | sentence-transformers (local CPU, fixed model, offline flags — co-equal vector lane, not a fallback) |
-| LLM evaluation | **Owner's GPU server only** — `189.60.217.20:8080`, RTX 5070 Ti 16 GB, `gpt-oss-20b-F16.gguf` served by `llama-server.exe` (llama.cpp b8198), scorer + gate, temperature 0, grammar-constrained JSON (ADR-0053, ADR-0059). Groq/Ollama fallback code kept, unwired. Bring-up/stop procedure and credentials: `.secrets/llm_server_access.md` (gitignored). |
+| LLM evaluation | **Owner's GPU server only** — `189.60.217.20`, server port 8083 reached through an SSH tunnel on 443 (`LLAMACPP_BASE_URL=http://127.0.0.1:18083`; never 8080), RTX 5070 Ti 16 GB, `gpt-oss-20b-F16.gguf` served by `llama-server.exe` (llama.cpp b8198), scorer + gate, temperature 0, grammar-constrained JSON (ADR-0053, ADR-0059). Groq/Ollama fallback code kept, unwired. Bring-up/stop procedure and credentials: `.secrets/llm_server_access.md` (gitignored). |
 | Frontend | Vue.js 3 (Phase 2) |
 
 ---

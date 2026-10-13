@@ -79,7 +79,7 @@ _Avoid_: profile version, profile quality, profile completeness
 **Term Status**: The current confidence level of an individual Query Term within a Retrieval Profile, based on accumulated empirical evidence from retrieval testing. Four values: `active` (in use, untested), `experimental` (tentatively added, pending validation), `validated` (confirmed to contribute useful recall), `deprecated` (empirically shown to be noise; retained for auditability). Distinct from **Provenance**, which explains origin rather than confidence.
 _Avoid_: term quality, term confidence, term flag
 
-**Provenance**: The origin classification of an individual Query Term, distinct from **Term Status** (confidence, not origin). Three values: `canonical` (derived directly from IPMP or Rio Manual source text), `real_world` (observed in an actual PPP case document during a Stage B population session), `synthetic` (derived from general domain knowledge of Brazilian PPP contracting practice, applied offline during profile generation, grounded in neither a specific case document nor the IPMP text itself).
+**Provenance**: The origin classification of an individual Query Term, distinct from **Term Status** (confidence, not origin). Three values: `canonical` (general vocabulary of the concept, valid for any document of any type. It comes from a source outside any case document: the IPMP or Rio Manual text, the legislation and official standards the criterion relies on, or established domain vocabulary. Never tailored to the document under analysis — ADR-0073), `real_world` (observed in an actual PPP case document during a Stage B population session), `synthetic` (derived from general domain knowledge of Brazilian PPP contracting practice, applied offline during profile generation, grounded in neither a specific case document nor the IPMP text itself).
 _Avoid_: source, origin, source type
 
 ### Module Concepts
@@ -132,7 +132,7 @@ _Avoid_: AI client, model client, LLM wrapper, provider adapter
 **Uncertainty flag**: A boolean field in `EvaluationResult` set by the LLM (the `uncertainty_flag` field of the grammar-constrained JSON response, ADR-0053 — the earlier sentinel block is gone) when retrieved evidence is absent, insufficient, or contradictory with respect to the Ação's Expected Products, and forced to True by code when the per-product verdicts do not cover the expected set (ADR-0058). Distinct from `parse_failed` (format compliance failure set by Module 4) and `no_evidence_found` (upstream retrieval state set by Module 4 before any LLM call).
 _Avoid_: confidence flag, model confidence, uncertainty score
 
-**Relevance Gate**: The per-chunk, binary (`relevant: true|false`) LLM classification the evaluation module applies to every retrieval candidate of one scored **Expected Product** before any evidence reaches the scorer; its system prompt is built per product from the **Retrieval Profile** (Evidence Intent, Retrieval Signal Concepts, negative evidence patterns) plus the Ação's identity block and **Sibling Contrast**, and its verdict is one call — never a vote (ADR-0050, ADR-0061, ADR-0064). Judges relevance only: a chunk that attests the item was NOT met is still relevant; fulfilment is the scorer's question (ADR-0066).
+**Relevance Gate**: The per-chunk, binary (`relevant: true|false`) LLM classification the evaluation module applies to every retrieval candidate of one scored **Expected Product** that survives the **Genre Filter**, before any evidence reaches the scorer; its system prompt is built per product from the **Retrieval Profile** (Evidence Intent, Retrieval Signal Concepts, negative evidence patterns) plus the Ação's identity block and **Sibling Contrast**, and its verdict is one call — never a vote (ADR-0050, ADR-0061, ADR-0064). Judges relevance only: a chunk that attests the item was NOT met is still relevant; fulfilment is the scorer's question (ADR-0066).
 _Avoid_: filter, relevance check, "the pre-filter" (that is `_prefilter_near_duplicates`, deterministic and LLM-free), gate (unqualified)
 
 **Sibling Contrast**: The list of the Ação's other scored **Expected Products** injected into every **Relevance Gate** system prompt, with the product id repeated next to the chunk in the user prompt, so the model judges "this product, not its siblings" instead of being told to be strict in general (ADR-0064).
@@ -177,6 +177,24 @@ _Avoid_: fault tolerance, resilience, degraded mode, graceful degradation
 **Retrieval cascade**: The ordered retrieval strategy for a given Ação. Steps A–B are document-focused and deterministic: (A) exact document name match, (B) variant name match. Step C is hybrid: BM25 and dense vector search run unconditionally, once per letter-suffixed Expected Product, and are fused via per-product Reciprocal Rank Fusion (RRF, k=60) — vector is co-equal with BM25, not a fallback (ADR-0049, superseding the earlier "vector only on zero lexical results" model). `rio_hints` stays a separate BM25-only lane, structurally lower-priority than a product-attributed RRF match. Regex additive search (the former Step D) was removed from the cascade entirely (ADR-0052); `search_regex()` is preserved as a utility, unused in the live cascade. All steps belong entirely to the retrieval module.
 _Avoid_: pipeline, search flow, fallback chain, vector fallback (superseded terminology — see ADR-0049)
 
+**Instrument Text**: Text of a document whose **Genre** is INSTRUMENTO. That covers a contract or minuta, an edital, a termo de referência, and their normative annexes: risk matrix, specification, performance indicators, payment mechanism, forms. It is evidence only for a **Genre-Exempt Product**. For every other Expected Product it is removed before the **Relevance Gate** (ADR-0074).
+_Avoid_: contract text (too narrow), boilerplate, legal text, normative text (ambiguous with the laws themselves)
+
+**Genre**: The class a **Chunk** takes from the **Document Segment** it belongs to: INSTRUMENTO or OUTRO. OUTRO covers studies, the ETP, opinions, notes, reports, justifications and acts. A segment's genre is the type its title names. With no known type, it is the majority of its chunks' own labels; a tie is OUTRO. A chunk's own label is evidence for its segment's genre, never its genre.
+_Avoid_: document type (that is the title's finer type: minuta, edital, parecer…), category, kind
+
+**Document Segment**: One document inside an uploaded PDF. It records its page range, how its start was recognised (file start, cover, title, numbering restart), its title type if any, and its **Genre**. A **Document Artifact** bundles one or more Document Segments.
+_Avoid_: document (unqualified — ambiguous with the Document Artifact), section, part
+
+**Document Index**: The persisted map of a Case from its **Chunks** to their **Document Segments** and **Genres**. It lives in three retrieval-owned tables: `document_index`, `chunk_genre` and `document_index_state`. It is rebuilt on read whenever the chunks or `GENRE_RULES_VERSION` change, and dropped when a file is new or replaced. The same chunks and rules always give the same index. It is derived from the chunks alone, never from a hand-made page map (ADR-0074).
+_Avoid_: page map, genre cache, document map
+
+**Genre Filter**: The deterministic, LLM-free removal of **Instrument Text** before the **Relevance Gate** (ADR-0074). It does two things. For each non-exempt Expected Product, it drops instrument-text candidates from the ranked list, before the near-duplicate prefilter and the `_MAX_EXAMINED` cut (variant A2). For every product, it drops instrument-text neighbours from neighbour expansion.
+_Avoid_: relevance filter, pre-filter (that is `_prefilter_near_duplicates`), gate
+
+**Genre-Exempt Product**: An Expected Product whose IPMP criterion is the instrument itself, so its candidates keep their **Instrument Text**. Examples: the contractual structure, the risk matrix as an annex, the edital and minuta, the payment rules, the finalised documents, the signed contract. Each is listed with its IPMP sentence in `data/ipmp/isencoes_genero.json`. There are 17: 22.1, 22.2, 22.2a, 22.2b, 23.1–23.4, 25a–25e, 37, 42d, 45 and 46.1.
+_Avoid_: whitelist, allowed product, instrument product
+
 **Assessment module**: The Python package (`src/assessment/`) responsible for orchestrating the end-to-end assessment workflow for one Case — accepting Document Artifacts via upload, storing them to disk, calling extraction, indexing, retrieval, and evaluation in sequence, and returning an `EvaluationResult`. Owns the application-service layer; FastAPI routes invoke it; a future CLI may invoke it directly. Does not own HTTP concerns, score persistence, or Auditor rendering. Per-document pipeline: Upload → Store → Extract → Index → Retrieve → Evaluate. (The ingestion module loads IPMP/Rio Manual framework data at startup; it is not a per-document step.)
 _Avoid_: pipeline runner, orchestration layer, workflow engine, ingestion (that term is taken by Module 1)
 
@@ -218,6 +236,8 @@ _Avoid_: manual override, correction, human correction
 - A **Case** contains one or more **Document Artifacts**
 - A **Document Artifact** is chunked into one or more **Chunks** during extraction
 - A **Chunk** carries provenance: the **Document Artifact** filename and page number it came from
+- A **Document Artifact** bundles one or more **Document Segments**; every **Chunk** belongs to exactly one segment and takes its **Genre**
+- The **Document Index** of a Case is derived from its **Chunks** alone; the **Genre Filter** reads it before the **Relevance Gate**, and only a **Genre-Exempt Product** keeps **Instrument Text** among its candidates
 - The retrieval module searches **Chunks** to find evidence for an **Ação's** Expected Products
 - A **Retrieval Profile** synthesises data from one **IPMP** artifact, one **Rio Manual** artifact, the acronym table, and real-document observation for the same **Ação**
 - A **Retrieval Profile** contains one **Evidence Ontology** entry per letter-suffixed **Expected Product**
@@ -238,6 +258,9 @@ _Avoid_: manual override, correction, human correction
 >
 > **Dev:** "We're in Phase 1 with only Ação 1 defined. Can the system score a case document for Ação 1 even if `acao_02.json` doesn't exist yet?"
 > **Domain expert:** "Yes — that's **progressive enrichment**. The ingestion module loads whatever source-of-truth artifacts exist. Phase 1 naturally loads only Ação 1. Adding Ação 2 later means dropping `acao_02.json` in the right directory — no code change needed."
+>
+> **Dev:** "Page 3 of the minuta is plain prose, and the classifier labels that chunk OUTRO. Why does the **Genre Filter** still remove it for 1a?"
+> **Domain expert:** "Because a chunk's **Genre** is its **Document Segment**'s, not its own label. The page belongs to a minuta, so it is **Instrument Text**. The chunk's label only decides when the segment's title names no known type. It stays in 23.2's pool, though: 23.2 is a **Genre-Exempt Product**, because its criterion is the edital and the minuta themselves."
 
 ---
 
@@ -250,5 +273,7 @@ _Avoid_: manual override, correction, human correction
 - **"gap"** was used to mean both structural errors and intentionally incomplete domain data — resolved: structural errors are **artifact integrity** failures (fatal); intentionally incomplete data is captured in `_meta.known_gaps` and is a valid document state (non-fatal).
 - **"canonical"** was used loosely to refer to both the JSON file and the loaded Python object — resolved: the JSON file is the **source-of-truth artifact**; the loaded, validated Python object is the **canonical domain structure**.
 - **"anchor"** was used to mean vocabulary source, phrase encoding mechanism, and FTS5 query term simultaneously — retired: the term is now disambiguated into **Evidence Intent** (Layer A — what to look for), **Retrieval Signal Concept** (Layer B — what concept indicates the evidence), and **Query Term** (Layer C — the actual FTS5 input). "Anchor" should not be used in this system.
+- **"document"** was used both for an uploaded PDF and for each of the many documents bundled inside it (edital, minutas, studies, opinions) — resolved: the PDF is the **Document Artifact**; a document inside it is a **Document Segment**.
+- **"pre-gate filter"** was ambiguous once there were two deterministic steps before the **Relevance Gate** — resolved: the **Genre Filter** removes **Instrument Text** and runs first; the near-duplicate prefilter (`_prefilter_near_duplicates`) removes near-copies and runs second.
 - **"gate"** was used for both the IPMP phase-boundary approval checkpoint and the LLM relevance classifier — resolved: say **Ponto de Transição** for the former and **Relevance Gate** for the latter; "gate" alone should not be used.
 - **"llama.cpp"** was read as a provider distinct from "the GPU" (as if parallel to Groq or Ollama) — resolved: llama.cpp is the inference software running ON the **Servidor GPU**; every production call and every measurement since ADR-0059 goes to that one server. Say **Servidor GPU** when meaning the provider; say "llama.cpp" only when the software itself (slots, prompt cache, grammar sampling) is the subject.

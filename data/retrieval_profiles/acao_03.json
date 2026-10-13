@@ -10,6 +10,7 @@
       "SMG-040_101607_2024_2.pdf (Estudo Técnico Preliminar, §3.2 DESCRIÇÃO DA SOLUÇÃO / §3.3 ESTIMATIVA DE QUANTITATIVO / §3.5 POSSIBILIDADE DE PARCELAMENTO DA SOLUÇÃO, p.156-163)"
     ],
     "changelog": [
+      {"date": "2026-10-10", "summary": "Termos real_world legados classificados por canonicidade (ADR-0073; regra do usuário, 2026-10-10: 'os termos de busca não podem ser customizados para o documento ... a única exigência é que um novo termo seja canônico'; classificação em scripts/diagnostics/candidates_legacy_terms.py): 3a: canonicos 9 [proposta inicial (general synonym of a preliminary scope; stays experimental) | NEAR(divisão, objeto, lotes) (same (division of the object into lots); stays experimental) | objeto pretendido (procurement vocabulary; stays experimental) | NEAR(contratação, pretendida) (procurement vocabulary; stays experimental) | parcelamento da solução (Lei 14.133/2021 art. 18 par. 1 VIII (every ETP)) | NEAR(parcelamento, lotes) (same) | parcelamento da contratação (same) | viabilidade técnica (IPMP (Ações 4, 33)) | estimativa de quantitativo (Lei 14.133/2021 art. 18 par. 1 IV (estimated quantities))]. Medida: Ação 1 medida entre processos independentes (reproducibility.py --runs 1 --acoes 1, ledger desligado, candidato aplicado em memória com --candidates/--apply; 5 processos do estado atual x 5 do candidato, intercalados, 2026-10-10): leva idêntica por par de processos 10 % -> 100 % (29 % sobre 11 processos do estado atual), bits 40 % -> 100 %, vereditos constantes 97,7 % -> 100 %, score 1 nos 10. A moeda da 1b (_1 p.192/p.298, o estudo econômico do caso trazido ao pool pelos termos de finanças) sai do pool examinado; a 1a passa a se apoiar em um chunk (_2 p.157, aceito 5/5). Adotado pela regra do usuário (adotar só o que medir mais consistente). Nas Ações 3, 4, 5 e 28 só a proveniência muda (real_world -> canonical); o status dos termos, que é o que a busca lê, não muda."},
       {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 1 termo NEAR alinhado citante<-citada em 3a — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."}
     ],
     "validation_notes": [
@@ -158,7 +159,7 @@
           "encoding": "phrase",
           "text": "proposta inicial",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "preliminary_scope_definition"
         },
@@ -171,7 +172,7 @@
           ],
           "distance": 6,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "preliminary_scope_definition"
         },
@@ -234,7 +235,7 @@
           "encoding": "phrase",
           "text": "objeto pretendido",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "concrete_solution_description"
         },
@@ -246,7 +247,7 @@
           ],
           "distance": 3,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "concrete_solution_description"
         },
@@ -303,7 +304,7 @@
           "encoding": "phrase",
           "text": "parcelamento da solução",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "change_prioritization"
         },
@@ -315,7 +316,7 @@
           ],
           "distance": 4,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "change_prioritization"
         },
@@ -323,7 +324,7 @@
           "encoding": "phrase",
           "text": "parcelamento da contratação",
           "type": "A",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "change_prioritization"
         },
@@ -434,7 +435,7 @@
           "encoding": "phrase",
           "text": "viabilidade técnica",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "management_financial_feasibility"
         },
@@ -516,7 +517,7 @@
           "encoding": "phrase",
           "text": "estimativa de quantitativo",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "physical_technical_elements"
         },

@@ -76,7 +76,7 @@ class ProductGateReport(BaseModel):
     """
 
     expected_product_id: str
-    n_candidates: int          # after pre-gate near-duplicate removal
+    n_candidates: int          # after the genre filter and pre-gate near-duplicate removal
     n_examined: int            # actually sent to the gate (<= _MAX_EXAMINED)
     n_accepted: int            # anchors accepted for this product
     n_rejected: int            # judged and found irrelevant
@@ -84,6 +84,12 @@ class ProductGateReport(BaseModel):
     providers: list[str] = []  # distinct provider labels that served this product
     models: list[str] = []     # distinct model labels that served this product
     n_ledger_hits: int = 0     # verdicts answered from the gate ledger (ADR-0067)
+    # ADR-0074: candidates removed before the cut because their document is
+    # instrument text (always 0 for a genre-exempt product), and neighbours of
+    # accepted chunks not gated for the same reason (any product, exempt ones
+    # included). Both 0 when the genre filter is off.
+    n_genre_excluded: int = 0
+    n_neighbors_genre_excluded: int = 0
 
     @property
     def no_evidence(self) -> bool:

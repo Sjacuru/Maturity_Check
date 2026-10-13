@@ -55,11 +55,13 @@ _RELEVANT_NO = json.dumps({"relevant": False})
 
 
 def test_the_same_gate_question_twice_in_one_pass_is_asked_once():
-    """A chunk can reach the gate twice for one product in a single pass: once
+    """A chunk could reach the gate twice for one product in a single pass: once
     from ranked[:_MAX_EXAMINED], once as the neighbour of an accepted chunk.
     The ledger used to absorb that by accident -- 15 repeats in cycle 1's cold
     run, enough to move Acao 23's score -- so the coherence has to come from
-    code and hold with no ledger configured."""
+    code and hold with no ledger configured. Since 2026-10-13 _expand_anchors
+    also skips a neighbour already judged (ADR-0074); the memo keeps any repeat
+    left -- two short candidates with the same text -- coherent."""
     answers = iter([_RELEVANT_YES, _RELEVANT_NO])
     _set_gate(lambda s, u: next(answers))
     memo: dict = {}
@@ -129,9 +131,9 @@ def _no_neighbors(monkeypatch):
 
 
 def _with_expansion(monkeypatch):
-    """Neighbour expansion is off in production since 2026-10-06 (the question
-    it asks depends on a verdict), but the mechanism is kept switchable for
-    diagnostics -- so the tests that cover it turn it on explicitly."""
+    """Neighbour expansion is on by default again since 2026-10-13 (ADR-0074,
+    behind the genre filter); the tests that cover it still set it explicitly,
+    so they keep testing the mechanism whatever the default becomes."""
     monkeypatch.setattr(es, "EXPANSION_ENABLED", True)
 
 
@@ -1089,13 +1091,99 @@ def test_pooled_gate_gives_the_same_evidence_as_the_serial_gate(monkeypatch):
 
 # --- expansao de vizinhos desligada em producao (2026-10-06) ---
 
-def test_expansion_is_off_by_default_so_no_question_depends_on_a_verdict(monkeypatch):
-    """With expansion on, a flip on an accept changed WHICH chunks were gated,
-    not just how one was judged. Measured over three clean passes with it off:
-    the per-product n_examined vector repeated 46/46, against 26/46 with it on."""
+def test_expansion_is_on_by_default_and_gates_a_neighbour_that_is_not_instrument_text(monkeypatch):
+    """Back on since 2026-10-13 by the user's decision, behind the genre filter
+    (ADR-0074). Off from 2026-10-06 because a flip on an accept changed WHICH
+    chunks were gated (ADR-0069); test cycle 3 measures that cost again."""
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    assert es.EXPANSION_ENABLED is True
 
+    vizinho = make_chunk(page_number=1, chunk_index=0, text="vizinho do aceito")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("doc.pdf", 1, 0): "OUTRO"})
+    _set_gate(lambda system, user: _RELEVANT_YES)
+
+    anchor = make_chunk(page_number=1, chunk_index=1, text="ancora aceita")
+    result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+
+    assert any("vizinho" in c.text for c in result.accepted)
+    assert result.product_reports[0].n_neighbors_genre_excluded == 0
+
+
+def test_a_neighbour_from_an_instrument_document_is_not_gated(monkeypatch):
+    """The user's rule (2026-10-12): a neighbour passes to the gate only when
+    the genre classifier says its document is NOT instrument text."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    vizinho = make_chunk(page_number=1, chunk_index=0, text="clausula vizinha do contrato")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", 1, 0): "INSTRUMENTO", ("doc.pdf", 1, 1): "OUTRO",
+    })
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    anchor = make_chunk(page_number=1, chunk_index=1, text="ancora aceita")
+    result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+
+    assert len(stub.calls) == 1                       # only the anchor was asked
+    assert [c.chunk_index for c in result.accepted] == [1]
+    assert result.product_reports[0].n_neighbors_genre_excluded == 1
+
+
+def test_an_exempt_product_does_not_gate_instrument_neighbours_either(monkeypatch):
+    """The neighbour rule is literal, for every product: an exempt product keeps
+    its instrument CANDIDATES, but the neighbours of its accepts pass the same
+    genre test as anyone else's."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_for(22, "22.2", "matriz de risco do contrato"))
+    vizinho = make_chunk(page_number=1, chunk_index=0, text="outra linha da matriz")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", 1, 0): "INSTRUMENTO", ("doc.pdf", 1, 1): "INSTRUMENTO",
+    })
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    anchor = make_chunk(page_number=1, chunk_index=1, text="linha da matriz aceita",
+                        expected_product_ids=["22.2"])
+    result = select_evidence(22, "P001", {"22.2": [(0.05, anchor)]})
+
+    assert [c.chunk_index for c in result.accepted] == [1]   # the exempt candidate stays
+    assert len(stub.calls) == 1
+    report = result.product_reports[0]
+    assert report.n_genre_excluded == 0
+    assert report.n_neighbors_genre_excluded == 1
+
+
+def test_a_neighbour_already_examined_for_the_product_is_not_asked_again(monkeypatch):
+    """Two accepted candidates side by side are each other's neighbours. Asking
+    again only duplicated rows and spent expansion slots on chunks that were
+    already anchors."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    a = make_chunk(page_number=3, chunk_index=0, text="primeiro trecho aceito")
+    b = make_chunk(page_number=3, chunk_index=1, text="segundo trecho aceito")
+    vizinhos = {(3, 0): (None, b), (3, 1): (a, None)}
+    monkeypatch.setattr(es, "fetch_neighbor_chunks",
+                        lambda pn, f, page, idx: vizinhos[(page, idx)])
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    result = select_evidence(1, "P001", {"1a": [(0.9, a), (0.8, b)]})
+
+    assert len(stub.calls) == 2
+    assert sorted(c.chunk_index for c in result.accepted) == [0, 1]
+    assert result.product_reports[0].n_examined == 2
+
+
+def test_expansion_can_be_switched_off_for_a_diagnostic(monkeypatch):
+    """reproducibility.py --no-expansion: the output without neighbours stays
+    measurable, as the output with them was while they were off."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    monkeypatch.setattr(es, "EXPANSION_ENABLED", False)
     vizinho = make_chunk(page_number=1, chunk_index=0, text="vizinho do aceito")
     monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
     stub = StubGateClient(lambda system, user: _RELEVANT_YES)
@@ -1104,27 +1192,182 @@ def test_expansion_is_off_by_default_so_no_question_depends_on_a_verdict(monkeyp
     anchor = make_chunk(page_number=1, chunk_index=1, text="ancora aceita")
     result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
 
-    assert len(stub.calls) == 1                                   # so a ancora foi perguntada
+    assert len(stub.calls) == 1
     assert [c.chunk_index for c in result.accepted] == [1]
-    assert not any("vizinho" in c.text for c in result.accepted)
 
 
-def test_expansion_can_be_switched_back_on_for_a_diagnostic(monkeypatch):
-    """The mechanism stays in the tree and switchable: the 23 products that used
-    neighbours were just as unstable without them, so this removed the cascade,
-    not the ambiguity -- and the output with expansion still has to be measurable."""
+# --- filtro de genero antes do gate (ADR-0074) ---
+
+def _profile_for(acao_id: int, product_id: str, evidence_intent: str) -> RetrievalProfileStore:
+    return RetrievalProfileStore(
+        acoes={
+            acao_id: AcaoRetrievalProfile(
+                acao_id=acao_id,
+                profile_maturity="seed",
+                expected_products={
+                    product_id: ExpectedProductProfile(
+                        evidence_intent=evidence_intent,
+                        retrieval_signal_concepts=[],
+                        query_terms=[],
+                    )
+                },
+            )
+        }
+    )
+
+
+def _asked_texts(stub: StubGateClient) -> list[str]:
+    return [user.rsplit("\n", 1)[-1] for _system, user in stub.calls]
+
+
+def test_instrument_text_is_removed_before_the_examined_cut(monkeypatch):
+    """The examined pool is cut AFTER the filter, so it is filled by the
+    best-ranked candidates that are not instrument text (variant A2)."""
     import ingestion.retrieval_profile as _rp
     monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
-    _with_expansion(monkeypatch)
+    monkeypatch.setattr(es, "_MAX_EXAMINED", 2)
+    generos = ["INSTRUMENTO", "OUTRO", "INSTRUMENTO", "OUTRO", "OUTRO"]
+    candidatos = [
+        (1.0 - i / 10, make_chunk(page_number=i, chunk_index=0, text=f"trecho numero {i}"))
+        for i in range(5)
+    ]
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", i, 0): g for i, g in enumerate(generos)
+    })
+    stub = StubGateClient(lambda system, user: _RELEVANT_NO)
+    eval_cfg._gate_client = stub
 
-    vizinho = make_chunk(page_number=1, chunk_index=0, text="vizinho do aceito")
-    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (vizinho, None))
+    result = select_evidence(1, "P001", {"1a": candidatos})
+
+    assert _asked_texts(stub) == ["trecho numero 1", "trecho numero 3"]
+    report = result.product_reports[0]
+    assert report.n_genre_excluded == 2
+    assert report.n_candidates == 3
+    assert report.n_examined == 2
+
+
+def test_the_genre_filter_runs_before_the_near_duplicate_prefilter(monkeypatch):
+    """A study that quotes a contract clause must not lose its place in the pool
+    to the clause itself: the near-duplicate prefilter keeps the first copy, so
+    the instrument copy has to leave first."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    clausula = "A CONCESSIONARIA devera manter os bens reversiveis em perfeito estado de conservacao " * 2
+    contrato = make_chunk(page_number=5, chunk_index=0, text=clausula + "conforme o contrato.")
+    estudo = make_chunk(page_number=9, chunk_index=0, text=clausula + "conforme o estudo!")
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", 5, 0): "INSTRUMENTO", ("doc.pdf", 9, 0): "OUTRO",
+    })
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    result = select_evidence(1, "P001", {"1a": [(0.9, contrato), (0.8, estudo)]})
+
+    assert [c.page_number for c in result.accepted] == [9]
+    assert len(stub.calls) == 1
+
+
+def test_an_exempt_product_keeps_its_instrument_candidates(monkeypatch):
+    """22.2 asks for the risk matrix itself: instrument text is its evidence."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_for(22, "22.2", "matriz de risco do contrato"))
+    matriz = make_chunk(page_number=7, chunk_index=0, text="linha da matriz de riscos",
+                        expected_product_ids=["22.2"])
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("doc.pdf", 7, 0): "INSTRUMENTO"})
     _set_gate(lambda system, user: _RELEVANT_YES)
 
-    anchor = make_chunk(page_number=1, chunk_index=1, text="ancora aceita")
-    result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+    result = select_evidence(22, "P001", {"22.2": [(0.9, matriz)]})
 
-    assert any("vizinho" in c.text for c in result.accepted)
+    assert [c.page_number for c in result.accepted] == [7]
+    assert result.product_reports[0].n_genre_excluded == 0
+
+
+def test_a_chunk_the_index_does_not_know_is_kept(monkeypatch):
+    """In doubt, OUTRO: a candidate missing from the index is not filtered."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("outro.pdf", 1, 0): "INSTRUMENTO"})
+    _set_gate(lambda system, user: _RELEVANT_YES)
+
+    result = select_evidence(1, "P001", {"1a": [(0.9, make_chunk(text="trecho sem genero"))]})
+
+    assert len(result.accepted) == 1
+    assert result.product_reports[0].n_genre_excluded == 0
+
+
+def test_the_genre_filter_can_be_switched_off(monkeypatch):
+    """reproducibility.py --no-genre-filter; the index is not even read."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    monkeypatch.setattr(es, "GENRE_FILTER_ENABLED", False)
+
+    def _nao_leia(pn):
+        raise AssertionError("o indice de documentos nao deveria ser lido")
+
+    monkeypatch.setattr(es, "_chunk_genres", _nao_leia)
+    _set_gate(lambda system, user: _RELEVANT_YES)
+
+    result = select_evidence(1, "P001", {"1a": [(0.9, make_chunk(text="clausula do contrato"))]})
+
+    assert len(result.accepted) == 1
+
+
+def test_an_ungated_product_is_filtered_too(monkeypatch):
+    """A product with no evidence_intent passes ungated -- but only after the
+    filter, so it never carries instrument text to the scorer either."""
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", 1, 0): "INSTRUMENTO", ("doc.pdf", 2, 0): "OUTRO",
+    })
+    candidatos = [
+        (0.9, make_chunk(page_number=1, chunk_index=0, text="clausula do contrato")),
+        (0.8, make_chunk(page_number=2, chunk_index=0, text="trecho do estudo")),
+    ]
+
+    result = select_evidence(1, "P001", {"1a": candidatos})
+
+    assert [c.page_number for c in result.accepted] == [2]
+    assert result.product_reports[0].n_genre_excluded == 1
+
+
+# --- rota focal (Step A/B) sob o filtro de genero ---
+
+def _focais(*paginas: int) -> list[RetrievedChunk]:
+    return [make_chunk(page_number=p, chunk_index=0, text=f"pagina {p}", expected_product_ids=[])
+            for p in paginas]
+
+
+def test_focal_document_without_instrument_text_is_used_as_is(monkeypatch):
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("doc.pdf", 1, 0): "OUTRO"})
+    chunks = _focais(1)
+    assert es.filter_focal_document(1, "P001", chunks) == chunks
+
+
+def test_focal_document_loses_its_instrument_chunks_when_no_product_is_exempt(monkeypatch):
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", 1, 0): "OUTRO", ("doc.pdf", 2, 0): "INSTRUMENTO",
+    })
+    kept = es.filter_focal_document(1, "P001", _focais(1, 2))
+    assert [c.page_number for c in kept] == [1]
+
+
+def test_a_focal_document_that_is_all_instrument_text_falls_through(monkeypatch):
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("doc.pdf", 1, 0): "INSTRUMENTO"})
+    assert es.filter_focal_document(1, "P001", _focais(1)) is None
+
+
+def test_a_focal_document_stays_whole_when_every_product_is_exempt(monkeypatch):
+    """Ação 23: the TR, the edital, the payment and risk clauses -- all four
+    products ask for the instrument."""
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("doc.pdf", 1, 0): "INSTRUMENTO"})
+    chunks = _focais(1)
+    assert es.filter_focal_document(23, "P001", chunks) == chunks
+
+
+def test_a_focal_document_with_mixed_exemptions_falls_through(monkeypatch):
+    """Ação 46: 46.1 asks for the signed contract, 46.2 for the service order.
+    Only the per-product route can keep the contract for 46.1 alone."""
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {("doc.pdf", 1, 0): "INSTRUMENTO"})
+    assert es.filter_focal_document(46, "P001", _focais(1)) is None
 
 
 # --- dedup semantico por produto, nao pela Acao inteira (2026-10-06) ---

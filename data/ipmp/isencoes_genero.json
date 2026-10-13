@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "descricao": "Produtos Esperados cujo critério do IPMP é o próprio instrumento de contratação (contrato ou minuta, edital, termo de referência, matriz de riscos e demais anexos normativos). Para eles o filtro de gênero (ADR-0074) não retira texto de instrumento antes do gate: é exatamente a evidência que o critério pede. Para os demais produtos, trechos de documentos de gênero INSTRUMENTO não chegam ao gate nem ao scorer.",
+    "regra": "Um produto é isento quando a frase do IPMP (campo frase, copiada literalmente de data/ipmp/acao_NN.json) pede o instrumento ou uma parte dele. O carregador recusa o arquivo se a frase deixar de ser a do IPMP, se o produto não for pontuado ou se houver duplicata.",
+    "aprovacao": "Lista aprovada pelo usuário em 2026-10-12 (mensagem L).",
+    "ultima_atualizacao": "2026-10-13"
+  },
+  "isencoes": [
+    {
+      "acao": 22,
+      "produto": "22.1",
+      "frase": "Documento com a definição fundamentada da estrutura contratual a ser adotada, considerando a solução escolhida, em especial indicando o tipo de contratação (preço unitário, preço global), critérios de julgamento, formas de apresentação de preços e outros regimes de contratação previstos (empreitada integral, contratação integrada, contratação semi-integrada, fornecimento e prestação de serviço associado);",
+      "motivo": "A estrutura contratual (tipo de contratação, critérios de julgamento, regime) é escrita no edital e na minuta de contrato."
+    },
+    {
+      "acao": 22,
+      "produto": "22.2",
+      "frase": "Matriz de risco abordando os principais riscos do contrato, com o respectivo responsável por seu gerenciamento;",
+      "motivo": "A matriz de risco é anexo do contrato."
+    },
+    {
+      "acao": 22,
+      "produto": "22.2a",
+      "frase": "Justificativa técnica da alocação dos riscos, com base em critérios como capacidade de controle, custo e previsibilidade;",
+      "motivo": "A justificativa da alocação dos riscos acompanha a matriz de risco, anexo do contrato."
+    },
+    {
+      "acao": 22,
+      "produto": "22.2b",
+      "frase": "Elementos de quantificação e/ou precificação dos riscos, quando aplicável.",
+      "motivo": "A quantificação e a precificação dos riscos acompanham a matriz e as cláusulas de risco e de garantia do contrato."
+    },
+    {
+      "acao": 23,
+      "produto": "23.1",
+      "frase": "Termo de referência ou anteprojeto/projeto com descrição precisa do objeto, entregas e condicionantes;",
+      "motivo": "O termo de referência ou o anteprojeto é o próprio produto."
+    },
+    {
+      "acao": 23,
+      "produto": "23.2",
+      "frase": "Edital e minuta de contrato com linguagem clara, compatíveis com o escopo e com os demais documentos do processo;",
+      "motivo": "O edital e a minuta de contrato são o próprio produto."
+    },
+    {
+      "acao": 23,
+      "produto": "23.3",
+      "frase": "Regras de pagamento proporcionais à execução e entregas do projeto;",
+      "motivo": "As regras de pagamento são cláusulas do contrato e do termo de referência."
+    },
+    {
+      "acao": 23,
+      "produto": "23.4",
+      "frase": "Dispositivos contratuais de alocação de riscos, reequilíbrio econômico-financeiro e penalidades (para o que há maiores indicativos de efetividade no emprego de Dispute Boards Permanentes e Vinculantes, desde que atendidas práticas consagradas dessa solução);",
+      "motivo": "Alocação de riscos, reequilíbrio econômico-financeiro e penalidades são cláusulas do contrato."
+    },
+    {
+      "acao": 25,
+      "produto": "25a",
+      "frase": "Cronograma com marcos, responsáveis e prazos definidos;",
+      "motivo": "O cronograma da licitação integra o edital ou um de seus anexos."
+    },
+    {
+      "acao": 25,
+      "produto": "25b",
+      "frase": "Fluxograma com etapas do processo, órgãos ou unidades envolvidas e suas competências;",
+      "motivo": "As etapas do certame e as competências de cada unidade são descritas no edital."
+    },
+    {
+      "acao": 25,
+      "produto": "25c",
+      "frase": "Identificação da documentação a ser elaborada, aprovada e publicada;",
+      "motivo": "A documentação a elaborar, aprovar e publicar é a do edital e de seus anexos."
+    },
+    {
+      "acao": 25,
+      "produto": "25d",
+      "frase": "Plano de gerenciamento de riscos da licitação com medidas mitigadoras;",
+      "motivo": "As regras que mitigam os riscos da licitação (impugnação, esclarecimento, prazos, garantias) estão no edital."
+    },
+    {
+      "acao": 25,
+      "produto": "25e",
+      "frase": "Quando aplicável, diretrizes específicas para interação com BMDs.",
+      "motivo": "As diretrizes de interação com BMDs, quando aplicáveis, entram no edital e na minuta de contrato."
+    },
+    {
+      "acao": 37,
+      "produto": "37",
+      "frase": "Conjunto completo dos documentos do processo de contratação finalizados e aprovados internamente.",
+      "motivo": "O conjunto finalizado dos documentos de contratação é o próprio produto."
+    },
+    {
+      "acao": 42,
+      "produto": "42d",
+      "frase": "Versão final dos documentos com destaque para as seções revisadas.",
+      "motivo": "A versão final dos documentos de contratação (edital, minuta, termo de referência) é o próprio produto."
+    },
+    {
+      "acao": 45,
+      "produto": "45",
+      "frase": "Registro da realização do processo licitatório, nos termos da legislação aplicável.",
+      "motivo": "O registro da homologação e da adjudicação consta do contrato e dos atos do certame."
+    },
+    {
+      "acao": 46,
+      "produto": "46.1",
+      "frase": "Contrato tempestivamente assinado com o licitante vencedor.",
+      "motivo": "O contrato assinado é o próprio produto."
+    }
+  ]
+}

@@ -1,13 +1,16 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A",
       "B"
     ],
     "stage_b_sources": [
       "SMG-040_101607_2024_1.pdf (Termo de Referência §4.9-4.11, p.175-176 — restrições urbanísticas, licenciamento, bens tombados)"
+    ],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "Termos real_world legados classificados por canonicidade (ADR-0073; regra do usuário, 2026-10-10: 'os termos de busca não podem ser customizados para o documento ... a única exigência é que um novo termo seja canônico'; classificação em scripts/diagnostics/candidates_legacy_terms.py): 4a: canonicos 3 [qualidade de vida (IPMP (Ações 1, 19, 36); the concept text (social_benefits)) | NEAR(acessibilidade, segurança) (the concept text (social_benefits); stays experimental) | sustentabilidade (the concept text (environmental_benefits); stays experimental)] || 4c: canonicos 3 [restrições urbanísticas (urban-planning law restricts any project in a city, any sector) | restrições e condicionantes (general wording of 4c's limiting factors) | bens tombados (heritage protection, Decreto-Lei 25/1937: a standard legal restriction)] || 4d: canonicos 2 [contratações correlatas (Lei 14.133/2021 art. 18 par. 1 XI) | NEAR(contratações, correlatas, interdependentes) (same)]. Medida: Ação 1 medida entre processos independentes (reproducibility.py --runs 1 --acoes 1, ledger desligado, candidato aplicado em memória com --candidates/--apply; 5 processos do estado atual x 5 do candidato, intercalados, 2026-10-10): leva idêntica por par de processos 10 % -> 100 % (29 % sobre 11 processos do estado atual), bits 40 % -> 100 %, vereditos constantes 97,7 % -> 100 %, score 1 nos 10. A moeda da 1b (_1 p.192/p.298, o estudo econômico do caso trazido ao pool pelos termos de finanças) sai do pool examinado; a 1a passa a se apoiar em um chunk (_2 p.157, aceito 5/5). Adotado pela regra do usuário (adotar só o que medir mais consistente). Nas Ações 3, 4, 5 e 28 só a proveniência muda (real_world -> canonical); o status dos termos, que é o que a busca lê, não muda."}
     ],
     "validation_notes": [
       {
@@ -127,7 +130,7 @@
           "encoding": "phrase",
           "text": "qualidade de vida",
           "type": "A",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "social_benefits"
         },
@@ -139,7 +142,7 @@
           ],
           "distance": 4,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "social_benefits"
         },
@@ -168,7 +171,7 @@
           "encoding": "phrase",
           "text": "sustentabilidade",
           "type": "A",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "environmental_benefits"
         },
@@ -527,7 +530,7 @@
           "encoding": "phrase",
           "text": "restrições urbanísticas",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "technical_restriction"
         },
@@ -535,7 +538,7 @@
           "encoding": "phrase",
           "text": "restrições e condicionantes",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "legal_regulatory_restriction"
         },
@@ -543,7 +546,7 @@
           "encoding": "phrase",
           "text": "bens tombados",
           "type": "A",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "legal_regulatory_restriction"
         },
@@ -664,7 +667,7 @@
           "encoding": "phrase",
           "text": "contratações correlatas",
           "type": "A",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "correlated_interdependent_contracting"
         },
@@ -685,7 +688,7 @@
           ],
           "distance": 4,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "correlated_interdependent_contracting"
         },

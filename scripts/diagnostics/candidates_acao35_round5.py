@@ -33,6 +33,13 @@ Entre processos (5 pares intercalados, --acoes 35, ledger off): pools idênticos
 nos 10 processos; p.126 TFTTT -> FFFFF -> 35.2f aplicada (padrão negativo #3).
 Ação 35: 1,1,1,1,1 -> 0,1,0,1,1 — o 1 constante era crédito falso sustentado por
 moedas; a leva já variava em 4 de 5 processos nos dois braços (ADR-0072).
+
+35.2e entre processos, a pedido do usuário (2026-10-10, tarde; a35e_cur/cand
+1..5): p.776 aceita em 7 de 10 processos atuais e em 1 de 5 com o candidato
+(direção confirmada, ao contrário da medição em processo), mas o desfecho da
+Ação 35 ficou menos constante (mudanças contra a moda 1/5 -> 3/5; pares com o
+mesmo score 60 % -> 20 %; leva e vereditos sem mudança). Não adotada pela regra
+do usuário do mesmo dia: adotar apenas o que deixa o sistema mais consistente.
 """
 
 _IPMP_35 = ("Produto 35.2: 'Documento completo que atualize e aprofunde o plano de "

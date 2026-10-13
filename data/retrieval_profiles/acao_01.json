@@ -1,7 +1,7 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-03",
+    "last_updated": "2026-10-10",
     "population_stages_completed": [
       "A",
       "B",
@@ -10,6 +10,10 @@
     "stage_b_sources": [
       "SMG-040_101607_2024_1.pdf (Vol.1 — Edital e Memorando de Justificativa)",
       "SMG-040_101607_2024_2.pdf (Vol.2 — Estudo Econômico de Referência, Anexo III)"
+    ],
+    "changelog": [
+      {"date": "2026-10-10", "summary": "Canonicidade (ADR-0073), aceito pelo usuário em 2026-10-10 ('Vou acatar todas as sugestões'): 1d — padrão negativo nº 1 sem o setor do caso ('mobiliário urbano ... Plansab inaplicável a este setor'), reescrito sobre o qualificador do próprio critério ('quando for aplicável'); evidence_logic_patterns (campo dormente, sem consumidor) nº 3 e nº 4 reescritos no mesmo sentido. A troca dos conceitos da 1b (os cenários do critério no lugar dos três conceitos tirados do estudo econômico do caso), aceita no mesmo dia, foi medida entre processos e NÃO foi gravada: os conceitos novos mudam a consulta vetorial da 1b (entram 11 chunks, saem 10) e um dos que entram, a justificativa da licitação (_1 p.2), foi aceito em 1 de 5 processos, com o raciocínio confundindo o produto avaliado; leva menos constante, pontuação igual. Fica com o usuário, como o conceito do 3a (canonicidade contra custo medido). Auditoria de sobreajuste: 0 n-gramas estritos. Candidato: scripts/diagnostics/candidates_acao01_canonical.py. Medida: entre processos independentes, ledger off. (a) 1b+1d, 5 processos atuais e 5 candidatos intercalados: a 1d com o mesmo pool e os 16 chunks examinados rejeitados em todos. (b) Só a 1d, 5 processos: leva idêntica nos 5 e igual à dos 11 processos do estado atual (a1leg_cand1-5, a1leg_gravado1, a1can_cur1-5), 1d 16/16 rejeitados em 5/5, pontuação 1 em todos. Arquivos: scratchpad/acc/a1can_*, a1d_cand*."},
+      {"date": "2026-10-10", "summary": "Termos real_world legados classificados por canonicidade (ADR-0073; regra do usuário, 2026-10-10: 'os termos de busca não podem ser customizados para o documento ... a única exigência é que um novo termo seja canônico'; classificação em scripts/diagnostics/candidates_legacy_terms.py): 1a: canonicos 13 [obsolescência (IPMP (Ação 4); the concept text itself (existing_problem)) | NEAR(serviço, ineficiente) (general deficiency vocabulary) | NEAR(serviço, deficiente) (general deficiency vocabulary) | NEAR(falhas, prestação) (IPMP (Ações 9, 24, 36, 42); 1a canonical 'falhas na prestação') | NEAR(limitações, operacionais) (IPMP (Ação 10)) | requalificação (IPMP (Ações 19, 32, 36); stays experimental) | NEAR(demanda, crescente) (1a canonical 'demanda crescente'; the concept text (public_demand)) | término da vigência (general contract vocabulary for a re-procurement motive; same concept as 1a canonical 'vencimento contratual') | NEAR(contrato, vencimento) (same; 1a canonical 'vencimento contratual') | NEAR(encerramento, contrato) (same; 1a canonical 'encerramento contratual') | NEAR(término, vigência) (same) | NEAR(nova, contratação) (same; 1a canonical 'necessidade de nova contratação') | NEAR(continuidade, serviço) (continuity of public service, Lei 8.987/1995 art. 6 par. 1; IPMP (Ação 46); stays experimental)]; removidos 2 [harmonização contratual | NEAR(harmonização, contratual)] || 1b: removidos 11 [estudo econômico de referência | fluxo de caixa descontado | viabilidade econômico-financeira | projetos análogos | NEAR(entes, federativos) | NEAR(investimentos, estimativa) | fluxo de caixa livre | receita projetada | premissas básicas | CAPEX | custos operacionais]; canonicos 1 [NEAR(panorama, econômico) (the IPMP 1b criterion's own word; Rio Manual (socioeconomic annex, maps to 1b))] || 1c: canonicos 2 [objetivos estratégicos (the IPMP 1c criterion's own words) | NEAR(objetivos, projeto) (IPMP wording)]; removidos 3 [segurança pública | atualização tecnológica | NEAR(renovação, tecnológica)] || 1d: canonicos 2 [Lei Complementar Municipal (Rio Manual (LC 105/2009, the municipal PPP law listed for Ação 1)) | NEAR(alinhamento, política) (IPMP (Ações 1, 39): consonance with public policies)]; setoriais 2 [mobilidade urbana -> synthetic/experimental, sector_hint transporte_publico | NEAR(integração, mobilidade) -> synthetic/experimental, sector_hint transporte_publico]; removidos 1 [NEAR(concessão, serviço, público)]. Medida: Ação 1 medida entre processos independentes (reproducibility.py --runs 1 --acoes 1, ledger desligado, candidato aplicado em memória com --candidates/--apply; 5 processos do estado atual x 5 do candidato, intercalados, 2026-10-10): leva idêntica por par de processos 10 % -> 100 % (29 % sobre 11 processos do estado atual), bits 40 % -> 100 %, vereditos constantes 97,7 % -> 100 %, score 1 nos 10. A moeda da 1b (_1 p.192/p.298, o estudo econômico do caso trazido ao pool pelos termos de finanças) sai do pool examinado; a 1a passa a se apoiar em um chunk (_2 p.157, aceito 5/5). Adotado pela regra do usuário (adotar só o que medir mais consistente). Nas Ações 3, 4, 5 e 28 só a proveniência muda (real_world -> canonical); o status dos termos, que é o que a busca lê, não muda."}
     ],
     "revisions": [
       {
@@ -55,7 +59,7 @@
           "encoding": "phrase",
           "text": "obsolescência",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -155,7 +159,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -167,7 +171,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -179,7 +183,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -191,7 +195,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "existing_problem"
         },
@@ -199,7 +203,7 @@
           "encoding": "phrase",
           "text": "requalificação",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "existing_problem"
         },
@@ -255,7 +259,7 @@
           ],
           "distance": 3,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "public_demand"
         },
@@ -309,29 +313,9 @@
         },
         {
           "encoding": "phrase",
-          "text": "harmonização contratual",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "contract_governance_context"
-        },
-        {
-          "encoding": "phrase",
           "text": "reorganização da gestão",
           "type": "B",
           "provenance": "canonical",
-          "status": "active",
-          "concept_ref": "contract_governance_context"
-        },
-        {
-          "encoding": "near",
-          "tokens": [
-            "harmonização",
-            "contratual"
-          ],
-          "distance": 5,
-          "type": "C",
-          "provenance": "real_world",
           "status": "active",
           "concept_ref": "contract_governance_context"
         },
@@ -367,7 +351,7 @@
           "encoding": "phrase",
           "text": "término da vigência",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -395,7 +379,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -407,7 +391,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -419,7 +403,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -431,7 +415,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "trigger_event"
         },
@@ -455,7 +439,7 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "experimental",
           "concept_ref": "trigger_event"
         }
@@ -519,38 +503,6 @@
           "concept_ref": "socioeconomic_panorama"
         },
         {
-          "encoding": "phrase",
-          "text": "estudo econômico de referência",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "economic_viability_study"
-        },
-        {
-          "encoding": "phrase",
-          "text": "fluxo de caixa descontado",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "economic_viability_study"
-        },
-        {
-          "encoding": "phrase",
-          "text": "viabilidade econômico-financeira",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "economic_viability_study"
-        },
-        {
-          "encoding": "phrase",
-          "text": "projetos análogos",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "benchmarking"
-        },
-        {
           "encoding": "near",
           "tokens": [
             "panorama",
@@ -558,73 +510,9 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "socioeconomic_panorama"
-        },
-        {
-          "encoding": "near",
-          "tokens": [
-            "entes",
-            "federativos"
-          ],
-          "distance": 3,
-          "type": "C",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "benchmarking"
-        },
-        {
-          "encoding": "near",
-          "tokens": [
-            "investimentos",
-            "estimativa"
-          ],
-          "distance": 7,
-          "type": "C",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "investment_scale"
-        },
-        {
-          "encoding": "phrase",
-          "text": "fluxo de caixa livre",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "experimental",
-          "concept_ref": "economic_viability_study"
-        },
-        {
-          "encoding": "phrase",
-          "text": "receita projetada",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "experimental",
-          "concept_ref": "economic_viability_study"
-        },
-        {
-          "encoding": "phrase",
-          "text": "premissas básicas",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "economic_viability_study"
-        },
-        {
-          "encoding": "phrase",
-          "text": "CAPEX",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "experimental",
-          "concept_ref": "investment_scale"
-        },
-        {
-          "encoding": "phrase",
-          "text": "custos operacionais",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "experimental",
-          "concept_ref": "economic_viability_study"
         }
       ],
       "evidence_logic_patterns": [
@@ -681,25 +569,9 @@
           "encoding": "phrase",
           "text": "objetivos estratégicos",
           "type": "B",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "strategic_objectives"
-        },
-        {
-          "encoding": "phrase",
-          "text": "segurança pública",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "public_interest_goals"
-        },
-        {
-          "encoding": "phrase",
-          "text": "atualização tecnológica",
-          "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "public_interest_goals"
         },
         {
           "encoding": "near",
@@ -709,21 +581,9 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "strategic_objectives"
-        },
-        {
-          "encoding": "near",
-          "tokens": [
-            "renovação",
-            "tecnológica"
-          ],
-          "distance": 5,
-          "type": "C",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "public_interest_goals"
         }
       ],
       "evidence_logic_patterns": [
@@ -803,7 +663,7 @@
           "encoding": "phrase",
           "text": "Lei Complementar Municipal",
           "type": "A",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "legal_framework"
         },
@@ -811,9 +671,10 @@
           "encoding": "phrase",
           "text": "mobilidade urbana",
           "type": "B",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "sectoral_program_alignment"
+          "provenance": "synthetic",
+          "status": "experimental",
+          "concept_ref": "sectoral_program_alignment",
+          "sector_hint": "transporte_publico"
         },
         {
           "encoding": "near",
@@ -823,7 +684,7 @@
           ],
           "distance": 7,
           "type": "C",
-          "provenance": "real_world",
+          "provenance": "canonical",
           "status": "active",
           "concept_ref": "municipal_planning_alignment"
         },
@@ -835,22 +696,10 @@
           ],
           "distance": 5,
           "type": "C",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "sectoral_program_alignment"
-        },
-        {
-          "encoding": "near",
-          "tokens": [
-            "concessão",
-            "serviço",
-            "público"
-          ],
-          "distance": 5,
-          "type": "C",
-          "provenance": "real_world",
-          "status": "active",
-          "concept_ref": "legal_framework"
+          "provenance": "synthetic",
+          "status": "experimental",
+          "concept_ref": "sectoral_program_alignment",
+          "sector_hint": "transporte_publico"
         },
         {
           "encoding": "phrase",
@@ -944,11 +793,11 @@
       "evidence_logic_patterns": [
         "Referência explícita ao Plano Estratégico Municipal, PPA, LOA ou LDO vigente como instrumento de alinhamento do projeto",
         "Citação da Lei Orgânica Municipal ou da legislação municipal de PPP como fundamento legal do projeto",
-        "Menção à integração com programas de mobilidade urbana municipal como BRT, bicicletas compartilhadas ou sistema de transporte integrado",
-        "Nota: para concessões de mobiliário urbano, o alinhamento é com planejamento municipal — a ausência de referências a planos nacionais setoriais (PNL, PDE, Plansab) é esperada e não configura não atendimento"
+        "Menção à integração do projeto com programas setoriais vigentes do ente responsável, do mesmo setor do projeto",
+        "Nota: quando nenhum instrumento oficial de planejamento federal for aplicável ao setor do projeto, o alinhamento é demonstrado com o planejamento regional ou local (PPA, LOA, LDO, plano estratégico do ente) — a ausência de planos nacionais setoriais é então esperada e não configura não atendimento"
       ],
       "negative_evidence_patterns": [
-        "Citação isolada de planos nacionais setoriais sem correspondência com o setor de mobiliário urbano (PNL, PDE, Plansab, PNLP são inaplicáveis a este setor)",
+        "Citação isolada de instrumento oficial de planejamento federal de setor diferente do setor do projeto, sem correspondência com o objeto: o instrumento só demonstra aderência quando for aplicável ao setor do próprio projeto",
         "Sigla de instrumento federal usada em outro sentido no documento — notadamente PDE como Plano Diretor Estratégico municipal, e não como Plano Decenal de Expansão de Energia"
       ]
     }
