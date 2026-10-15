@@ -5,6 +5,12 @@
       <span class="text-h6 ml-2">Avaliação — {{ processNumber }}</span>
     </div>
 
+    <MaturityIndicator
+      v-if="!loading && evaluations.length"
+      :process-number="processNumber"
+      :refresh-key="reviewsLanded"
+    />
+
     <v-progress-circular
       v-if="loading"
       indeterminate
@@ -48,6 +54,7 @@
         :key="ev.acao_id"
         :evaluation="ev"
         :process-number="processNumber"
+        @reviewed="reviewsLanded++"
       />
     </v-expansion-panels>
   </v-container>
@@ -57,6 +64,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AcaoPanel from '../components/AcaoPanel.vue'
+import MaturityIndicator from '../components/MaturityIndicator.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,6 +74,8 @@ const loading = ref(true)
 const fetchError = ref(null)
 const evaluations = ref([])
 const routeEvents = ref([])
+// Bumped on every submitted review, so the indicator refetches (ADR-0075).
+const reviewsLanded = ref(0)
 
 // Same event log the live progress panel (UploadView) polled during the run
 // (ADR-0055) — the backend keeps it in memory until the next assessment for

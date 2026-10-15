@@ -474,7 +474,7 @@
         :proposed-score="evaluation.proposed_score"
         :process-number="processNumber"
         :acao-id="evaluation.acao_id"
-        @submitted="review = $event"
+        @submitted="onReviewSubmitted"
       />
     </v-expansion-panel-text>
   </v-expansion-panel>
@@ -489,7 +489,15 @@ const props = defineProps({
   processNumber: String,
 })
 
+const emit = defineEmits(['reviewed'])
+
 const review = ref(null)
+
+// The case view refreshes its maturity indicator when a review lands (ADR-0075).
+function onReviewSubmitted(outcome) {
+  review.value = outcome
+  emit('reviewed', outcome)
+}
 const overriding = ref(null)
 const overrideMessage = ref('')
 const overrideError = ref(false)

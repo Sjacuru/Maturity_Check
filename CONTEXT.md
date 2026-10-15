@@ -14,14 +14,17 @@ _Avoid_: step, item, criterion, check, action (use the Portuguese term)
 **Dimensão**: One of 5 analytical groupings of Ações in the M5D (Modelo de Cinco Dimensões) framework IPMP adapts from the British Five Case Model: Estratégica, Econômica, Comercial, Financeira, Gerencial. Source: IPMP Guide §2.2. Orthogonal to **Fase** — every Ação belongs to exactly one Dimensão and exactly one Fase.
 _Avoid_: category, dimension, area, group; the incorrect list (Técnica, Ambiental e Social, Jurídica e Regulatória) that appeared here before 2026-08-21 — never verified against the source PDF
 
-**Fase**: One of 3 sequential stages of the investment-structuring lifecycle that IPMP's 46 Ações are organized into: Fase Inicial (Ações 1-20, estudo das alternativas), Fase Intermediária (Ações 21-37, aprimoramento da alternativa escolhida), Fase Final (Ações 38-46, consulta pública, revisões e atualizações). Source: IPMP Guide §4, Figuras 3-5.
+**Fase**: One of 3 sequential stages of the investment-structuring lifecycle that IPMP's 46 Ações are organized into, as chapter 4 of the Guide groups them: Ações 1-20 (estudo das alternativas; stored as "Inicial"), Ações 21-37 (aprimoramento da alternativa escolhida), Ações 38-46 (consulta pública, revisões e atualizações). The M5D flowcharts (Figuras 3-5) draw their Inicial, Intermediária and Final phases with other boundaries (1-16, 17-38, 39-46), each closed by **Pontos de Transição**; the `fase` field follows chapter 4. Source: IPMP Guide §4, Figuras 3-5.
 _Avoid_: stage, step, phase (use the Portuguese term), sprint
 
-**Ponto de Transição**: A structural marker the IPMP Guide's own flowcharts (Figuras 3-5) place on 5 specific Ações (16, 37, 38, 45, 46) that sit at the boundary between two Fases — not a sixth Dimensão. Marks an approval/gating checkpoint, not a content theme.
+**Ponto de Transição**: A structural marker the IPMP Guide's own flowcharts (Figuras 3-5) place on 5 specific Ações (16, 37, 38, 45, 46) that close a flowchart phase, right after the step "Obtenha aprovações necessárias": 16 closes the initial phase, 37 and 38 the intermediate one, 45 and 46 the final one — not a sixth Dimensão. Marks an approval/gating checkpoint, not a content theme. Carried by the `ponto_transicao` field, which the **Nota iPMP** groups (ADR-0075).
 _Avoid_: transition dimension, sixth dimension, gate (unqualified)
 
 **Maturity Score**: The 0/1/3 integer assigned to an Ação after LLM evaluation against the IPMP rubric and scored examples, validated by the Auditor.
 _Avoid_: grade, rating, result, mark
+
+**Nota iPMP**: The IPMP's percentual de atendimento for one **Case**, between 0 and 1: the points counted over three times the Ações counted (138 for all 46). Each Ação gives its **Final Score** when reviewed, else its proposed **Maturity Score**, with `no_evidence_found` counting 0; an Ação without a score is left out and the nota is marked partial. Also reported per **Dimensão**, per **Fase** and over the **Pontos de Transição**, and read against the Guide's two limits, 0.2 and 0.8. Computed on read, never stored (ADR-0075).
+_Avoid_: maturity score (that is one Ação's 0/1/3), total score, grade, index
 
 **Auditor**: The human reviewer who validates the system's proposed Maturity Score and retrieved evidence for each Ação before the score is accepted.
 _Avoid_: user, reviewer, operator, evaluator
@@ -230,6 +233,7 @@ _Avoid_: manual override, correction, human correction
 - The **Auditor** validates the system's proposed **Maturity Score** for each **Ação** before it is accepted
 - The **assessment module** orchestrates extraction, retrieval, and evaluation for one Case and returns an **EvaluationResult** per Ação
 - The **Auditor** produces one **Review Outcome** per **EvaluationResult**, carrying the **Final Score**
+- The **Nota iPMP** of a **Case** counts one **Final Score** or proposed **Maturity Score** per **Ação**; a new **Review Outcome** moves it at once
 - A **Review Outcome** either accepts the `proposed_score` (is_override=False) or overrides it (is_override=True) with a mandatory justification
 - An **Auditor Intervention** is a **Review Outcome** where the **Final Score** was not derived from the LLM's `proposed_score`
 - A **Case** has one `process_number` (required) and zero or one `contract_number` (optional)
@@ -275,5 +279,6 @@ _Avoid_: manual override, correction, human correction
 - **"anchor"** was used to mean vocabulary source, phrase encoding mechanism, and FTS5 query term simultaneously — retired: the term is now disambiguated into **Evidence Intent** (Layer A — what to look for), **Retrieval Signal Concept** (Layer B — what concept indicates the evidence), and **Query Term** (Layer C — the actual FTS5 input). "Anchor" should not be used in this system.
 - **"document"** was used both for an uploaded PDF and for each of the many documents bundled inside it (edital, minutas, studies, opinions) — resolved: the PDF is the **Document Artifact**; a document inside it is a **Document Segment**.
 - **"pre-gate filter"** was ambiguous once there were two deterministic steps before the **Relevance Gate** — resolved: the **Genre Filter** removes **Instrument Text** and runs first; the near-duplicate prefilter (`_prefilter_near_duplicates`) removes near-copies and runs second.
+- **"fase"** was used both for the M5D flowchart phases (Ações 1-16, 17-38, 39-46) and for the Guide's chapter-4 blocks (1-20, 21-37, 38-46) — resolved: **Fase** and the `fase` field follow chapter 4; the flowchart phases only frame the **Pontos de Transição**. The stored label of the first block is still "Inicial" (renaming it changes 20 gate prompts; the user's decision).
 - **"gate"** was used for both the IPMP phase-boundary approval checkpoint and the LLM relevance classifier — resolved: say **Ponto de Transição** for the former and **Relevance Gate** for the latter; "gate" alone should not be used.
 - **"llama.cpp"** was read as a provider distinct from "the GPU" (as if parallel to Groq or Ollama) — resolved: llama.cpp is the inference software running ON the **Servidor GPU**; every production call and every measurement since ADR-0059 goes to that one server. Say **Servidor GPU** when meaning the provider; say "llama.cpp" only when the software itself (slots, prompt cache, grammar sampling) is the subject.

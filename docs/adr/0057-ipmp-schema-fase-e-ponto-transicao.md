@@ -37,3 +37,13 @@ inform vocabulary register when a synthesis session drafts Query Terms for a new
   rollups/reporting is unaffected — this ADR captures data, not aggregation logic.
 - CONTEXT.md gained: Fase, Ponto de Transição; Dimensão's value list corrected, with the prior
   incorrect list called out in `_Avoid_` so it isn't silently reintroduced later.
+
+## Amendment (2026-10-15): two phase schemes, and the transition points marked
+
+- **The five transition points were not marked.** `ponto_transicao` was false in every file, including 16, 37, 38, 45 and 46. The schema validated and nothing read the field, so nothing failed. The five were checked against the rendered flowchart pages (Figuras 3-5) and set to true (commit 30bd386). `tests/test_ipmp_structure.py` now pins them.
+- **The Guide has two phase schemes, and this ADR's opening paragraph conflated them.**
+  - The flowcharts draw Inicial (Ações 1-16), Intermediária (17-38) and Final (39-46). Each phase ends with "Obtenha aprovações necessárias para a proposta Inicial/Intermediária/completa de Investimento" and its transition points.
+  - Chapter 4 groups the Ações as estudo das alternativas (1-20), aprimoramento da alternativa escolhida (21-37) and consulta pública, revisões e atualizações (38-46).
+  - The `fase` field follows chapter 4's boundaries but labels the first block "Inicial". "Intermediária" and "Final" stay in the Literal, used by no file.
+- **The label is not renamed here.** `fase` enters every gate prompt ("Dimensão X, fase Y."). Renaming "Inicial" changes the 20 gate prompts of Ações 1-20 and would need a measurement. That is the user's decision.
+- **The fields now have a consumer.** The maturity indicator (ADR-0075) groups the Ações by `fase` and over the transition points.

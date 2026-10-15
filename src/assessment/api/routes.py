@@ -14,6 +14,7 @@ from assessment import progress
 from assessment._config import get_db_path
 from assessment.api.schemas import GateOverrideRequest, ReviewSubmission
 from assessment.interfaces.contracts import ReviewOutcome
+from assessment.maturity import NoEvaluations, compute_maturity
 from assessment.service import AssessmentService
 
 router = APIRouter()
@@ -305,3 +306,19 @@ def get_review(process_number: str, acao_id: int):
         created_at=datetime.fromisoformat(created_at),
     )
     return outcome.model_dump(mode="json")
+
+
+# ── GET /cases/{process_number}/maturity ─────────────────────────────────────
+
+@router.get("/cases/{process_number}/maturity")
+def get_maturity(process_number: str):
+    """The case's IPMP nota (ADR-0075), computed on read from the stored
+    evaluations and reviews, so it follows every review as it lands."""
+    try:
+        indicator = compute_maturity(process_number, get_db_path())
+    except NoEvaluations:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No evaluations found for process_number='{process_number}'.",
+        )
+    return indicator.model_dump()
