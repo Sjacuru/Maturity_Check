@@ -230,6 +230,72 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
+**Session 2026-10-15 (74th pass) — C7, THE CONFIRMATION CYCLE OF THE COMMITTED HEAD `4824b14`, RAN on the user message *"Servidor livre. Pode continuar o teste."* (item 1 of message W). 42 of 46 Ações have the same points in 9 or more of 10, as expected, and the proposed stability margin is met. Cycle 7 replaces cycle 3 as the constancy baseline. Recorded in ADR-0074 ("Confirmation cycle 7").**
+
+- **Launch** (every check read-only before anything started):
+  - **15:07:** GPU free (0 %, 2 665 MiB), llama-server down, task 8083 Ready, no local ssh.exe or python.exe. The background waiter had read LIVRE twice in a row.
+  - **15:08:34:** `sobe_8083.ps1` started the task; llama-server PID 24416, session 0; `/health` ok.
+    - With the model loaded the GPU holds 15 310 MiB, and `gpu_livre.ps1` still reads LIVRE (session 0 is excluded).
+    - New read-only `$W/saude_8083.ps1` polls `/health` on the server and prints the GPU memory.
+  - **15:09:30:** runner `$W/ciclo7_runner.py`, PID 12684, launched detached with `Start-Process`; tunnel PID 21872.
+    - It ended at 17:35:28 with `FIM rc=0`.
+    - The tunnel never dropped and was closed by the runner.
+    - The GPU guard read LIVRE before every process and never fired during one.
+  - **llama-server PID 24416 was left running** (15.3 GB of VRAM).
+- **Run:** 10 of 10 with rc=0, 14.2–14.9 min each; no errors and no gate failures; 480–487 pool gate calls and 35–44 accepts per process. Outputs `scratchpad/acc/ciclo7_run{1..10}.{json,log}`.
+  - **Readers:**
+    - `$W/analisa_ciclo7.py` → `$W/acc_ciclo7_final.txt` (rules A–E; the 7-process provisional reading is `$W/acc_ciclo7_prov7.txt`);
+    - `$W/analisa_ciclo2.py ciclo7_run ciclo6_run` → `$W/acc_ciclo7_vs6_analisa2.txt`;
+    - `$W/estabilidade_total.py` → `$W/acc_estabilidade_total_c7.txt`;
+    - `$W/margem_proposta.py` → `$W/acc_margem_v2_c7.txt`.
+- **Same configuration across cycles:** from `5be6d44` to `4824b14`, `src/` changed only in the assessment module, and `data/` only in `_meta`, `shared_with_acao`, `ponto_transicao` and the exemption of 45. Ações 1–44 ran the same prompts and pools in cycles 3 and 7, and every Ação but 35 ran the same in cycles 6 and 7.
+- **Results (cycle 3 / cycle 6 / cycle 7):**
+  - same points in 9+ of 10: 41 / 42 / **42** (rule A: as expected);
+  - replicate block (Ações 1–34): 32 / 32 / 31 (rule B: one below, Ação 32);
+  - same in all ten: 38 / 38 / 39;
+  - mean agreement with the mode: 95.7 / 95.7 / 97.4 %;
+  - scale: 38/4/4 / 38/4/4 / 39/6/1;
+  - batch identical in all ten: 31 / 30 / 33;
+  - bits identical in all ten: 34 / 33 / 36;
+  - coin pairs: 65 / 67 / 63;
+  - point changes: 136 / 128 / 96 (cycle 7: gate 58, scorer 29, cap 9);
+  - below 9 of 10: cycle 6 10 23 35 37; cycle 7 10 23 32 37.
+  - On Ações 1–44 (same configuration), cycles 3 and 7 both give 40 of 44.
+- **By rule and by Ação:**
+  - **C (45):** 0 points in 10/10, nothing accepted, both ETP pages rejected in every process.
+  - **D (35), different from the expectation, by chance:** `_1` p.3 was rejected for 35.2e in 10/10, and Ação 35 scored 0 in all ten.
+    - The expected ~5/10 came from cycle 3 alone.
+    - Cycle 4, with the same prompt, gave 1/10; pooled over the three cycles, 6/30.
+  - **32 (3 changes, the only inconsistent Ação):** the same passage was delivered in 10/10 (`_1` p.303, the constant false credit).
+    - On that byte-identical prompt the scorer answered T F T F T F T T T T.
+    - Pooled with cycles 3 and 6, the scorer credits it in 26/30.
+    - The run JSON keeps only the scorer verdict (`gate.verdicts` is a dict of booleans), not its justification.
+  - **10, 23 and 37:** two changes each, the documented residue.
+  - **2 and 3:** in process 6 Ação 2 fell to 0, and the ADR-0070 cap took Ação 3 from 3 to 1. This happens once per cycle, as in cycles 3, 4 and 6.
+  - **46:** row 14 of the risk matrix ("Anulação da concessão", whose mitigation cites the signing of the CONTRATO) was accepted for the exempt 46.1 once each in two copies: `_1` p.198 in process 9 and `_2` p.20 in process 10.
+    - That made one point change.
+    - The review signal fired on the process that scored 1.
+- **Margin (proposed 2026-10-15):**
+  - nota 0.058–0.109, median 0.087 (12 of 138 points);
+  - 10/10 within ±0.05 and in the alert band;
+  - every dimension within ±0.1 in 9+ of 10 (Estratégica 9/10 through the cap; Comercial 10/10, amplitude 0.091).
+  - **Met**, as in cycles 4 and 6. Cycles 3 and 5 miss only Comercial; cycle 2 misses Estratégica and Financeira.
+- **Reading:** the HEAD holds 42 ± 1. The Ações that fall below 9 of 10 in a cycle are drawn from five, all documented residue:
+  - 10 and 32: the scorer on an identical batch;
+  - 23 and 37: coins on legitimate partial targets, with the scorer;
+  - 35: a false credit that passes about one process in five.
+  - No other Ação moved by more than one change.
+- **Method note:** a coin rate taken from one cycle is a poor expectation. Under one prompt, 35.2e p.3 passed in 5/10, 1/10 and 0/10 of three cycles, so pool the cycles that share a prompt before writing an expectation.
+- **Commit (no push):** ADR-0074 (new section) and this CLAUDE.md; the 73rd-pass commit line now names `4824b14`.
+- **Open for the user:**
+  - the stability margin (the new baseline meets the proposal);
+  - stopping the 8083 task now that the cycle is over (left running; nothing else needs it);
+  - a fresh `/assess` to refresh `data/app.db`, which still holds the 2026-09-07 evaluation (nota 0.246); a forced re-run deletes the reviews of the case (ADR-0026);
+  - the "Inicial" label;
+  - N/A for 45/46;
+  - criteria for promoting the 19 seed profiles;
+  - deferred: the second case document, 25a, 1b/3a, the password rotation.
+
 **Session 2026-10-15 (73rd pass) — THE USER'S MESSAGE W (verbatim): *"1 - Faremos o commit. / 2 - por hora nada de segundo documento de caso. Precisamos verificar se o score está estável ou dentro de uma margem aceitável. / 3 a 4 OK / 5 é caso específico e não tenho certeza se vale a pena tratar casos específicos com o nível de acuidade atual. Talvez no futuro. / 6 - Não carregar o campo é falha relevante. / 7 - idem ao 5 / 8 - pode atualizar todos os tópicos. Mas não vamos tratar de rotação de senha agora. / Servidor llama liberado para testes."* The numbers are the 72nd pass's next steps. Items 3, 4, 6 and 8 are done and committed. Item 2 is measured, and the margin proposed below is the user's decision. C7 is approved but waits for the GPU: two idle Roblox windows hold video memory and the model does not fit.**
 
 - **Reading of W:**
@@ -296,7 +362,7 @@ Maturity_Check/
     2. Run `sobe_8083.ps1`, then check `/health`.
     3. Launch `$W/ciclo7_runner.py` detached: 10 full processes, ledger off, about 2.5 h.
     4. Read it by rules A–E, then add C7 to the stability table.
-- **Commits (no push):** `30bd386` (item 6), `12385a1` (item 4), `9fdecfe` (item 3); the item-8 commit (the 19 profiles' `_meta` and this CLAUDE.md) follows them.
+- **Commits (no push):** `30bd386` (item 6), `12385a1` (item 4), `9fdecfe` (item 3), `4824b14` (item 8: the 19 profiles' `_meta` and this CLAUDE.md).
 - **Open for the user:**
   - the stability margin;
   - a fresh `/assess` after C7 to refresh `data/app.db`;

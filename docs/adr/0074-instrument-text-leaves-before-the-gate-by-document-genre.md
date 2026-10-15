@@ -629,3 +629,108 @@ The user read the cycle-6 report and decided:
   10 accepts of `_1` p.3), so the count of 42 does not depend on that prompt.
   A confirmation cycle of the committed configuration is pending on the GPU
   being free.
+
+## Confirmation cycle 7 (2026-10-15)
+
+The user approved a confirmation cycle of the committed configuration (message
+W). It measured HEAD `4824b14`: 45 out of the exemption list, 35.2e at its
+cycle-3 text, and no candidate in memory. The reading rule was written before
+the launch (`scratchpad/acc/criterio_ciclo7.txt`). It is a baseline
+measurement, so nothing is approved or rejected.
+
+Between the cycle-3 baseline (`5be6d44`) and `4824b14`:
+
+- `src/` changed only in the assessment module (the maturity indicator and the
+  review validation);
+- `data/` changed only in `_meta`, `shared_with_acao`, `ponto_transicao` and
+  the exemption of 45.
+
+So Ações 1 to 44 ran the same prompts and pools in cycles 3 and 7, and every
+Ação except 35 ran the same in cycles 6 and 7.
+
+- **The cycle:**
+  - Ten full processes, from 15:09 to 17:35
+    (`scratchpad/acc/ciclo7_run{1..10}`), on a llama-server started for the
+    cycle.
+  - Settings: ledger off; genre filter and filtered expansion on;
+    `reproducibility.py --runs 1 --record-reasoning`, with no candidate and no
+    variant.
+  - Result: no errors and no gate failures. The GPU guard read free before
+    every process and never fired during one.
+
+| Measure (points, with `sem evidência` read as 0) | Cycle 3 | Cycle 6 | Cycle 7 |
+|---|---|---|---|
+| Ações with the same points in 9 or more of 10 | 41 | 42 | 42 |
+| … of them in the replicate block (Ações 1–34) | 32 | 32 | 31 |
+| Ações with the same points in all ten | 38 | 38 | 39 |
+| Mean agreement with the modal outcome | 95.7 % | 95.7 % | 97.4 % |
+| Consistent / tolerable / inconsistent | 38 / 4 / 4 | 38 / 4 / 4 | 39 / 6 / 1 |
+| Batch identical in all ten | 31 | 30 | 33 |
+| Evidenced bits identical in all ten | 34 | 33 | 36 |
+| Coin pairs | 65 | 67 | 63 |
+| Point changes (Ação × pair of processes) | 136 | 128 | 96 |
+| Gate calls per process | 492–506 | 486–495 | 480–487 |
+| Minutes per process | 14.5–15.6 | 14.3–15.6 | 14.2–14.9 |
+
+Below 9 of 10: Ações 10, 23, 35 and 37 in cycle 6; Ações 10, 23, 32 and 37
+in cycle 7.
+
+- **By rule:**
+  - *A, as expected:* 42.
+  - *B, one below the expected 32:* Ação 32 left on the scorer.
+    - The gate delivered the same passage for 32a in all ten processes:
+      `_1` p.303, the staff costs of the concession read as the cost of the
+      project team, a constant false credit since cycle 3.
+    - The scorer answered that byte-identical prompt T F T F T F T T T T
+      (points 1 0 1 0 1 0 1 1 1 1).
+    - Cycles 3 and 6 credited the same passage in 9 and 10 of 10, so the
+      scorer credits it in 26 of 30.
+    - The run records keep the verdict of the scorer, not its
+      justification.
+  - *C, as expected:* Ação 45 scored 0 in 10 of 10, nothing was accepted for
+    it, and both ETP pages were rejected in every process.
+  - *D, different from the expectation, by chance:* `_1` p.3 was rejected
+    for 35.2e in 10 of 10, and Ação 35 scored 0 in all ten.
+    - The expectation (about 5 of 10) came from cycle 3 alone.
+    - Cycle 4 ran the same prompt for 35.2e and accepted the page in 1 of 10.
+      Over the three cycles with this prompt it passes in 6 of 30, about one
+      process in five.
+    - Ação 35 was below 9 of 10 in cycle 3 and at 9 or more in cycles 4
+      and 7.
+  - *E:* cycle 7 is the baseline of the following measurements, in place of
+    cycle 3.
+- **The other Ações that moved:**
+  - *10, two changes:* the scorer on the batch of 10a, which was identical in
+    9 of 10 processes.
+  - *23, two changes:* a 3 needs 23.2 and 23.3 together. The coin of 23.2 on
+    `_2` p.145 (delivered in 4 of 10) and the scorer met in two processes.
+  - *37, two changes:* the gate passed pages in 9 of 10 processes, and the
+    scorer credited them in two.
+  - *2 and 3, one change each:* in one process Ação 2 fell to 0, and the
+    dependency cap (ADR-0070) took Ação 3 from 3 to 1. The same happened once
+    in each of cycles 3, 4 and 6.
+  - *46, one change:* in two late processes the exempt 46.1 accepted row 14
+    of the risk matrix ("Anulação da concessão"), whose mitigation cites
+    "observância do devido processo legal … para assinatura do CONTRATO".
+    - `_1` p.198 once: score 1, review signal on.
+    - Its copy `_2` p.20 once: score 0.
+    - Cycle 3 had accepted p.198 once too.
+- **The same configuration in two cycles:**
+  - On Ações 1 to 44, cycles 3 and 7 both give 40 of 44 with the same points
+    in 9 or more of 10. The four below are 10, 23 and 37 in both, plus 35 in
+    cycle 3 and 32 in cycle 7.
+  - Point changes fell by 32 from cycle 6 to cycle 7, and 21 of them are
+    Ação 35. The rest move both ways.
+- **Reading:** the committed configuration holds 42, give or take one.
+  - The Ações that fall below 9 of 10 in a cycle are drawn from five:
+    - 10 and 32, the scorer on an identical batch;
+    - 23 and 37, coins on legitimate partial targets, with the scorer;
+    - 35, a false credit that passes about one process in five.
+  - No other Ação moved by more than one change.
+- **Against the stability margin proposed on 2026-10-15** (the nota of
+  ADR-0075):
+  - The nota ranged from 0.058 to 0.109 (median 0.087), all ten within ±0.05
+    of the median and in the alert band.
+  - Every dimension was within ±0.1 of its median in 9 or more of 10;
+    Estratégica, through the cap, in exactly 9.
+  - Cycles 4, 6 and 7 meet that margin; cycles 3 and 5 miss only Comercial.
