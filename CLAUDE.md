@@ -202,7 +202,7 @@ Maturity_Check/
 └── data/
     ├── ipmp/
     │   ├── dependencias.json    ← 54 typed citation edges between Ações, with the IPMP sentence (ADR-0070)
-    │   ├── isencoes_genero.json ← 17 genre-exempt products, each with its IPMP sentence (ADR-0074)
+    │   ├── isencoes_genero.json ← 16 genre-exempt products, each with its IPMP sentence (ADR-0074; 45 removed 2026-10-15)
     │   ├── acao_01.json         ← complete (Phase 1 scope)
     │   └── acao_02.json         ← complete (scaling test case, 2026-08-21)
     ├── rio_manual/
@@ -218,19 +218,385 @@ Maturity_Check/
 
 ## ⏭️ Where to Resume
 
-**Session 2026-10-13 (66th pass) — THE USER'S MESSAGES M and N. M: *"Verifique se a rodada 10 terminou e apresente relatório com diagnóstico"*; cycle 3 was reported (results and diagnosis in the 65th-pass entry and in ADR-0074). N (verbatim): *"Sobre "O prompt já diz que julgar o cumprimento é do scorer (ADR-0066). O gate aplica essa regra de forma diferente em cada processo." o gate sabe quem é o scorer? Se não tiver contexto no prompt como ele vai saber julgar isso? / Sugestoes de $5 aceitas. Pode implementar."* The four recommendations of the report are accepted and recorded in ADR-0074, section "Decisions after cycle 3". The question about the gate is answered below; the change it suggests (G) is a proposal, not applied.**
+**Session 2026-10-15 (72nd pass) — THE USER'S MESSAGE V (verbatim): *"Ação 45: Remova. / 10, 23, 35, 37 permanecerão como estão. / C2 Pode commitar / Confirma que as passadas estão estáveis com as últimas alterações e vamos para a próxima tarefa de melhoria do processo. Verifique no claude.md quais próximos passos, atualize-os e confirme! / Responda em português, por favor."* DONE: 45 removed from the genre-exemption list (16 left), checked without GPU; the auditor review form fixed (a prop typo made every review POST go to `evaluations/undefined/review` since 2026-08-28); three commits (hashes below). The confirmation cycle of the committed state (C7) is PENDING: the GPU was in use (Dead by Daylight since 08:37) and the llama-server was down after two reboots (08:07, 08:33); nothing started. The next steps were consolidated (list at the end) and put to the user for confirmation.**
+
+- **45 out of the exemption list** (`data/ipmp/isencoes_genero.json`, `_meta.aprovacao` records the removal and the reason; `tests/test_genre_exemptions.py` APPROVED set; CONTEXT.md "Genre-Exempt Product"; ADR-0074 list sentence + new section "Decisions after cycle 6"; CLAUDE.md tree line).
+  - Fast suite **691** passing.
+  - `$W/confere_pools_producao.py` (real `_retrieve_and_select`, reject-all gate, ledger off): of the 164 production pools only 45's changed, to `_2` p.158 and p.157, the pool cycle 6 measured; 2 994 instrument candidates removed (2 956 + 38); 450 gate calls instead of 464; index and genres unchanged; `gate_verdicts` 0 rows.
+- **Review form fixed.** `ReviewForm.vue` declared its prop `acoaId` while `AcaoPanel.vue` passes `:acao-id` → `props.acoaId` was undefined → the URL `evaluations/undefined/review` → 422 (int path param). Renamed to `acaoId` (two occurrences); `npm run build` clean. The body already matched `ReviewSubmission`. Not exercised against `data/app.db` (it would persist a ReviewOutcome); the route has its own tests.
+- **GPU (read-only check at 09:26 server time):** EM_USO — Dead by Daylight pid 17320, 43 % engine, 3.1 GB; console session since 08:37. llama-server absent, task 8083 Ready (no trigger), port 8083 closed; reboots at 08:07 and 08:33. **On the go-ahead with the GPU free:** `sobe_8083.ps1`, then C7 = 10 full processes of the committed state (no `--candidates`), runner to be derived from `$W/ciclo6_runner.py`, criterion written before launch. Expected: 42 ± chance (Ações 2, 3, 13 and 40 sit at one change each; the replicate block is at 32/34 in three cycles).
+- **What cycle 6 already says about the committed state:** it differs from the measured configuration in one prompt only (35.2e, back to its cycle-3 text); Ação 35 is below 9 of 10 under both texts, so the 42 does not rest on it. Everything gated before 35.2e is byte-identical; Ações 36–46 keep their prompts and 45 keeps its measured pool.
+- **Commits (no push):** `b887bcc` records and harness of cycles 4–6; `12cc913` 45 out of the exemption list; the third (this CLAUDE.md + the review-form fix) follows them.
+- **Next steps, consolidated from the record (2026-10-15), in the recommended order; the user confirms:**
+  1. **C7, the confirmation cycle of the committed state** — GPU, ~2.5 h, on the go-ahead. Closes the constancy line with a baseline measured on the exact commit.
+  2. **A second case document.** Every measurement so far is on SMG-040. Known case-specific limits: `strip_extraction_noise` (header/signature patterns are Rio SMG's, recorded in ADR-0074), the genre classifier validated on one corpus, the ETP structure, the 25a retrieval gap. Needs the user to supply the PDFs of another PPP process. The user's own method rule (the next file will not break in the same items) makes this the strongest test available.
+  3. **The maturity indicator itself** — the sum of the 46 final scores (max 138, per dimension), with ReviewOutcome, the cap and `sem evidência` = 0: "aggregation deferred" since ADR-0030, so the product's headline number does not exist yet. Small design + ADR + route + panel.
+  4. **Exercise the review path end to end** on a scratch DB (the fix above), and record it.
+  5. **The 25a retrieval gap** (the real schedule annex `_2` p.973–974 is indexed but outside 25a's pool of 16; cover page and annex list are in): retrieval-only, no GPU.
+  6. **Data anomalies of the IPMP files** (cheap, data only): `ponto_transicao` false on 16/37/38/45/46 although the IPMP prose calls them transition gates (the field is loaded and never read); the duplicated "33"/"34" header text; the untagged "termos de referência" collision 7/23.
+  7. **1b/3a canonicity** — the user's decision: ADR-0073 canonicity against a measured new coin (1b batch 100 % → 30 %; 3a 100 % → 60 %).
+  8. **Bookkeeping:** Strategic Decision #8 ("Phase 1 scope: Ação 1 only") is stale, all 46 Ações run; 19 profiles still `seed` although every Ação has run in cycles 2–6; Rio Manual only for Ações 1–2 (the focal route never fires elsewhere); rotation of the fallback password in `.secrets` (recommended since 2026-10-10).
+  - **Not levers, closed with data, do not reopen:** voting, `cache_prompt=false`, slot pinning, V1–V3, P2, scorer `low`, `rotulado`, G, G2, S, the 39 verdict-phrased patterns (P), `_MAX_EXAMINED` 16→10/12, the 23.3 and 35.2e second rounds, the scorer ledger as a constancy tool.
+
+**Session 2026-10-14 (71st pass) — THE USER'S MESSAGE U (verbatim): *"Descartar G? sim. / S (a frase equivalente no scorer) >> Sai junto / Próximo passo rumo a 42: o resíduo da linha de base continua 10, 23, 35, 37 e 45. As opções são as da tabela (A35, R2 para 23.3, P)."* G and S are DISCARDED; nothing in `src/` used either. Toward 42, the baseline residue was read by mechanism and three candidates were written (cycle 6). In one process, 23.3 round 2 FAILED its direction check, 35.2e entered by the letter of the rule, and 45 (out of the genre exemption, in memory) passed. TEST CYCLE 6 (35.2e + 45 in memory, 10 full processes, 15:18–17:46, 0 errors) RAN: 42 of 46 Ações with the same points in 9+ of 10, the target (cycles 3 and 4: 41). The gain comes from 45 alone: 0 points in 10/10, and its cycle-3 score of 3 rested on the minuta template `_2` p.23. The 35.2e pattern does not hold (p.3 accepted 8/10), so it is not written. Removing 45 from the genre-exemption list is the user's decision. Nothing committed.**
+
+- **Reading of U:** the third item quotes the options without choosing; read as delegation to proceed toward 42 with my recommendation.
+  - P (the 39 verdict-phrased patterns) was not chosen: cycle 3 showed wording is not the class, and cycle 5 showed that rewording the gate moves the borderline mass without shrinking it.
+  - G and S: ADR-0071 gained a "Decision on G" note, and `gate_positioning.py` a docstring line. G and G2 stay in the harness as the record of what was tried.
+- **Residue of the baseline, by mechanism** (cycles 3 and 4; readers `$W/residuo_ciclos.py`, `$W/le_par5.py`):
+  - **23:** a 3 needs 23.2 AND 23.3 evidenced, and 23.3 rests on the false credit `_2` p.145 (the grant fee paid to the Poder Concedente, read as a payment rule; 10/10 in cycle 3).
+  - **35:** the only chunk ever accepted in cycles 3–5 is `_1` p.3 for 35.2e (5, 1 and 2 of 10), the procurement justification read as an "avoid" strategy. The modal outcome is already `sem evidência`.
+  - **45:** the score rests on `_2` p.23, the contract MINUTA's recital ("Lote 4 da LICITAÇÃO foi homologada… adjudicado", with "Edital [•]" placeholders). It is a template, not a record. The 61st-pass reading of it as legitimate was wrong, so 45 is a false credit inside an exempt product.
+  - **10:** the scorer on an identical batch (10a `_2` p.763/764). No gate lever.
+  - **37:** six coin pages plus the scorer. No single lever.
+- **Candidates** (`scripts/diagnostics/candidates_cycle6.py`, new; overfitting audit strict 0 after two phrases of 35.2e were reworded):
+  - **23.3:** round-2 negative pattern with a marker the passage decides: does the value go to the public authority?
+  - **35.2e:** a second negative pattern, with the marker: is the action presented as a strategy to contract or bid the object itself? Insurance bought to transfer an identified risk stays a legitimate response.
+  - **45:** out of the genre-exemption list (ADR-0074), in memory only.
+    - The record of a bidding lives in acts (ata, resultado, homologação, adjudicação, publication), and acts have genre OUTRO.
+    - Without the exemption, 45's examined pool goes from 16 instrument chunks to 2 ETP pages (`_2` p.157 and p.158).
+    - This contradicts the list the user confirmed on 12/10: measuring is not adopting.
+- **Harness** (checked without GPU by `$W/confere_c6_harness.py`: only the targeted prompts change; 45's exemption is dropped in memory only):
+  - `reproducibility.py --candidates` gained the key `sem_isencao_genero`, which wraps `evidence_selection.get_genre_exemption_store` in memory (`_drop_genre_exemptions`);
+  - `measure_integral_candidates.py` gained the same key: it builds the new pool and measures it.
+- **Criterion** written before any result: `scratchpad/acc/criterio_ciclo6.txt` (rules A–E), plus an addendum written at 15:17, after the direction check and before the cycle.
+- **Direction check** (one process, 5 passes, 15:11–15:14, 0 errors; runner `$W/c6_direcao_runner.py`; output `scratchpad/acc/ciclo6_direcao.{json,log}`):
+  - **23.3 FAILS.** The base of this process rejected p.145 in 5 of 5, and the pattern made the gate accept it in 5 of 5. The reasoning never consults the marker ("payment of outorga before and during execution after grace period. That is payment schedule tied to execution. So relevant"). p.60 went the right way (TTTTT → FFFFF), and the 13 controls did not move. As in cycle 4, p.145 is a borderline that flips on any byte of the prompt, and the marker is not read on it.
+  - **35.2e ENTERS by the letter of rule A:** p.3 was accepted in 4 of 5 with and without the pattern. The one rejecting pass uses the pattern's reason; the four accepting passes do not consult it.
+  - **45 PASSES:** both new-pool pages were rejected in 5 of 5 for the right reason (no session, ata, homologação, adjudicação or publication).
+- **Test cycle 6:**
+  - **Run:**
+    - Runner `$W/ciclo6_runner.py "35.2e,45"`, PID 38792, ran 15:18 → 17:46 and ended with FIM rc=0.
+    - Every pre-process check read LIVRE, and the in-flight guard never fired.
+    - The runner closed its tunnel; no ssh.exe of ours is left. llama-server PID 13144 was left running.
+    - 10 of 10 processes with rc=0, 14.3–15.6 min each; 0 errors and 0 gate failures in 4 889 calls.
+    - Outputs `scratchpad/acc/ciclo6_run{1..10}.{json,log}`; reader `$W/analisa_ciclo6.py` → `$W/acc_ciclo6_final.txt`.
+  - **Headline (rule D): 42/46 with the same points in 9+ of 10** (cycles 3 and 4: 41).
+    - The replicate block (Ações 1–34) is at 32 in all three cycles.
+    - Below 9: 10 23 35 37. The only Ação that crossed the line is 45.
+  - **Secondary (cycle 3 / cycle 4 / cycle 6):**
+    - identical in all ten: 38 / 34 / 38;
+    - scale: 38/4/4 / 34/8/4 / 38/4/4;
+    - mean agreement with the mode: 95.7 / 95.2 / 95.7 %;
+    - coin pairs: 65 / 70 / 67;
+    - point changes: 136 / 166 / 128 (cycle 6: gate 92; scorer 27, in Ações 10 and 35; cap 9);
+    - batch identical in all ten: 31 / 26 / 30; bits: 34 / 30 / 33.
+  - **35.2e (rule C): not written.**
+    - `_1` p.3 was accepted in 8/10 (cycle 3: 5/10, within chance). The accepts never consult the marker; the 2 rejects use it.
+    - Ação 35 scored 0 1 1 0 1 1 0 1 1 1, so its mode is now 1, a false credit.
+    - p.3 is the procurement justification (genre OUTRO). It is a legitimate target of 1a, 1c and 4a (accepted in every process, cycles 3–6) and a coin for 35.2e, 13c, 14a and 2c. The 13 other products that judge it always reject it.
+  - **45 (rule C): 0 points in 10/10, no chunk accepted.**
+    - In every process, 38 instrument candidates left before the gate, and `_2` p.157/p.158 were rejected for the right reason.
+    - The rule recommends removing 45 from the exemption list. The decision is the user's, who confirmed the list on 12/10.
+    - The cycle-3 score of 3 (8/10) rested on `_2` p.23, the minuta recital "conforme o Edital [•] … foi homologada … adjudicado", which is a template. The case's documents stop at the edital's publication, so "not met" is the right outcome.
+    - Cost: a future case with the signed contract but without the acts would lose 45's only evidence.
+    - 46.1, also exempt, is clean: the gate rejects the unsigned minuta 16/16, and Ação 46 is sem evidência in 10/10.
+  - **Position check:** processes at the same position in two cycles agree no more often than at different positions (identical batch, Ações 1–22: 17.6 vs 17.8 of 22). The coin does not follow position.
+  - **Ação 23** (replicate block; scored 3 in 5/10):
+    - Both swings rest on `_2` p.145 (genre OUTRO), the CCPAR's reply justifying the judgment criterion and the split grant-fee payment.
+    - For 23.2 it is legitimate partial evidence (6/10; the rejections argue sufficiency). For 23.3 it is a false credit (10/10).
+    - Filtering it would cost 23.2 a legitimate passage, so no change is proposed.
+  - **ADR-0068 signal:** fired for 5 of the 8 varying Ações; it misses 3 (cap), 10 (scorer) and 37 (known gaps).
+  - Recorded in ADR-0074 ("Test cycle 6"), the docstring of `candidates_cycle6.py`, and memory.
+- **Open for the user:**
+  - Remove 45 from `data/ipmp/isencoes_genero.json`. Rule C recommends it, and it gives 42 with the residue 10 23 35 37. If yes:
+    1. write it;
+    2. check the production pools without GPU;
+    3. optionally, run a confirmation cycle of the exact production configuration (no 35.2e pattern).
+  - Residue, documented with the ADR-0068 signal:
+    - 23.3 and 35.2e have no candidate the gate reads (two rounds each);
+    - 10 (scorer) and 37 (six coins) have no single lever.
+  - Unchanged: the 25a retrieval gap, 1b/3a canonicity, commit only on request.
+
+**Session 2026-10-14 (70th pass) — THE USER'S MESSAGE R (verbatim): *"Computador está liberado. Pode efetuar os testes de C5"*. Cycle 5 (plain G, 10 full processes) RAN and showed NO GAIN BEYOND CHANCE: 40 of 46 Ações with the same points in 9+ of 10, against 41 in cycles 3 and 4. The pre-registered rule gives outcome (c), discard G; the decision is the user's. Messages S and T (kill the son's programs, stop the game services, show a message on the server screen) were BLOCKED by the auto-mode classifier and not retried. Nothing committed.**
+
+- **Launch:**
+  - The guard read LIVRE at 11:45 (Roblox open but idle).
+  - Runner `$W/ciclo5_runner.py` (PID 32896, tunnel PID 8520) ran 11:45:27 → 14:17:53 and ended with FIM rc=0.
+  - Every pre-process check read LIVRE, and the in-flight guard never fired.
+  - The runner closed its tunnel; no ssh.exe of ours is left. llama-server PID 13144 was left running.
+  - The criterion was written before launch: `scratchpad/acc/criterio_ciclo5.txt`.
+- **Messages S and T (mid-run):**
+  - The user asked to kill steamwebhelper, GameInputSvc, Killer, steam and every process not tied to the LLM, then to kill Roblox and show an on-screen message to the son.
+  - The classifier blocked both ([Interfere With Workloads]); `$W/mata_nao_llm.ps1` was never run. It also blocked a later read-only read of `insere_69.py` and of CLAUDE.md lines 219–254.
+  - The user can do it at the PC or over AnyDesk, or add a permission rule.
+  - The inventory is in `$W/lista_processos.ps1`. What must never be killed is in memory `feedback_check_gpu_before_runs.md`.
+- **Run:**
+  - 10 of 10 processes with rc=0, 14.6–15.7 min each (mean 15.1; cycle 3: 15.0).
+  - 0 errors and 0 gate failures in 5 029 calls; 497–512 calls and 35–52 accepts per process.
+  - Outputs: `scratchpad/acc/ciclo5_run{1..10}.{json,log}`.
+  - Readers:
+    - `$W/analisa_ciclo5.py` → `$W/acc_ciclo5_final.txt`;
+    - `$W/compara_k8.py`, cycles compared at the same number of processes;
+    - `$W/le_par5.py PRODUTO SUFIXO PAGINA`, chunk text and gate reasoning per cycle.
+- **Results (cycle 3 / cycle 4 / cycle 5):**
+  - same points in 9+ of 10: 41 / 41 / **40**, no detectable difference (band 39–43);
+  - identical in all ten: 38 / 34 / 35, within chance;
+  - scale: 38/4/4 / 34/8/4 / 35/8/3;
+  - coin pairs: 65 / 70 / 76;
+  - point changes: 136 / 166 / 163;
+  - identical per pair, batch/bits/points: 36.5/40.9/43.0 / 35.1/39.6/42.3 / 34.4/39.9/42.4;
+  - accepts per process: 39.4 / 38.7 / 43.9;
+  - sufficiency-only rejections: 8.8 % / 9.3 % / 6.8 %;
+  - point changes from gate/scorer/cap: 98/29/9 / 139/18/9 / 123/40/0;
+  - below 9 of 10: cycle 3 had 10 23 35 37 45; cycle 5 has 10 13 23 25 35 37.
+- **By Ação:**
+  - Steadier:
+    - 2 and 3: 1 change → 0;
+    - 45: 2 → 0, but through the edital rules `_2` p.223 (9/10) and `_1` p.55 (6/10), which are false accepts;
+    - 35: 4 → 2; 23: 3 → 2;
+    - 37: 4 → 3, with the mode moving from 0 to 3 on mostly legitimate pages.
+  - Less steady:
+    - 13: 0 → 4. The procurement justification `_1` p.3 was accepted for 13c in 5 of 10 and scored in 4, a false credit.
+    - 25: 0 → 2. The 25d edital clauses read as the procurement risk plan went 9/10 → 3/10 (the coin-removal path).
+    - 10: 4 → 5, the scorer on an identical batch.
+    - 14, 26, 27 and 42: 0 → 1 each.
+- **Pairs:** 14 (product, page) pairs moved side between cycles 3 and 5, against 4 between cycles 3 and 4.
+  - 11 moved toward acceptance:
+    - legitimate partial evidence: 23.1 `_2` p.345, 23.2 `_2` p.138, 23.4 `_2` p.577, 37 `_3` p.3;
+    - debatable: 37 `_2` p.135 and p.136;
+    - false: 13c `_1` p.3; 45 `_2` p.223 and `_1` p.55; 25a `_2` p.232 (the annex list); 3a `_2` p.161 (against 3a's own negative pattern).
+  - 3 moved toward rejection: 25c `_2` p.961, 23.4 `_1` p.383, 23.3 `_2` p.144.
+  - 23.3 `_2` p.145 went 10/10 → 3/10, accepted in processes 1–3 only. 32a `_1` p.303 stayed at 10/10.
+  - From the in-process watch list: the 22.2 pointers and 25a p.972 were accepted 0/10; 18b p.185 3/10 (no points moved). The losses (3a p.159 7/10, 1c p.2 9/10, 22.2b p.921 9/10) changed no modal outcome.
+- **Reading:** G changes the gate's reasoning as written, but the borderline mass moves instead of shrinking. The gain of this line came from removing a class before the gate (cycle 2 → 3: 31 → 41), not from rewording the gate. Recorded in ADR-0071 ("Variant G across ten full processes") and in memory.
+- **Open for the user:**
+  - discard G, as the pre-registered rule recommends; there is nothing to revert, because G lives only in the harness;
+  - S (the scorer counterpart) was tied to G;
+  - unchanged: the 39 verdict-phrased patterns, the 25a retrieval gap, 23.3/32a round 2, Ação 35, 1b/3a canonicity, the baseline residue 10 23 35 37 45, commit only on request.
+
+**Session 2026-10-14 (69th pass) — THE USER'S MESSAGE Q (verbatim): *"Rode o ciclo 5 com G puro. / Importante: meu filho está em casa e pode estar usando o servidor para jogar. Verifique o uso da GPU antes de iniciar os testes. Caso esteja em uso não faça os testes, avise. Informarei quando proceder com os testes novamente."* The GPU was in use by games, so cycle 5 was NOT launched. The runner gained a GPU guard. Waiting for the user's go-ahead. Nothing committed.**
+
+- **Check at 09:29 server time.** It was read-only: `$W/uso_gpu.ps1`, sent with the new `$W/ssh_ps_gz.py`. That helper sends the script gzip-compressed inside the command, because cmd.exe refuses lines over 8 191 characters; nothing is written on the server.
+  - A console session has been active since 06:32.
+  - Dead by Daylight has been running since 06:48, with the 3D engine at 63–78 % and 3–4 GB of video memory.
+  - Roblox has been open since 06:34 (about 700 MB), and Steam is open.
+  - The GPU is at 71–81 %, with 14.5 of 16.3 GB in use.
+  - Our llama-server (PID 13144, started 01:10 after the Windows Update reboot) is still loaded and idle. The Windows counter attributes 8.4 GB to it; it took 13.4 GB at start on an empty GPU. The game therefore shares the card with the idle model.
+  - Stopping the 8083 task until the go-ahead was offered to the user and not done without their OK.
+  - The OCR task is now `Disabled`. There is no local ssh.exe or python.exe.
+- **GPU guard** (`$W/gpu_livre.ps1`, read-only). It reads the Windows GPU Engine and GPU Process Memory counters, using the second of two samples 3 s apart.
+  - **EM_USO:** a process outside session 0 and outside a list of desktop programs (dwm, explorer, NVIDIA Overlay, the Steam client and webhelper, …) has a GPU engine at ≥ 5 % or holds ≥ 300 MB of video memory.
+  - **INDETERMINADO:** the counters are missing.
+  - **Validation:** against the live games it returned EM_USO with both games, run directly and from inside the runner module. The LIVRE case is checked at launch.
+- **`$W/ciclo5_runner.py` rewritten.** It still runs plain G (`--gate-variant posicionado`), and `main` is guarded, so the module imports without side effects.
+  - The guard runs before each process. If the GPU is not LIVRE, the runner stops with code 5 and starts nothing.
+  - The guard also runs every 60 s during a process. Two EM_USO in a row terminate the process, save it as `ciclo5_run{i}_interrompido{k}.*`, and stop the runner with code 5.
+  - SSH failures in the check do not count as use.
+  - The runner never starts or stops the llama-server.
+  - Every exit logs `FIM rc=<code>: <reason>`.
+  - Relaunching resumes: existing `ciclo5_run{i}.json` files are skipped.
+  - Not launched.
+- **On the go-ahead:**
+  1. re-run the check;
+  2. start the 8083 task with `sobe_8083.ps1` if it is down;
+  3. write the reading criteria for cycle 5 before launch;
+  4. launch the runner detached, with a background waiter on `FIM rc=`.
+- **Open for the user:**
+  - whether the guard should also stop the 8083 task when it stops a cycle because of a game (default no);
+  - whether to stop the 8083 task now, while the games run;
+  - everything else as in the 68th pass.
+
+**Session 2026-10-14 (68th pass) — THE USER'S MESSAGE P (verbatim): *"Façamos a medição sugerida para os mesmos pools de G2. Vou dormir, então faça a análise da saída de G2 e decida rodar ou não o ciclo 5 com G como está, caso passe nos critérios de manutenção dos 13 acertos e derrubada dos ponteiros e regras."* G2 was measured against G in one process, under a decision rule written before the run. It failed the rule, so cycle 5 was NOT launched. The same run measured G against itself across two processes: the pair-level "direction" of G measured on 13/10 was noise (ADR-0071, new section). Nothing committed.**
+
+- **Reading of P.** Recorded before the run in `scratchpad/acc/criterio_g2.txt` (01:03):
+  - "G como está" = the variant as proposed: G2 plus the 18b product pattern, with no text change after seeing the result.
+  - The user's two criteria are binding: A, keep the 13 right moves; B, drop the pointers and the rules.
+  - Three guards bar only a G2 clearly worse than G:
+    - D1: 3 or more new confusions on stable rejections;
+    - D2: accepts up more than 15 %;
+    - D3: 2 or more stable accepts lost.
+  - P's wording echoes the alternative in my report ("rodar o ciclo 5 com G como está"). The criteria are G2's, so the reading stands, and every plausible reading gives the same decision.
+- **GPU server:**
+  - Windows Update rebooted it at 23:29–23:33 on 13/10 (event 1074 by SYSTEM: MoUsoCoreWorker, then TrustedInstaller).
+  - The 8083 task has no trigger and stayed down. The console was at the logon screen, the GPU empty, OCR 8082 not running.
+  - Started over SSH at 01:10:15, as on 13/10, with `$W/sobe_8083.ps1` (it refuses if a llama-server or port 8082 is up). llama-server PID 13144; 8083 listening after 15 s; health ok at 01:10:44. Left running.
+  - The local AUDITOR processes (`ensaio_171.py`, two PIDs since 00:55) had no network connections and were not touched.
+- **Harness** (all checked without GPU; G unchanged; harness and measurer give the same bytes on 164/164 G2 prompts):
+  - `measure_gate_positioning.py --condicoes g,g2 --candidates scripts/diagnostics/candidates_g2.py --apply 18b` (generalized this pass);
+  - `reproducibility.py --gate-variant posicionado2`;
+  - `gate_positioning.posiciona(..., versao="g2")`.
+- **Run:**
+  - Runner `$W/posicao_g2_runner.py` (retries once), 01:10:44 → 01:47:36: 2 784 calls, 0 errors, 0 without a verdict.
+  - Output `scratchpad/acc/posicao_g2_direcao.{json,log}`. The runner closed tunnel PID 33696; no ssh.exe of ours is left.
+  - Readers:
+    - `$W/decide_g2.py` applies the rule (`--le LAB…` reads pairs) → `$W/acc_decide_g2.txt`;
+    - `$W/ruido_g.py` → `$W/acc_ruido_g.txt`;
+    - `$W/agregados_g.py` → `$W/acc_agregados_g.txt`.
+- **Rule result: NOT LAUNCHED.**
+  - **A1 fails** on 23.2 `_2` p.138 (G TTT, G2 FFF): the Procuradoria's review of the edital and contract minutes, rejected as "a review document… not evidence".
+    - A2 passes: right-side votes G 21/39, G2 25/39.
+    - G itself repeated only 7 of its 13 right moves.
+  - **B1 fails** on 22.2 `_1` p.210, G2 TTT: "lists annexes including ANEXO V MATRIZ DE RISCO. That indicates existence of risk matrix. So relevant".
+    - The same content on p.75 was rejected, citing the rule.
+    - The other four targets were dropped with the right reason: 25a p.972 "a title alone does not pass"; 45 ×2 "a statement of what will happen is not evidence".
+    - G in this process accepted the two 45 rules (TTT, TTT) and rejected the 22.2 pointers and 25a p.972.
+  - **D3 bars.** G2 lost two pairs accepted in all 20 reference processes:
+    - 1c `_1` p.2: "lists benefits but not explicit strategic objectives";
+    - 22.2b `_2` p.921, the seguro-garantia terms: "Might be partially relevant?".
+  - **D1: 3 new accepts** on stable rejections, below the bar:
+    - 18b `_1` p.185 is a confusion. It is the 18b pattern's own target, TTT: the pattern was ignored ("the criterion says any of the elements").
+    - 23.3 `_1` p.260 is a confusion: late-payment interest on a fine, read as a payment rule.
+    - 23.4 `_2` p.311 (a termination indemnity) is debatable.
+  - **D2:** G2 accepts 26 % fewer than G (151 → 112).
+  - **Gate bands, G vs G2:**
+    - 23: 1 → 3 (23.3 via p.260, a false credit);
+    - 42: sem → 1 (42a `_2` p.144, 1/20 in the cycles);
+    - 22 and 25 keep their band on fewer products;
+    - 1 keeps 1 on 1a only.
+  - **Mechanism:** the gate reads the NOMEAR paragraph as "mentioning is not enough", which brings back the sufficiency question G removed. Its targets move both ways.
+- **G against G across two processes, the finding of the pass:**
+  - **Pair majorities:**
+    - the same G prompt changed majority in 27 of the 464 pairs between 13/10 and 14/10;
+    - base → G on 13/10 had changed 29;
+    - G repeated 16 of those 29: 7 of the 13 "right", 4 of the 10 "wrong" (the 45 rules and two 23.4 losses), 5 of the 6 "debatable";
+    - the coin frequencies of cycles 3 and 4 predict about 21 differences between two processes of one prompt;
+    - G vs G2 inside one process changed 31.
+  - **Stable accepts:** two of the 16 flipped between the two G processes. 23.3 `_2` p.145, the constant false credit, was TTT on 13/10 and FFF on 14/10 under both G and G2; 3a `_2` p.159 went FFT → TTT. 32a `_1` p.303 stays TTT everywhere.
+  - **Reading:** a prompt-wide variant tosses every coin again, so its pair-level direction in one process is noise.
+  - **What repeats:** rejections arguing sufficiency only, 8.5 % under the production prompt vs 6.4 % and 5.8 % under G.
+  - **What does not repeat:** accept volume, G 123 and 151 of the same 1 392 calls.
+  - **G2's design:** its paragraph targeted noise for the pointers and 18b, which did not repeat under G, and a real class for the 45 rules, which did.
+  - **Recorded in:** ADR-0071 (new section), the docstrings of `gate_positioning.py` and `candidates_g2.py`, and memory.
+- **Open for the user:**
+  - cycle 5 with plain G (about 2.5–3 h, runner `$W/ciclo5_runner.py` as written for G): the only valid test of positioning, since in-process pair screening cannot decide it; G2 not recommended;
+  - or drop G;
+  - unchanged: the 39 verdict-phrased patterns, the scorer counterpart S, the 25a retrieval gap, 23.3/32a round 2, Ação 35, 1b/3a canonicity, commit only on request.
+
+**Session 2026-10-13 (67th pass) — THE USER'S MESSAGE O (verbatim): *"Sobre "O que já foi feito do §5" no trecho "Achado que você precisa saber para decidir" mantém como está. / Sobre "Proposta G (não aplicada; decisão sua)" acho que vale uma reanálise no caso. O que disse foi que o gate está fazendo as vezes do scorer ou se perdendo pq ele não possui contexto de onde ele se encaixa no processo. O papel dele está definido, falta posicionamento. Vc é....a etapa que vc trata é ... sua função é... para garantir que a etapa final julgue adequadamente. Avalie meu comentário criticamente e posicione-se sobre uma possível melhoria nos prompts. / Apesar dos comentários acima, aceito as recomendações com as mencionadas ressalvas."* The cycle-4 recommendations are accepted (23.3 and 32a not written; G next, measured in one process and then in ten full processes; the round-2 draft not prioritized), with G re-analysed as POSITIONING. The p.144 neighbour finding stays as recorded.**
+
+- **The user's hypothesis, tested on the recorded gate reasoning** (session scratchpad `argumentos_rejeicao.py`; cycle 3: 521 pairs, 4 970 verdicts; replicated on cycle 4 without 23.3 and 32a):
+  - the only positional cue of the prompt, the ADR-0066 clause "julgar o cumprimento é da etapa seguinte", appears in 3 reasonings (0.1 %); the polarity rule in 3.8 %;
+  - rejections in coin pairs argue sufficiency far more than stable rejections: completeness 30.5 % vs 6.9 %, absence read as no evidence 7.4 % vs 0.8 %, "only mentions" 33.5 % vs 7.7 %, other object 19.7 % vs 25.8 %; 44 of the 65 coins have at least one completeness or absence rejection (cycle 4: 42 of 68);
+  - reading: in stable rejections the gate does its own job (the passage is about something else); in coins it does the scorer's (does the passage suffice?). Example: 23.2 `_2` p.231 rejected because it "doesn't show clear language, compatibility, matrix of risk, criteria" — one passage checked against the whole product.
+- **Position given to the user:**
+  - agree with the diagnosis;
+  - a persona alone ("Você é…") is not enough: the prompt already has one and a role clause, both ignored; what works for this model is concrete — what comes before, what comes after, what each error costs, the question to ask instead of "does it suffice?" (precedent: the abstract scope rule engaged 0.8 %, the concrete sibling contrast worked);
+  - "para garantir que a etapa final julgue adequadamente" kept as intent, not as words: the gate cannot guarantee the final judgement, and saying it does may push it to pre-judge; written as consequences instead;
+  - two causes sit in our own text: (i) the criterion the gate reads is the IPMP product text, written for fulfilment, and the concepts are introduced as "evidência válida"; (ii) 39 of the 195 negative patterns (34 products) are fulfilment verdicts, mostly copied from the IPMP Parcialmente/Não Atendido examples — 19 of completeness ("X sem Y não é evidência suficiente": the gate is told to do the scorer's job), 9 of absence of the whole document ("Ausência total… não atende": they contradict the ADR-0066 polarity rule, the p.144 mechanism of cycle 4), 11 of another stage phrased as a verdict (right content for the gate, scorer wording); 7 more only name sufficiency as a topic. The scorer already receives those IPMP examples. The cycle-3 analysis found no more coins in products with such wording, so they do not explain the coins alone, but they contradict G inside the same prompt; the direction measurement splits those products out;
+  - risks: more accepts (`rotulado` gave +11 %); the remaining false credits are aboutness errors (23.3 p.145, 32a p.303, 35.2e p.3) that G does not fix and could add to — hence the text also states the cost of passing another subject and keeps the other-element/product/party/stage rule;
+  - scorer counterpart proposed for AFTER G (the gate drives 72–84 % of point changes, changing both at once confounds attribution): one sentence in `_PRODUCT_BLOCK_INSTRUCTION` saying the passages were selected only for being about the product, may cover part of it or record that it is missing, and the product is judged on the set.
+- **Variant G** (`scripts/diagnostics/gate_positioning.py`, new): the opening sentence becomes "## Seu lugar no processo" (three stages, the triage is the second; what a rejection loses and a wrong pass spoils; ask whether the passage is about the element — whole, in part, or recording that it is missing or does not apply — not whether it suffices; another element, product, party or stage does not pass even with the same words), and the criterion heading becomes "## O que a etapa final vai procurar neste Produto Esperado" with one sentence (the criterion describes the whole product the final stage will require of the set; here it is enough that the passage is about a part of it). Nothing else changes. Mean system prompt +48 % (1 417 fixed characters, identical in all 164 prompts). A first wording ("de outra parte ou de outra etapa do projeto", read as "another part of the project") was corrected to "de outra das partes envolvidas (por exemplo, a contratada no lugar do órgão responsável, ou o contrário)" before any gate call was made (the first launch was stopped while it built the pools).
+- **Harness:** `reproducibility.py --gate-variant posicionado` (new choice) wraps `evidence_selection.build_relevance_system_prompt` with `gate_positioning.posiciona`; checked without GPU on 164/164 prompts (same bytes as the measurer). New measurer `scripts/diagnostics/measure_gate_positioning.py` (production pools with the genre filter, 0.92 prefilter, cut of 16, no neighbours; base and variant interleaved per pass; labels carry the file suffix).
+- **Direction of G in one process** (`measure_gate_positioning.py --passes 3`: production pools, base and G interleaved per pass, ledger off; runner `$W/posicao_runner.py`, 22:23 to 23:11, 2 784 calls, 0 errors, the runner closed its tunnel; output `scratchpad/acc/posicao_direcao.json`; readers `$W/analisa_posicao.py`, `$W/bandas_posicao.py`, `$W/le_pares_posicao.py`):
+  - **Volume:** accepts 128 → 123 (−4 %; `rotulado` gave +11 %). Of the 373 pairs rejected in all twenty processes of cycles 3 and 4, 369 stay rejected; of the 16 accepted in all twenty, 15 stay accepted.
+  - **Sufficiency arguments in rejections fall about a quarter** without vanishing: completeness 9.3 → 6.7 %, sufficiency-only 8.5 → 6.4 %; in products whose negative patterns are completeness verdicts, 17.6 → 12.9 %. Example of what remains: 23.4 `_1` p.355 rejected under G as "not explicitly linked to the risk matrix".
+  - **The 29 pairs whose majority changes, read one by one:**
+    - right (13):
+      - legitimate partial evidence now passes: 1a `_2` p.157 (13/20 → TTT), 23.1 `_2` p.345, 23.2 `_2` p.231 and p.138, 23.4 `_2` p.577 and p.310, 42d `_3` p.10 (the record of the final version, rejected before for lacking highlighted sections);
+      - confusions removed: 2c `_1` p.302 (10/20); 25c ×5, the bidders' habilitation documents read as the documentation the administration will produce and publish (13/20, 12/20, 10/20, 9/18, 6/20);
+    - wrong (10):
+      - 7 new false accepts:
+        - pointers that only name the element or say where it is: 22.2 `_1` p.210 and p.75 (the contract's annex list "ANEXO V MATRIZ DE RISCO"), 25a `_2` p.972 (the cover page of the schedule annex);
+        - edital rules on what will be done, read as the record that it was done: 45 `_1` p.55 and `_2` p.223;
+        - another Ação's element: 18b `_1` p.185, the concessionaire's revenue projection (Ação 27's financial model; 0/20 in the cycles);
+        - an instrument fragment read as "part of the complete set": 37 `_1` p.207 (contract definitions);
+      - 3 legitimate accepts lost: 3a `_2` p.159 (20/20 → FFT, "inventory and cost, not scope"; 3a's bit holds through p.158), 23.4 `_1` p.355 and p.196;
+    - debatable (6): 4d `_2` p.163 (a checklist question of the ETP attestation), 37 `_1` p.40, 14a `_1` p.3, 25d ×3 (edital procedural clauses that the gate used to read as the procurement's risk plan).
+  - **The three aboutness false credits are untouched:** 23.3 `_2` p.145 TTT/TTT; 32a `_1` p.303 TTT/TTT (G's own example of the wrong party did not transfer); 35.2e `_1` p.3 FTF/FTF.
+  - **Gate band per Ação** (`$W/bandas_posicao.py`; the band the gate verdicts allow, not the score), 4 of 41 change:
+    - 14: 1 → sem, back to the cycles' mode;
+    - 18: sem → 1, through 18b p.185;
+    - 23: 1 → 3, because 23.2 is now evidenced; a 3 would rest on 23.3's existing false credit;
+    - 42: sem → 1, through 42d `_3` p.10.
+    In 25 the hold moves from confusions to a pointer and a coin, a constancy risk. 37 `_3` p.2 (the internal conformity attestation, 6/20 in the cycles) becomes TTT.
+  - **Mechanism, the finding of the pass:** the sufficiency argument did double duty. It wrongly rejected legitimate partial evidence. It also rejected, rightly but for the wrong reason, passages that only name the element ("no details"), state a future rule ("not evidence of the actual event") or treat another Ação's element ("no discounting, no risk"). G removed the wrong reason without giving the right one, so the second group passes. The gate cannot apply G's "another Expected Product" rule across Ações: it sees only the siblings.
+  - **Outcome:** a new false credit that can change points appeared (Ação 18), so by the criteria fixed in advance, cycle 5 was NOT launched and the case went to the user. `$W/ciclo5_runner.py` is ready, not launched.
+  - **Proposal (not applied):**
+    - G2 = G plus one paragraph that gives the right reasons, with markers the passage itself decides:
+      - naming the element or saying where it is (a title, an index, a list of annexes, the cover of an annex) is not treating it;
+      - when the criterion asks for the record of something done, a rule saying what will be done is not that record.
+    - For 18b, a product-level negative pattern: the concessionaire's revenue, costs or cash flow (the financial model) are not the public benefits and costs of the cost-benefit analysis.
+    - Measure G2 in one process on the same pools: it must keep the 13 right moves and drop the pointer and rule accepts. Then cycle 5.
+  - **Side finding:** the real content of the bidding-schedule annex (`_2` p.973–974: events and dates) is indexed but is not in 25a's examined pool, which carries the cover page and the annex list instead. This is a retrieval gap, separate from G.
+- **Open for the user:**
+  - G2 plus the 18b pattern, measured in one process, then cycle 5;
+  - or cycle 5 with G as it is;
+  - the 39 verdict-phrased negative patterns, after G;
+  - the scorer counterpart S, after G;
+  - the 25a retrieval gap;
+  - round 2 for 23.3/32a;
+  - Ação 35;
+  - 1b/3a canonicity;
+  - commit only on request.
+
+**Session 2026-10-13 (66th pass) — THE USER'S MESSAGES M and N. M: *"Verifique se a rodada 10 terminou e apresente relatório com diagnóstico"*; cycle 3 was reported (results and diagnosis in the 65th-pass entry and in ADR-0074). N (verbatim): *"Sobre "O prompt já diz que julgar o cumprimento é do scorer (ADR-0066). O gate aplica essa regra de forma diferente em cada processo." o gate sabe quem é o scorer? Se não tiver contexto no prompt como ele vai saber julgar isso? / Sugestoes de $5 aceitas. Pode implementar."* The four recommendations of the report are accepted and recorded in ADR-0074, section "Decisions after cycle 3". The question about the gate is answered below; the change it suggests (G) is a proposal, not applied. Test cycle 4 measured the 23.3 and 32a patterns across ten full processes: both targets became coins, and neither pattern is written (ADR-0074, section "Test cycle 4").**
 
 - **Decisions recorded:**
   - V: exempt products take no instrument neighbours (the code already does this);
   - Ações 3, 10, 37 and 45 stay as documented residue: the review signal of ADR-0068 covers 10 and 45, the cap notice covers 3, and 37 is a known gap of the signal (its accepts vanish together);
   - 35.2e is unchanged; another round is the decision of the user;
   - the cycle-3 state is committed as the baseline (hash below, recorded after the commit).
+- **Commit `5be6d44`** (the baseline; nothing pushed; this line is not in it).
 - **The gate does not know the scorer.** Its only cue is one clause of `_INSTRUCTIONS` in `relevance_builder.py`: "julgar o cumprimento é da etapa seguinte, não deste classificador" (ADR-0066). The prompt does not say:
   - that the accepted passages of every product are read together by a later stage that decides fulfilment per product;
   - that one passage rarely carries the whole set the criterion asks for;
   - that a rejected passage never reaches the scorer or the auditor.
   This model uses abstract rules weakly (the scope rule was engaged in 0.8 % of 640 traces, 2026-10-02), and the cycle-3 rejections that move points read as sufficiency judgements. **Candidate G** (the decision of the user): one concrete paragraph on how the verdict is used, measured in one process on the known borderlines and their controls, then in full processes. It changes all 164 gate prompts (new ledger keys), and its risk is more accepts (`rotulado` gave +11 %).
-- **23.3 and 32a:** canonical negative patterns, measured before writing (direction in one process, then ten full processes). Status below.
+- **23.3 and 32a: canonical negative patterns**, measured before writing. Candidates file: `scripts/diagnostics/candidates_cycle3_residue.py` (new).
+  - **Markers:** for 23.3, who pays whom (a sum owed to the public authority by the contractor or concessionaire, i.e. the grant fee or the highest-offer criterion, is not a rule for paying the contractor); for 32a, whose team (the staff costs of the contractor or concessionaire are not the cost of the project team of the responsible body).
+  - **Overfitting audit:** 0 strict n-grams after one rewording ("paga ao poder" was in 19 corpus chunks).
+  - **What the 23.3 pattern takes along:** `_2` p.144 (the reply recording that the TR has no measurement and payment criteria, because in a concession the authority does not pay the contractor) is not in the 23.3 pool. It reaches 23.3 only as a neighbour of p.145 (8 of 10 in cycle 3). If p.145 leaves, p.144 leaves too, and 23.3 ends without evidence: the right outcome for the product here, but without the passage that explains why. `_1` p.60 (the edital clause on paying the grant-fee instalments, accepted 1 of 10) is the same class as p.145 and was added as a target.
+  - **Measurer:** `measure_integral_candidates.py` now applies the production genre filter to the pool (`--no-genre-filter` reproduces the earlier measurements).
+  - **Direction in one process** (5 passes, production pools, `scratchpad/acc/ciclo3res_direcao.json`, 147 s): 23.3 p.145 TTTTT to FFFFF, p.60 FFFFF to FFFFF, 13 of 13 controls FFFFF in both conditions; 32a p.303 (its pool has this one chunk) TTTTT to FFFFF. The rejecting reasoning applies the markers; the 32a one hesitates ("not clear if it is the project management team or the contractor staff").
+  - **Plumbing check** (one process with Ações 23 and 32 only, `scratchpad/acc/ciclo4_sanidade.json`; single-Ação processes do not measure constancy, ADR-0071): the patch is recorded; Ação 32 came out `sem evidência`; but 23.3 accepted p.145 despite the pattern (the reasoning ignored the marker), and 23.1 rejected p.207 (accepted 10 of 10 in cycle 3) by target-product confusion ("earlier description was for 23.3"). 23.1 is gated before 23.3 with a prompt byte-identical to cycle 3, so that is not the patch.
+  - **Test cycle 4:** 10 full processes, ledger off, patterns in memory (`--candidates ... --apply 23.3,32a`), runner `$W/ciclo4_runner.py` (PID 29504, tunnel 25672, started 18:39). Outputs `scratchpad/acc/ciclo4_run{1..10}.{json,log}`; readers `$W/analisa_ciclo4.py` and `$W/analisa_ciclo2.py ciclo4_run ciclo3_run`. RESULTS (2026-10-13, 18:39 to 21:09; also `$W/pares_23_32.py`, `$W/razao_p144.py`, `$W/detalhe_ciclo4.py`):
+    - **Runs:**
+      - 10 of 10 with rc=0, 14.7–15.7 min each; 0 errors and 0 gate failures in 4 973 calls.
+      - The runner closed tunnel PID 25672 at 21:08:58, and no ssh.exe of ours is left.
+      - llama-server PID 24956 was left running.
+    - **The targets became coins** (accepted, cycle 3 → cycle 4):
+      - 23.3 `_2` p.145: 10/10 → 4/10;
+      - 23.3 `_1` p.60: 1/10 → 0/10;
+      - 32a `_1` p.303: 10/10 → 3/10.
+      Inside one process they were FFFFF: that measurement gives direction, not constancy.
+    - **Why the patterns did not hold:**
+      - The p.145 accepts never consult the who-pays-whom marker; they read the split grant-fee payment as a schedule tied to execution.
+      - p.303 never names the employer ("staff involved in the operation"), so the whose-team marker is a guess.
+      - A marker must be decidable from the passage itself.
+    - **Ação 32 (32a):**
+      - Points went from 1 0 1 1 1 1 1 1 1 1 to 1 0 1 0 0 0 0 1 0 0: 1 → 3 changes, tolerable → inconsistent.
+      - Identical per pair: batch 100 → 53 %, bits 100 → 53 %, points 80 → 53 %.
+      - The modal outcome is now the right one (`sem evidência`), but the false credit returns in 3 of 10.
+    - **Ação 23 (23.3):**
+      - Points went from 1 1 3 3 1 3 1 1 1 1 to 1 1 3 1 1 1 1 1 1 1: 3 → 1 change.
+      - The scorer judged 23.3 evidenced in 10/10 → 3/10.
+      - A 3 now needs the 23.2 and 23.3 coins to land together: about 1 process in 10, against 3–4 before.
+      - Identical per pair: batch 2 → 0 %, bits 44 → 22 %, the 23.3 bit 100 → 47 %.
+    - **Side effect against ADR-0066:**
+      - `_2` p.144 says there are no payment criteria because the concession does not pay the contractor.
+      - Cycle 3: accepted 8/10, the reasoning citing the polarity rule.
+      - Cycle 4: judged 4 times (when p.145 was accepted) and rejected 4/4 ("no evidence of payment rules").
+    - **System, cycle 3 → cycle 4:**
+      - Same points in all ten: 38 → 34.
+      - Same points in 9+ of 10: 41 → 41 (23 and 35 in; 32 and 42 out).
+      - Scale (consistent/tolerable/inconsistent): 38/4/4 → 34/8/4.
+      - Identical per pair: batch 36.5 → 35.1, bits 40.9 → 39.6, points 43.0 → 42.3. In points, the contributions of Ações 23 and 32 cancel exactly.
+      - Identical in all ten: batch 31 → 26, bits 34 → 30.
+      - Coins: 65 → 70.
+      - Point changes: 136 → 166 (gate 139; scorer 18, all in Ação 10; cap 9, Ação 3 via Ação 2).
+      - ADR-0068 signal: fired for 9 of the 12 varying Ações; misses 3, 10 and 37.
+    - **Noise floor, measured:**
+      - Ações 1–22 are gated before any changed prompt, so for them the two cycles are twenty processes of one configuration:
+        - 23 coin pairs in each cycle, but on different pairs (Ação 22: 6 → 2; Ação 2: 6 → 8);
+        - same points in all ten: 19 → 17 (13 and 14 moved once each);
+        - same points in 9+ of 10: 21 = 21.
+      - After Ação 23, Ações with unchanged prompts moved both ways: 35 and 37 better; 40, 42 and 45 worse.
+      - So two 10-process cycles resolve a one-Ação change only where the change touches that Ação, and "identical in all ten" moves by about two by chance.
+    - **Outcome: neither pattern is written.**
+      - The rule names a constant accept turned into a coin as the loss; both patterns did that.
+      - 32a also lowers the constancy of its Ação.
+      - 23.3 raises Ação 23 in points only because two coins rarely land together, and it switches off P1 on p.144.
+      - Read in points alone, 23.3 would pass for Ação 23; this is recorded for the user.
+      - The result is in ADR-0074 ("Test cycle 4") and in the docstring of the candidates file. The baseline stays `5be6d44`.
+    - **Round-2 draft** (`$W/candidatos_rodada2_23_32.py`; NOT measured, NOT applied; overfitting audit clean):
+      - It uses markers the passage itself decides: for 23.3, whether the recipient of the value is the public authority; for 32a, whether the staff's function is to operate or maintain the service.
+      - It cannot keep p.144, which arrives only as a neighbour of p.145.
+- **Open for the user:**
+  - a second round for 23.3/32a;
+  - G;
+  - Ação 35 (the 35.2e coin);
+  - the 1b/3a canonicity question.
 
 **Session 2026-10-12/13 (65th pass) — THE USER'S MESSAGE L (verbatim): *"Liga a expansão de vizinhos e colocar eles para passarem pelo filtro, mas apenas se o classificador de gênero o apontar como não sendo texto de INSTRUMENTO (contrato ou minuta, edital, TR, anexos normativos) / A lista de isenção está certa? Sim / Você aceita as 14 perdas (Ação 4 de 3 para 1; Ações 15 e 36 de 1 para 0)? Sim / A2 ou B? A2 / Gênero por trecho (o descritivo do TR fica) ou documento inteiro? Documento inteiro exige saber onde cada documento começa e termina, e o índice não guarda isso de forma canônica. >>Índice de forma canônica / Posso implementar e depois rodar o ciclo 3 na GPU? Pode implementar e rodar na GPU"*.**
 

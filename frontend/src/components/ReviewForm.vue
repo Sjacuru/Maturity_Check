@@ -54,7 +54,7 @@ import { ref, computed } from 'vue'
 const props = defineProps({
   proposedScore: Number,
   processNumber: String,
-  acoaId: Number,
+  acaoId: Number,
 })
 
 const emit = defineEmits(['submitted'])
@@ -73,7 +73,7 @@ async function submit() {
 
   try {
     const resp = await fetch(
-      `/api/cases/${encodeURIComponent(props.processNumber)}/evaluations/${props.acoaId}/review`,
+      `/api/cases/${encodeURIComponent(props.processNumber)}/evaluations/${props.acaoId}/review`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
