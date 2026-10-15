@@ -1,7 +1,10 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-09-08",
+    "last_updated": "2026-10-15",
+    "changelog": [
+      {"date": "2026-10-15", "summary": "Termo 'termo de referência' marcado shared_with_acao [7, 30] com nota (colisão 7b/23.1/30c apontada em 2026-09-07 na Ação 30 e corrigida nas duas pontas, item 6 da mensagem W). Documental: não muda a busca nem os prompts."}
+    ],
     "population_stages_completed": [
       "A",
       "B"
@@ -41,7 +44,9 @@
           "type": "A",
           "provenance": "canonical",
           "status": "active",
-          "concept_ref": "precise_object_definition"
+          "concept_ref": "precise_object_definition",
+          "shared_with_acao": [7, 30],
+          "shared_with_acao_note": "Colisão registrada nas duas pontas em 2026-10-15 (antes só a Ação 30c a anotava). Aqui (23.1): o TR do processo de contratação principal, que define o objeto do contrato e o anteprojeto. Ação 7b (termo ativo 'Termos de Referência'): os TR dos estudos da AIAS. Ação 30c (experimental): o TR de cada consultoria individual. O TR do objeto costuma ser documento extenso do processo, o que dá a este termo muitos acertos para qualquer Ação que o use."
         },
         {
           "encoding": "phrase",

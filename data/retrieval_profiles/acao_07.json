@@ -1,7 +1,10 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-09-05",
+    "last_updated": "2026-10-15",
+    "changelog": [
+      {"date": "2026-10-15", "summary": "Termo 'Termos de Referência' marcado shared_with_acao [23, 30] com nota (colisão 7b/23.1/30c apontada em 2026-09-07 na Ação 30 e corrigida nas duas pontas, item 6 da mensagem W). Documental: não muda a busca nem os prompts."}
+    ],
     "population_stages_completed": [
       "A"
     ],
@@ -184,7 +187,9 @@
           "type": "A",
           "provenance": "canonical",
           "status": "active",
-          "concept_ref": "detailed_terms_of_reference"
+          "concept_ref": "detailed_terms_of_reference",
+          "shared_with_acao": [23, 30],
+          "shared_with_acao_note": "Colisão registrada nas duas pontas em 2026-10-15 (antes só a Ação 30c a anotava). Aqui (7b): os Termos de Referência que delimitam os estudos da AIAS. Ação 23.1 (termo ativo 'termo de referência'): o TR do processo de contratação principal, que define o objeto do contrato. Ação 30c (experimental): o TR de cada consultoria individual. Mesmo nome de documento, três objetos distintos; quem separa é o critério de cada produto no gate, não o termo."
         },
         {
           "encoding": "phrase",
