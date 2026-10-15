@@ -157,12 +157,41 @@ def _install_gate_variant(name: str) -> None:
     heading carries its id. Nothing else changes. Uses measure_sibling_text's
     own rotula_alvo(), so the bytes are the ones P1a measured inside one process
     — here they are measured across independent processes.
+
+    'posicionado' (variant G, 2026-10-13): the opening sentence becomes a section
+    on the gate's place in the process (search, triage, final stage, what each
+    error costs, the question to ask) and the criterion heading says the
+    criterion describes the whole product the final stage will require. Uses
+    gate_positioning.posiciona(), the bytes measure_gate_positioning.py measured
+    inside one process.
+
+    'posicionado2' (variant G2, 2026-10-14): G plus one paragraph that names
+    the right reasons the old 'no details' argument stood in for (naming the
+    element or saying where it is is not treating it; a rule about what will
+    be done is not the record that it was done). gate_positioning.posiciona(
+    ..., versao='g2'), the bytes measure_gate_positioning.py --condicoes g,g2
+    measured. Its product pattern for 18b goes with --candidates
+    scripts/diagnostics/candidates_g2.py --apply 18b.
     """
     sys.path.insert(0, str(ROOT / "scripts" / "diagnostics"))
     import measure_sibling_text as mst
 
     from evaluation import evidence_selection as es
 
+    if name in ("posicionado", "posicionado2"):
+        import gate_positioning as gp
+
+        original = es.build_relevance_system_prompt
+        versao = "g" if name == "posicionado" else "g2"
+
+        def positioned(evidence_intent, concepts=None, negative_patterns=None, *, acao=None, product_id=None):
+            return gp.posiciona(
+                original(evidence_intent, concepts, negative_patterns, acao=acao, product_id=product_id),
+                versao=versao)
+
+        es.build_relevance_system_prompt = positioned
+        print(f"gate variant '{name}' installed in memory")
+        return
     if name != "rotulado":
         raise SystemExit(f"unknown gate variant: {name}")
     original = es.build_relevance_system_prompt
@@ -240,11 +269,36 @@ def _apply_candidates(path: str, products: str | None) -> dict:
                 c.model_copy(update={"text": novos[c.key]}) if c.key in novos else c
                 for c in pp.retrieval_signal_concepts
             ]
-        chaves = ("intent_add", "negativo", "negativos_substitui", "remover_termos", "rebaixar_termos", "conceitos_texto")
+        chaves = ("intent_add", "negativo", "negativos_substitui", "remover_termos", "rebaixar_termos",
+                  "conceitos_texto", "sem_isencao_genero")
         applied[pid] = {k: cand[k] for k in chaves if cand.get(k)}
         print(f"candidate applied in memory: {pid} ({', '.join(applied[pid])})")
     assert get_retrieval_profile_store() is store
+    sem_isencao = frozenset(pid for pid, a in applied.items() if a.get("sem_isencao_genero"))
+    if sem_isencao:
+        _drop_genre_exemptions(sem_isencao)
     return {"file": str(path), "products": applied}
+
+
+def _drop_genre_exemptions(products: frozenset[str]) -> None:
+    """Treat these products as not exempt from the genre filter (ADR-0074), in memory.
+
+    A candidate with sem_isencao_genero (2026-10-14, Acao 45) leaves the exemption
+    list for this process only; data/ipmp/isencoes_genero.json is not touched. The
+    per-product filter and the focal route of evidence_selection both read the store
+    through this module attribute, so both see the change.
+    """
+    base = _es.get_genre_exemption_store
+
+    class _SemIsencao:
+        def __init__(self, store):
+            self._store = store
+
+        def produtos(self, acao_id=None):
+            return frozenset(p for p in self._store.produtos(acao_id) if p not in products)
+
+    _es.get_genre_exemption_store = lambda: _SemIsencao(base())
+    print(f"genre exemption dropped in memory for: {', '.join(sorted(products))}")
 
 
 def main() -> int:
@@ -288,16 +342,19 @@ def main() -> int:
              "with --apply, the named products get the candidate's negative pattern / intent "
              "addition / query-term removal or demotion (remover_termos, rebaixar_termos) / "
              "concept text replacement (conceitos_texto) / in-place negative-pattern replacement (negativos_substitui) "
+             "/ removal from the genre-exemption list (sem_isencao_genero) "
              "IN MEMORY for this process only. This is how a patch is measured across "
              "independent processes (the only valid constancy measurement, ADR-0071) before it "
              "is written to a profile.",
     )
     ap.add_argument("--apply", default=None, help="comma-separated product ids from --candidates")
     ap.add_argument(
-        "--gate-variant", default=None, choices=("rotulado",),
+        "--gate-variant", default=None, choices=("rotulado", "posicionado", "posicionado2"),
         help="measure a gate-prompt variant across independent processes, in memory only "
              "(src/ untouched). 'rotulado': the product under evaluation labelled like its "
-             "siblings (measure_sibling_text.rotula_alvo).",
+             "siblings (measure_sibling_text.rotula_alvo). 'posicionado': the gate's place in "
+             "the process stated in the prompt (gate_positioning.posiciona, variant G). "
+             "'posicionado2': variant G2, G plus the NOMEAR paragraph.",
     )
     ap.add_argument(
         "--record-reasoning", action="store_true",

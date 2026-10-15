@@ -278,3 +278,110 @@ applied after 3/3 rejections in `--acoes 31,42` processes, does not hold, and
 Cycle 2's other results are recorded in CLAUDE.md (63rd pass): 26/46 Ações with
 identical points in all ten processes, 31/46 at 90 % or more, and 83 % of the
 point changes coming from the gate.
+
+## A prompt-wide variant cannot be screened pair by pair in one process (2026-10-14)
+
+Variant G (CLAUDE.md, 67th pass) changes all 164 gate prompts: it adds a section
+that places the gate between retrieval and the final stage. Its direction was
+measured in one process on 2026-10-13 (production prompt and G interleaved, 3
+passes, 464 pairs). There, 29 pairs changed majority, read as 13 right moves and
+10 wrong ones. Variant G2 (G plus one paragraph aimed at the wrong ones) was then
+measured against G in a second process on 2026-10-14, under a decision rule
+written before the run. G2 failed the rule, so no cycle was launched.
+
+The second process also ran G again with the same bytes. That gives the noise
+the first comparison was read against:
+- the same G prompt in two processes changed majority in 27 of the 464 pairs;
+- of the 29 changes from base to G seen on 2026-10-13, G repeated 16 on
+  2026-10-14 (7 of the 13 "right" ones, 4 of the 10 "wrong" ones);
+- the coin frequencies of cycles 3 and 4 predict about 21 differences between
+  two processes of the same prompt;
+- G against G2 inside one process changed 31.
+
+A product-level patch changes one product's prompt. A prompt-wide variant
+changes every prompt, so every coin of the process is tossed again. Its
+pair-level "direction" in one process is therefore the size of the noise. One
+aggregate did repeat: rejections that argue sufficiency only were 8.5 % under
+the production prompt, and 6.4 % and 5.8 % under G in the two processes. Accept
+volume did not repeat: G accepted 123 and 151 of the same 1 392 calls.
+
+Consequence: criteria on named pairs inside one process cannot screen a
+prompt-wide variant. Aggregates in one process, and cycles of full processes,
+can.
+
+## Variant G across ten full processes (2026-10-14)
+
+Test cycle 5 ran variant G in memory over ten independent full processes of the
+baseline commit `5be6d44`. Each process ran `reproducibility.py --runs 1
+--record-reasoning --gate-variant posicionado`, with the ledger off and the genre
+filter and expansion on. The cycle ran from 11:45 to 14:18 with 0 errors and 0
+gate failures in 5 029 calls. The decision rule was written before launch, with
+no result in view (`scratchpad/acc/criterio_ciclo5.txt`). The primary metric is
+the number of Ações with the same points in 9 or more of 10 (`sem evidência` =
+0): 44 or more means better beyond chance, 39 to 43 no detectable difference, 38
+or less worse beyond chance. Cycles 3 and 4 (same commit, production prompt) are
+the reference; their difference is the noise floor.
+
+| Measure | Cycle 3 | Cycle 4 | Cycle 5 (G) |
+|---|---|---|---|
+| Same points in 9+ of 10 | 41 | 41 | **40** |
+| Same points in all ten | 38 | 34 | 35 |
+| Consistent / tolerable / inconsistent | 38/4/4 | 34/8/4 | 35/8/3 |
+| Coin pairs (product × chunk) | 65 | 70 | 76 |
+| Point changes over the 45 pairs of processes | 136 | 166 | 163 |
+| Identical per pair: batch / bits / points | 36.5/40.9/43.0 | 35.1/39.6/42.3 | 34.4/39.9/42.4 |
+| Accepts per process (mean) | 39.4 | 38.7 | 43.9 |
+| Rejections arguing sufficiency only | 8.8 % | 9.3 % | 6.8 % |
+| Point changes from the gate / the scorer / the cap | 98/29/9 | 139/18/9 | 123/40/0 |
+
+By the rule, cycle 5 shows **no detectable difference**: 40 sits in the 39–43
+band and below the owner's goal of 42. The other measures move with it: more
+accepts, more coin pairs, and per-pair identity at cycle 4's level.
+
+By Ação, in points:
+- Steadier: 2 and 3 (1 change to 0); 45 (2 to 0, now in the 9-of-10 group); 35
+  (4 to 2); 23 (3 to 2); 37 (4 to 3, with the mode moving from 0 to 3).
+- Less steady:
+  - 13 (0 to 4): the procurement justification `_1` p.3 was accepted for 13c
+    in 5 of 10 and scored as evidence in 4;
+  - 25 (0 to 2): the edital clauses that 25d accepted 9 of 10 times as the
+    procurement's risk plan became coins (3 of 10);
+  - 10 (4 to 5): the scorer, on an identical batch;
+  - 14, 26, 27 and 42 (0 to 1 each).
+
+Between cycles 3 and 5, 14 (product, page) pairs moved between 1 or fewer accepts
+and 5 or more, against 4 between cycles 3 and 4. Eleven moved toward acceptance:
+- legitimate partial evidence: 23.1 `_2` p.345, 23.2 `_2` p.138, 23.4 `_2` p.577,
+  and the conformity attestation `_3` p.3 for 37;
+- debatable: the Procuradoria opinion `_2` p.135 and p.136 for 37;
+- false:
+  - 13c `_1` p.3;
+  - the edital rules 45 `_2` p.223 (9 of 10) and `_1` p.55 (6 of 10), rules on
+    what will be done read as the record that it was done;
+  - 25a `_2` p.232, the edital's list of annexes, which only names the schedule;
+  - 3a `_2` p.161, a list of intended results, a class that 3a's own negative
+    pattern excludes.
+
+Three moved toward rejection: 25c `_2` p.961, a confusion; 23.4 `_1` p.383; and
+23.3 `_2` p.144, the ADR-0066 polarity passage, which arrives only as a neighbour
+of p.145. The constant false credit 23.3 `_2` p.145 fell from 10 of 10 to 3 of 10.
+Its 3 accepts were processes 1 to 3. 32a `_1` p.303 stayed at 10 of 10.
+
+Reading: G changes the gate's reasoning as written. Fewer rejections argue
+sufficiency, and legitimate partial evidence passes. But the borderline mass
+moves instead of shrinking. Constant accepts turn into coins (23.3 p.145, 25d).
+False accepts become modal (45, 13c), pointers pass again (25a), and a canonical
+negative pattern is overridden (3a). Constancy in points does not improve beyond
+chance. Under the pre-registered rule, the recommendation is to discard G.
+The owner decides. Nothing was applied: G exists only in the harness, as
+`--gate-variant posicionado`. Raw data is in `scratchpad/acc/ciclo5_run{1..10}.json`
+(gitignored).
+
+## Decision on G (2026-10-14)
+
+The owner discarded G after cycle 5. S goes with it: S was one sentence for the
+scorer's product-block instruction, saying the passages were selected only for
+being about the product, proposed on 2026-10-13 for after G. Nothing changes in
+`src/`. G and G2 stay in the harness (`scripts/diagnostics/gate_positioning.py`;
+`reproducibility.py --gate-variant posicionado` and `posicionado2`) as the record
+of what was tried. The baseline remains `5be6d44`.

@@ -33,6 +33,13 @@ Uso:
     python scripts/diagnostics/measure_integral_candidates.py --candidates \
         scripts/diagnostics/candidates_citing_originals.py ...
         (outro conjunto de candidatos, mesmo método — bloco A de 2026-10-10)
+
+Desde 2026-10-13 o pool de cada produto não isento passa pelo filtro de gênero
+do ADR-0074, como em produção; --no-genre-filter reproduz as medições anteriores.
+
+Desde 2026-10-14, um candidato com "sem_isencao_genero" tira o produto da lista de
+isenção do filtro de gênero, só em memória (Ação 45, candidates_cycle6.py). O
+prompt não muda; muda o pool. Mede-se o pool novo sob o prompt de produção.
 """
 
 from __future__ import annotations
@@ -186,6 +193,9 @@ def main() -> int:
     ap.add_argument("--base-url", default=None,
                     help="URL do servidor GPU (padrão: audit_gate_flips.BASE_URL); "
                          "útil quando o servidor só é alcançável por um túnel SSH")
+    ap.add_argument("--no-genre-filter", action="store_true",
+                    help="pool sem o filtro de gênero do ADR-0074 (como nas medições "
+                         "anteriores a 2026-10-13)")
     args = ap.parse_args()
 
     if args.candidates:
@@ -206,14 +216,27 @@ def main() -> int:
     mst.aplica_condicao(args.sibling_text)
     assert mst.rb._SIBLING_TEXT_MAX == mst.CONDICOES[args.sibling_text]
 
-    # recuperação determinística (164/164 byte-idêntica): memoizar não altera nada
+    # recuperação determinística (164/164 byte-idêntica): memoizar não altera nada.
+    # ADR-0074: o pool de um produto não isento perde o texto de instrumento antes
+    # do pré-filtro de quase-duplicatas e do corte de 16, como em select_evidence;
+    # os produtos isentos ficam como estão.
     _bruto = g.retrieve_hybrid_candidates_for_acao
     _memo: dict[tuple, dict] = {}
+    from evaluation import evidence_selection as _es
+    from ingestion import get_genre_exemption_store
+    _generos = {} if args.no_genre_filter else _es._chunk_genres(g.PROCESS)
+    # produtos tratados como não isentos (candidato sem_isencao_genero), só em memória
+    _sem_isencao: set[str] = set()
 
     def _memoizado(acao_id, process_number):
-        chave = (acao_id, process_number)
+        chave = (acao_id, process_number, frozenset(_sem_isencao))
         if chave not in _memo:
-            _memo[chave] = _bruto(acao_id, process_number)
+            bruto = _bruto(acao_id, process_number)
+            if _generos:
+                isentos = get_genre_exemption_store().produtos(acao_id) - _sem_isencao
+                bruto = {pid: (r if pid in isentos else _es._drop_instrument_text(r, _generos)[0])
+                         for pid, r in bruto.items()}
+            _memo[chave] = bruto
         return _memo[chave]
 
     g.retrieve_hybrid_candidates_for_acao = _memoizado
@@ -236,11 +259,67 @@ def main() -> int:
     escolhidos = ([p.strip() for p in args.only.split(",")] if args.only
                   else list(CANDIDATOS))
     saida: dict[str, dict] = {"_condicao": {"sibling_text": args.sibling_text, "base_url": g.BASE_URL,
-                                            "reasoning_effort": "low", "passes": args.passes}}
+                                            "reasoning_effort": "low", "passes": args.passes,
+                                            "genre_filter": not args.no_genre_filter}}
     t0 = time.time()
 
     for pid in escolhidos:
         cand = CANDIDATOS[pid]
+        if cand.get("sem_isencao_genero"):
+            # O produto sai da lista de isenção: o prompt de sistema tem de ser o
+            # mesmo; o pool novo é julgado sob ele.
+            if not _generos:
+                print(f"  !! {pid}: sem_isencao_genero exige o filtro de gênero; pulado")
+                continue
+
+            def _pool(acao, produto):
+                return g._prefilter_near_duplicates(
+                    g.retrieve_hybrid_candidates_for_acao(acao, g.PROCESS).get(produto, [])
+                )[:g._MAX_EXAMINED]
+
+            base_t = g.build_targets(cand["acao"], products={pid})
+            base_pool = _pool(cand["acao"], pid)
+            _sem_isencao.add(pid)
+            novo_t = g.build_targets(cand["acao"], products={pid})
+            novo_pool = _pool(cand["acao"], pid)
+            _sem_isencao.discard(pid)
+            sistemas = {t["system"] for t in base_t} | {t["system"] for t in novo_t}
+            assert len(sistemas) == 1, f"{pid}: o prompt de sistema mudou"
+            assert [t["label"] for t in novo_t] == [
+                f"{pid}/pg{ch.page_number}#{ch.chunk_index}" for _s, ch in novo_pool]
+            arq = {t["label"]: ch for t, (_s, ch) in zip(novo_t, novo_pool)}
+            hoje = {(ch.filename, ch.page_number, ch.chunk_index) for _s, ch in base_pool}
+            prompts = {t["label"]: (t["system"], t["user"]) for t in novo_t}
+            print()
+            print(f"=== {pid} (sem isenção de gênero)  pool hoje={len(base_t)}  "
+                  f"pool novo={len(novo_t)}", flush=True)
+            for lab, ch in arq.items():
+                marca = "mesmo" if (ch.filename, ch.page_number, ch.chunk_index) in hoje else "novo "
+                print(f"      {marca} {lab:22} {ch.filename}", flush=True)
+            registro = {"acao": cand["acao"], "direcao": cand["direcao"], "ipmp": cand["ipmp"],
+                        "patch": {"sem_isencao_genero": True},
+                        "pool_hoje": len(base_t), "pool_novo": len(novo_t),
+                        "arquivo_por_label": {lab: ch.filename for lab, ch in arq.items()}}
+            if args.dry_run:
+                saida[pid] = registro
+                continue
+            res = {lab: "" for lab in prompts}
+            razoes = {lab: [] for lab in prompts}
+            for passo in range(args.passes):
+                for lab, (system, user) in prompts.items():
+                    r = g.call(system, user)
+                    v = r["verdict"]
+                    res[lab] += "T" if v else ("F" if v is False else "?")
+                    razoes[lab].append(r.get("reasoning") or r.get("error") or "")
+                print(f"    passada {passo + 1}/{args.passes} ok  ({time.time() - t0:.0f}s)", flush=True)
+            for lab in sorted(res):
+                print(f"    {lab:22} {res[lab]}")
+            saida[pid] = dict(registro, resultado=res, reasoning=razoes)
+            if args.out:
+                Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+                json.dump(saida, open(args.out, "w", encoding="utf-8"),
+                          ensure_ascii=False, indent=1)
+            continue
         base_targets = g.build_targets(cand["acao"], products={pid})
         base_prompts = {t["label"]: (t["system"], t["user"]) for t in base_targets}
         pool = g._prefilter_near_duplicates(
