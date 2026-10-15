@@ -1,13 +1,14 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-10",
+    "last_updated": "2026-10-15",
     "population_stages_completed": [
       "A"
     ],
     "stage_b_sources": [],
     "changelog": [
-      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 5 termos NEAR alinhados citante<-citada em 29.1, 29.2 — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."}
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 5 termos NEAR alinhados citante<-citada em 29.1, 29.2 — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."},
+      {"date": "2026-10-15", "summary": "Exercitado, não populado: os ciclos de teste 3-6 rodaram este perfil em 40 processos completos sobre SMG-040_101607_2024 (2026-10-13/15, quatro configurações do gate). Saída: sem evidência 40/40. Nenhum produto teve trecho aceito. Depois do filtro de gênero (ADR-0074) o gate não examinou trecho algum: a saída se decide antes do gate. profile_maturity segue seed: nenhuma sessão de Stage B usou documento real; promover com base nos ciclos é decisão do usuário."}
     ],
     "revisions": [
       {"date": "2026-10-03", "summary": "29.1/29.2 intent: referência a id de produto irmão reescrita como descrição de conteúdo (ADR-0064)."}

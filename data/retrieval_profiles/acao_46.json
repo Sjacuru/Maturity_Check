@@ -1,7 +1,10 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-09-07",
+    "last_updated": "2026-10-15",
+    "changelog": [
+      {"date": "2026-10-15", "summary": "Exercitado, não populado: os ciclos de teste 3-6 rodaram este perfil em 40 processos completos sobre SMG-040_101607_2024 (2026-10-13/15, quatro configurações do gate). Saída: sem evidência 36/40, score 0 4/40 (ciclo 6: sem evidência 10/10). Produtos com trecho aceito: 46.1 em 4 processo(s). Depois do filtro de gênero (ADR-0074) o gate examinou no máximo 46.1: 16; 46.2: 0 (trechos por produto). profile_maturity segue seed: nenhuma sessão de Stage B usou documento real; promover com base nos ciclos é decisão do usuário."}
+    ],
     "population_stages_completed": [
       "A"
     ],

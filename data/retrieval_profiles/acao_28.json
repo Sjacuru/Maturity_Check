@@ -1,14 +1,15 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-10",
+    "last_updated": "2026-10-15",
     "population_stages_completed": [
       "A"
     ],
     "stage_b_sources": [],
     "changelog": [
       {"date": "2026-10-10", "summary": "Termos real_world legados classificados por canonicidade (ADR-0073; regra do usuário, 2026-10-10: 'os termos de busca não podem ser customizados para o documento ... a única exigência é que um novo termo seja canônico'; classificação em scripts/diagnostics/candidates_legacy_terms.py): 28.3: canonicos 1 [Lei de Responsabilidade Fiscal (LC 101/2000, named LRF by the IPMP 28.3 criterion)]. Medida: Ação 1 medida entre processos independentes (reproducibility.py --runs 1 --acoes 1, ledger desligado, candidato aplicado em memória com --candidates/--apply; 5 processos do estado atual x 5 do candidato, intercalados, 2026-10-10): leva idêntica por par de processos 10 % -> 100 % (29 % sobre 11 processos do estado atual), bits 40 % -> 100 %, vereditos constantes 97,7 % -> 100 %, score 1 nos 10. A moeda da 1b (_1 p.192/p.298, o estudo econômico do caso trazido ao pool pelos termos de finanças) sai do pool examinado; a 1a passa a se apoiar em um chunk (_2 p.157, aceito 5/5). Adotado pela regra do usuário (adotar só o que medir mais consistente). Nas Ações 3, 4, 5 e 28 só a proveniência muda (real_world -> canonical); o status dos termos, que é o que a busca lê, não muda."},
-      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 2 termos NEAR alinhados citante<-citada em 28.1 — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."}
+      {"date": "2026-10-10", "summary": "Bloco B (2026-10-10, registro canônico aprovado pelo usuário): 2 termos NEAR alinhados citante<-citada em 28.1 — âncora específica do artefato da Ação citada + marcador de revisão/condição desta Ação (atualizado/revisado/finalizado/aprofundado, alternativa ou opção escolhida, consulta pública, fatos supervenientes), canônicos, ativos. Sonda retrieval-only neste corpus: 0 hits BM25 e nenhuma das 16 examinadas muda (o corpus não registra revisão realizada); nada muda no prompt do gate."},
+      {"date": "2026-10-15", "summary": "Exercitado, não populado: os ciclos de teste 3-6 rodaram este perfil em 40 processos completos sobre SMG-040_101607_2024 (2026-10-13/15, quatro configurações do gate). Saída: score 0 26/40, sem evidência 14/40 (ciclo 6: score 0 6/10, sem evidência 4/10). Produtos com trecho aceito: 28.3 em 26 processo(s). Depois do filtro de gênero (ADR-0074) o gate examinou no máximo 28.1: 0; 28.2: 0; 28.3: 4 (trechos por produto). profile_maturity segue seed: nenhuma sessão de Stage B usou documento real; promover com base nos ciclos é decisão do usuário."}
     ],
     "revisions": [
       {

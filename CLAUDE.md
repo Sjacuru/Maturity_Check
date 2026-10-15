@@ -21,15 +21,19 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
 
 ---
 
-## Strategic Decisions (as of 2026-05-20)
+## Strategic Decisions (as of 2026-05-20; #2, #4 and #8 updated 2026-10-15)
 
 1. **Primary reference: IPMP** — operationalises each action into concrete expected
    products, scoring rubrics (0/1/3), and scored examples
    (Atendido / Parcialmente / Não Atendido).
 2. **Secondary reference: Rio Manual** — provides document names and procedures
-   used as retrieval hints when searching case documents.
+   used as retrieval hints when searching case documents. Populated for Ações 1
+   and 2 only (`data/rio_manual/`): for the other 44, `retrieve_document_focused`
+   returns None, so cascade steps A/B (the focal route) never fire and retrieval
+   goes straight to step C (recorded 2026-10-15).
 3. **TCDF IN: dropped.**
-4. **Scoring: 0 / 1 / 3 per action** (46 actions, max = 138 total).
+4. **Scoring: 0 / 1 / 3 per action** (46 actions, max = 138 total). The case's IPMP
+   nota is the points over three times the Ações counted, computed on read (ADR-0075).
 5. **Retrieval: BM25 (SQLite FTS5) + dense vector, deterministic.**
    Cascade per Ação: (A) exact document name match → (B) variant name match →
    (C) BM25 and vector fused via per-product Reciprocal Rank Fusion (RRF,
@@ -56,7 +60,11 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
    `reasoning_effort` level is a MODEL setting, not a server internal.
 7. **Reproducibility** is the core academic constraint (professor's requirement).
    BM25 (deterministic retrieval) + temperature=0 = same input → same score.
-8. **Phase 1 scope: Ação 1 only.**
+8. **Scope: all 46 Ações.** Phase 1 began with Ação 1 only. Since 2026-09-07 every
+   Ação has its IPMP file and retrieval profile, and every assessment evaluates all
+   46 (the scope comes from the IPMP store, ADR-0030). Every measurement so far uses
+   one case (SMG-040); a second case document waits until the score is shown stable
+   or within an accepted margin (the user, 2026-10-15).
 9. **IPMP ingestion: manual.** PDF structure is mixed text/image; data is static.
    Expected products sub-items (a/b/c/d) per action become BM25 search queries.
 10. **Development methodology:** CONTEXT.md → ADR → to-PRD → grill-me per module.
@@ -87,7 +95,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (74 filled, next: 0075-; 0074 = genre filter + document index)
+│   ├── adr/                     ← Architecture Decision Records (75 filled, next: 0076-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -133,7 +141,9 @@ Maturity_Check/
 │   ├── test_prompt_builder.py   ← system/user prompt assembly + ordering tests (15 tests)
 │   ├── test_evaluate_orchestration.py ← evaluate() full flow with StubLLMClient (12 tests)
 │   ├── test_score_margin.py ← ScoreMargin arithmetic: band margin, fragility, score floor (25 tests)
-│   └── test_genre_{classifier,segmentation,index,exemptions}.py ← genre classifier, document segments, document index, exemptions (ADR-0074, 39 tests)
+│   ├── test_genre_{classifier,segmentation,index,exemptions}.py ← genre classifier, document segments, document index, exemptions (ADR-0074, 39 tests)
+│   ├── test_ipmp_structure.py   ← all 46 Ações load; the five transition points; the chapter-4 phase blocks; dimension counts; 164 scored products (5 tests)
+│   └── test_maturity.py         ← the IPMP nota: counting rules, floor, groups, band limits, route (ADR-0075, 9 tests)
 ├── src/
 │   ├── ingestion/               ← Module 1 (COMPLETE)
 │   │   ├── __init__.py          ← sole public surface
@@ -186,37 +196,114 @@ Maturity_Check/
 │   │   │   └── relevance_builder.py ← gate prompt: identity block + sibling contrast (ADR-0064, siblings quoted WHOLE since ADR-0071), polarity sentence (ADR-0066), V4 concept-list rule
 │   │   └── parsing/
 │   │       └── response.py      ← ParsedResponse dataclass + parse_llm_response(raw)
-│   └── assessment/              ← Module 5 (GRILL-ME COMPLETE — PRD next, issues #21–25)
+│   └── assessment/              ← Module 5 (COMPLETE — issues #21–25; maturity indicator added 2026-10-15)
 │       ├── __init__.py          ← public surface: configure, init_db, AssessmentService, ReviewOutcome
 │       ├── _config.py           ← module-level DB path: configure() / get_db_path()
 │       ├── service.py           ← AssessmentService: run_assessment(process_number, document_paths)
+│       ├── maturity.py          ← compute_maturity(): the case's IPMP nota from stored evaluations and reviews, computed on read (ADR-0075)
 │       ├── interfaces/
-│       │   └── contracts.py     ← ReviewOutcome Pydantic model (7 fields, validator invariants)
+│       │   └── contracts.py     ← ReviewOutcome (7 fields, validator invariants); AcaoPoints, MaturityGroup, MaturityIndicator (ADR-0075)
 │       ├── schema/
 │       │   └── ddl.py           ← init_db(): evaluation_results + review_outcomes + document_fingerprints
 │       └── api/
 │           ├── app.py           ← create_app() — FastAPI app; imported by main.py only
-│           ├── routes.py        ← 5 Phase 1 routes
+│           ├── routes.py        ← 8 routes: assess and its progress, evaluations (list, one), review (post, get), gate overrides (ADR-0067), maturity (ADR-0075)
 │           └── schemas.py       ← request body Pydantic models (write-side only)
 ├── main.py                      ← runtime entry point: configure → init_db → create_app
+├── frontend/                    ← Vue 3 app (Module 7), built to frontend/dist and served by FastAPI; MaturityIndicator.vue shows the IPMP nota (ADR-0075)
 └── data/
     ├── ipmp/
     │   ├── dependencias.json    ← 54 typed citation edges between Ações, with the IPMP sentence (ADR-0070)
     │   ├── isencoes_genero.json ← 16 genre-exempt products, each with its IPMP sentence (ADR-0074; 45 removed 2026-10-15)
-    │   ├── acao_01.json         ← complete (Phase 1 scope)
-    │   └── acao_02.json         ← complete (scaling test case, 2026-08-21)
+    │   └── acao_01.json … acao_46.json ← all 46 Ações; ponto_transicao true on 16, 37, 38, 45, 46 (2026-10-15)
     ├── rio_manual/
-    │   └── acao_01.json         ← complete (schema v1.0, known gaps documented)
+    │   ├── acao_01.json         ← complete (schema v1.0, known gaps documented)
+    │   └── acao_02.json         ← Ação 2; no file for Ações 3–46 (Strategic Decision #2)
     ├── acronyms/
     │   └── acronyms.json        ← complete
     ├── retrieval_profiles/
-    │   └── acao_01.json         ← profile_maturity: observed
+    │   └── acao_01.json … acao_46.json ← all 46: 27 observed, 19 seed (the 19 annotated with their cycle 3–6 behaviour, 2026-10-15)
     └── sector_taxonomy.json     ← versioned reference list of PPP sector labels, added 2026-08-21
 ```
 
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-15 (73rd pass) — THE USER'S MESSAGE W (verbatim): *"1 - Faremos o commit. / 2 - por hora nada de segundo documento de caso. Precisamos verificar se o score está estável ou dentro de uma margem aceitável. / 3 a 4 OK / 5 é caso específico e não tenho certeza se vale a pena tratar casos específicos com o nível de acuidade atual. Talvez no futuro. / 6 - Não carregar o campo é falha relevante. / 7 - idem ao 5 / 8 - pode atualizar todos os tópicos. Mas não vamos tratar de rotação de senha agora. / Servidor llama liberado para testes."* The numbers are the 72nd pass's next steps. Items 3, 4, 6 and 8 are done and committed. Item 2 is measured, and the margin proposed below is the user's decision. C7 is approved but waits for the GPU: two idle Roblox windows hold video memory and the model does not fit.**
+
+- **Reading of W:**
+  - 1 (C7) approved; commits within the approved scope;
+  - 2: no second case document for now; show instead whether the score is stable or within an acceptable margin;
+  - 3 and 4 approved;
+  - 5 (the 25a retrieval gap) and 7 (1b/3a canonicity) deferred: case-specific, not worth it at the current accuracy, "talvez no futuro";
+  - 6: an IPMP field the data does not carry is a relevant failure, not a cosmetic one;
+  - 8: every bookkeeping topic except the rotation of the fallback password;
+  - the GPU server is released for tests; the read-only check before each launch still applies.
+- **Item 6, IPMP data (commit `30bd386`):**
+  - `ponto_transicao` is true on 16, 37, 38, 45 and 46: the boxes of the "PONTOS DE TRANSIÇÃO" lane of Figuras 3–5, checked on the rendered pages. It had been false in every file since ADR-0057, and nothing read it.
+  - "Termos de Referência" (7b) and "termo de referência" (23.1) are tagged `shared_with_acao`, as 30c already was. Documentary: the field reaches no search and no prompt.
+  - The repeated 33/34 header is the Guide's own wording (pp. 153 and 156), so it stays.
+  - New `tests/test_ipmp_structure.py` (5 tests) pins: all 46 Ações load (a file that fails validation is skipped silently, ADR-0010); the transition set; the three chapter-4 phase blocks; the dimension counts; the 164 scored products.
+- **Item 4, the review path end to end (commit `12385a1`):** exercised on a scratch copy of the database (`$W/exercita_revisao.py`; `data/app.db` untouched). Two gaps around ADR-0023's mandatory override note were fixed:
+  - a justification of spaces was accepted and stored unstripped; `ReviewSubmission` now strips it, and both it and `ReviewOutcome` reject a blank note;
+  - on an Ação without evidence the form's button was enabled with no score chosen (it posted null and got a 422); it now waits for a score.
+  - Everything else held: accept 201, read back, second review 409, override without a note 422, assignment on a no-evidence Ação 201, the old undefined URL 422, an Ação with no evaluation 404.
+- **Item 3, the maturity indicator (ADR-0075, commit `9fdecfe`):**
+  - **What it is:** the case's IPMP nota, the points over three times the Ações counted (138 for all 46; Guide 3.1, 3.4.4, FAQ Q6).
+  - **Points per Ação:** the review's final score, else the proposed score (after the cap); `sem evidência` counts 0; a parse failure is left out and the nota is marked partial.
+  - **Floor:** from ADR-0068's open review signals; no upward claim.
+  - **Groups:** per dimension, per stored phase block (1–20, 21–37, 38–46) and over the five transition points.
+  - **Band:** overall only, against the Guide's two limits (< 0.2 alert, > 0.8 satisfactory; no cut-offs in between, 3.4.3).
+  - **Shape:** computed on read, never stored. `src/assessment/maturity.py`; `GET /api/cases/{p}/maturity` (404 without evaluations); `MaturityIndicator.vue` on the case page, refetched when a review lands; `tests/test_maturity.py` (9 tests).
+  - **Docs:** CONTEXT.md gains Nota iPMP, Fase (two schemes), Ponto de Transição and the ambiguity "fase". ADR-0057 is amended: the flowcharts draw 1–16 / 17–38 / 39–46, chapter 4 groups 1–20 / 21–37 / 38–46.
+  - **Checks:** looked at in a headless browser on a scratch DB, at desktop and phone width (the phone-width horizontal overflow belongs to the whole page and predates this). Fast suite 708; gate digest `6919edcc672b8027`.
+  - **Finding:** `data/app.db` holds the evaluation of `040_101607_2024` from 2026-09-07, before the counted score, the margin and the genre filter. The page therefore shows nota 0.246, against 0.07–0.16 over the 40 processes of cycles 3–6. A fresh persisted assessment (`/assess`, about 15 min of GPU, after C7) would refresh it; a forced re-run deletes that case's reviews (ADR-0026). The user's decision.
+  - **Open:** renaming the stored "Inicial" label (it enters the 20 gate prompts of Ações 1–20, so it needs a measurement); N/A for 45/46 in projects not at that stage (changes ADR-0023); equal weights (the Guide gives none).
+- **Item 2, score stability:** measured over cycles 2–6 (10 full processes each) from the stored runs, with `sem evidência` = 0 (`$W/estabilidade_total.py` → `$W/acc_estabilidade_total.txt`; `$W/margem_proposta.py` → `$W/acc_margem_proposta.txt`).
+  - **Total points per process** (range, median → nota range):
+    - C2: 17–28, median 24 → 0.123–0.203;
+    - C3: 12–20, median 15 → 0.087–0.145;
+    - C4: 11–17, median 14.5 → 0.080–0.123;
+    - C5: 14–22, median 18 → 0.101–0.159;
+    - C6: 10–17, median 14.5 → 0.072–0.123.
+  - **Proposed acceptance margin (the user's decision):** in at least 9 of 10 processes, the nota is within ±0.05 of the cycle median (±6.9 points), it falls in the same Guide band, and each dimension is within ±0.1 of its own median.
+  - **The cycles against it:**
+    - nota and band: 10/10 in C3–C6; 9/10 in C2, where one process reached 0.203;
+    - the whole margin: met by C4 and C6;
+    - C3 and C5 miss only Comercial (8/10);
+    - C2 misses Estratégica and Financeira.
+  - **Caveats:**
+    - in a small dimension one Ação crosses the ±0.1 alone: Ação 3 moving from 3 to 1 is 0.111 of Estratégica, which sits at exactly 9/10 in C3, C4 and C6;
+    - the case is far from the 0.2 limit, so the band part is not yet a demanding test.
+- **Item 8, bookkeeping (this commit):**
+  - **The 19 `seed` profiles** (6, 7, 16, 18, 19, 21, 24, 26, 27, 28, 29, 30, 34, 37, 38, 39, 41, 44, 46) each got a dated `_meta.changelog` entry with their behaviour over the 40 processes of cycles 3–6: the outcomes, the products ever accepted, and the largest pool the gate examined after the genre filter.
+    - 13 of the 19 never had a passage accepted, and for 29, 38, 39 and 41 the gate examines nothing.
+    - Evidence appears only for 26 (0 in 34 of 40), 28 (0 in 26), 37 (3 ×17, 0 ×17, sem ×6), and rarely for 18, 27 and 46.
+    - `profile_maturity` stays `seed`: no Stage B session used a real document, and promoting on the cycles is the user's decision.
+    - Written by `$W/aplica_item8_seed.py` and checked against HEAD by `$W/confere_item8.py`: only `_meta.last_updated` and `_meta.changelog` change, one entry per profile. Gate digest unchanged; fast suite 708.
+  - **Strategic Decisions updated:** #2 (the Rio Manual covers Ações 1 and 2 only, so steps A/B never fire elsewhere), #4 (the nota) and #8 (scope: all 46 Ações).
+  - **Status lines refreshed:** the project tree, the module sequence, the ADR count (75, next `0076-`), the routes, the tests and the reference files.
+  - **The 72nd pass's commit line** is completed (`81269e4`).
+  - **Not addressed:** the rotation of the fallback password (the user, W).
+- **C7, approved and waiting for the GPU:**
+  - **Blocker:** the waiter (`$W/espera_gpu_livre.py`, the read-only `gpu_livre.ps1` every 3 min) has read EM_USO since 12:22.
+    - Two idle `RobloxPlayerBeta` processes (pids 19796 and 28480) sit at 0 % engine and 402 MB each.
+    - The GPU holds 3 633 of 16 303 MiB with the llama-server not loaded.
+    - The ~12 670 MiB left is below the ~13 400 MiB the model takes at start, so nothing starts until Roblox is closed.
+  - **On LIVRE:**
+    1. Add an addendum to `scratchpad/acc/criterio_ciclo7.txt`: HEAD is this commit, not 81269e4, and everything since is inert for the pipeline. `ponto_transicao` and `shared_with_acao` reach no search and no prompt; the review and indicator code sits outside evaluation; `_meta` is read by neither retrieval nor the prompts; the gate digest is unchanged.
+    2. Run `sobe_8083.ps1`, then check `/health`.
+    3. Launch `$W/ciclo7_runner.py` detached: 10 full processes, ledger off, about 2.5 h.
+    4. Read it by rules A–E, then add C7 to the stability table.
+- **Commits (no push):** `30bd386` (item 6), `12385a1` (item 4), `9fdecfe` (item 3); the item-8 commit (the 19 profiles' `_meta` and this CLAUDE.md) follows them.
+- **Open for the user:**
+  - the stability margin;
+  - a fresh `/assess` after C7 to refresh `data/app.db`;
+  - the "Inicial" label;
+  - N/A for 45/46;
+  - criteria for promoting the 19 seed profiles;
+  - deferred: the second case document, 25a, 1b/3a, the password rotation.
 
 **Session 2026-10-15 (72nd pass) — THE USER'S MESSAGE V (verbatim): *"Ação 45: Remova. / 10, 23, 35, 37 permanecerão como estão. / C2 Pode commitar / Confirma que as passadas estão estáveis com as últimas alterações e vamos para a próxima tarefa de melhoria do processo. Verifique no claude.md quais próximos passos, atualize-os e confirme! / Responda em português, por favor."* DONE: 45 removed from the genre-exemption list (16 left), checked without GPU; the auditor review form fixed (a prop typo made every review POST go to `evaluations/undefined/review` since 2026-08-28); three commits (hashes below). The confirmation cycle of the committed state (C7) is PENDING: the GPU was in use (Dead by Daylight since 08:37) and the llama-server was down after two reboots (08:07, 08:33); nothing started. The next steps were consolidated (list at the end) and put to the user for confirmation.**
 
@@ -226,7 +313,7 @@ Maturity_Check/
 - **Review form fixed.** `ReviewForm.vue` declared its prop `acoaId` while `AcaoPanel.vue` passes `:acao-id` → `props.acoaId` was undefined → the URL `evaluations/undefined/review` → 422 (int path param). Renamed to `acaoId` (two occurrences); `npm run build` clean. The body already matched `ReviewSubmission`. Not exercised against `data/app.db` (it would persist a ReviewOutcome); the route has its own tests.
 - **GPU (read-only check at 09:26 server time):** EM_USO — Dead by Daylight pid 17320, 43 % engine, 3.1 GB; console session since 08:37. llama-server absent, task 8083 Ready (no trigger), port 8083 closed; reboots at 08:07 and 08:33. **On the go-ahead with the GPU free:** `sobe_8083.ps1`, then C7 = 10 full processes of the committed state (no `--candidates`), runner to be derived from `$W/ciclo6_runner.py`, criterion written before launch. Expected: 42 ± chance (Ações 2, 3, 13 and 40 sit at one change each; the replicate block is at 32/34 in three cycles).
 - **What cycle 6 already says about the committed state:** it differs from the measured configuration in one prompt only (35.2e, back to its cycle-3 text); Ação 35 is below 9 of 10 under both texts, so the 42 does not rest on it. Everything gated before 35.2e is byte-identical; Ações 36–46 keep their prompts and 45 keeps its measured pool.
-- **Commits (no push):** `b887bcc` records and harness of cycles 4–6; `12cc913` 45 out of the exemption list; the third (this CLAUDE.md + the review-form fix) follows them.
+- **Commits (no push):** `b887bcc` records and harness of cycles 4–6; `12cc913` 45 out of the exemption list; `81269e4` this CLAUDE.md and the review-form fix.
 - **Next steps, consolidated from the record (2026-10-15), in the recommended order; the user confirms:**
   1. **C7, the confirmation cycle of the committed state** — GPU, ~2.5 h, on the go-ahead. Closes the constancy line with a baseline measured on the exact commit.
   2. **A second case document.** Every measurement so far is on SMG-040. Known case-specific limits: `strip_extraction_noise` (header/signature patterns are Rio SMG's, recorded in ADR-0074), the genre classifier validated on one corpus, the ETP structure, the 25a retrieval gap. Needs the user to supply the PDFs of another PPP process. The user's own method rule (the next file will not break in the same items) makes this the strongest test available.
@@ -1568,7 +1655,7 @@ User-defined 5-component plan to bring Ação 2 to parity with Ação 1, execute
 - ADR-0056 (synthetic seed retrieval-profile generation) and ADR-0057 (IPMP `fase`/`ponto_transicao`/`dimensao` correction) capture this session's decisions.
 - Not yet done: drafting a profile for Ação 2 itself (the process exists, hasn't been run yet); the retrieval-profile-automation design beyond seed generation (explicitly deferred by the user to a future dedicated grill-me).
 
-**Current state (2026-07-01):** Modules 1–7 COMPLETE. 388 tests (376 fast + 12 slow-marked — `pytest -m "not slow"` runs 376). Retrieval profile architecture (ADR-0047+0048) implemented and populated for Ação 1. Hybrid BM25+vector retrieval (ADR-0049) and the LLM relevance gate (ADR-0050) are both live, validated against the real corpus, and latency-tuned (ADR-0050's 2026-06-29 amendment + ADR-0051).
+**State on 2026-07-01 (historical; the current state is at the top of Where to Resume):** Modules 1–7 COMPLETE. 388 tests (376 fast + 12 slow-marked — `pytest -m "not slow"` runs 376). Retrieval profile architecture (ADR-0047+0048) implemented and populated for Ação 1. Hybrid BM25+vector retrieval (ADR-0049) and the LLM relevance gate (ADR-0050) are both live, validated against the real corpus, and latency-tuned (ADR-0050's 2026-06-29 amendment + ADR-0051).
 
 **Evidence pipeline enhancements (2026-07-01):**
 - Pre-gate semantic dedup (`_prefilter_near_duplicates`, threshold=0.92) live in `evidence_selection.py`: drops near-exact candidate duplicates before gate evaluation, saving ~6 gate calls/run (3 for 1b conclusion copies, 3 for 1d boilerplate copies). Does not affect post-gate dedup (threshold=0.70).
@@ -1592,7 +1679,7 @@ User-defined 5-component plan to bring Ação 2 to parity with Ação 1, execute
 
 **Latency:** ~17-20 min/Ação (ADR-0051 scope: one Ação at a time). Pre-gate dedup saves ~6 gate calls (3 for 1b conclusion copies, 3 for 1d boilerplate). Further reduction requires non-LLM pre-filter or fine-tuned small model (deferred).
 
-**Tests:** 386 fast + 12 slow = 398 total. Run with `pytest -m "not slow"` for fast path.
+**Tests (2026-07-01):** 386 fast + 12 slow = 398 total (2026-10-15: 708 fast). Run with `pytest -m "not slow"` for fast path.
 
 Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TESSERACT_CMD` env var).
@@ -1606,7 +1693,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - ADR-0027: 5 Phase 1 routes; multipart file upload; synchronous execution
 - ADR-0028: PDFs are transient; `chunks` table is canonical extracted artifact store; no PDF storage
 - ADR-0029: SHA-256 fingerprint-based reuse/replacement; `document_fingerprints` table owned by Module 5
-- ADR-0030: Assessment scope from `get_ipmp_store()`, not hardcoded; aggregation deferred
+- ADR-0030: Assessment scope from `get_ipmp_store()`, not hardcoded; aggregation deferred (built on read in ADR-0075, 2026-10-15)
 - ADR-0031: `EvaluationResult.model_dump()` as direct HTTP response; no shaped DTOs for reads
 - ADR-0032: Independent `configure(db_path)` per module; `main.py` owns startup sequencing
 
@@ -1616,18 +1703,18 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 3. BM25 retrieval (`src/retrieval/`) ← **COMPLETE** (issues #11–15)
 4. LLM evaluation (`src/evaluation/`) ← **COMPLETE** (issues #16–20)
 5. Auditor review interface (`src/assessment/` + `main.py`) ← **COMPLETE** (issues #21–25)
-6. Vector fallback (LanceDB)
-7. Frontend (Vue.js 3, Phase 2)
+6. Vector retrieval (LanceDB) ← **COMPLETE** (a fallback in ADR-0033; co-equal and always-on since ADR-0049)
+7. Frontend (Vue.js 3) ← **COMPLETE** (served by FastAPI from `frontend/dist`)
 
 **Key reference files:**
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
-- `CONTEXT.md` — canonical domain glossary (updated 2026-06-18: Retrieval Profile, Evidence Ontology, Evidence Intent, Retrieval Signal Concept, Query Term, Evidence Logic Pattern, Profile Maturity, Term Status)
-- `docs/adr/` — 74 ADRs, next is `0075-`
+- `CONTEXT.md` — canonical domain glossary (last updated 2026-10-15: Nota iPMP, Fase, Ponto de Transição)
+- `docs/adr/` — 75 ADRs, next is `0076-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
-- `data/ipmp/acao_01.json` — IPMP source-of-truth for Ação 1
-- `data/rio_manual/acao_01.json` — Rio Manual retrieval context for Ação 1
+- `data/ipmp/acao_NN.json` — IPMP source of truth, one file per Ação (46)
+- `data/rio_manual/acao_01.json`, `acao_02.json` — Rio Manual retrieval context (Ações 1 and 2 only)
 
 ---
 

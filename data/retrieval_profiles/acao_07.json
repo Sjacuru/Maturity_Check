@@ -3,7 +3,8 @@
     "schema_version": "1.0",
     "last_updated": "2026-10-15",
     "changelog": [
-      {"date": "2026-10-15", "summary": "Termo 'Termos de Referência' marcado shared_with_acao [23, 30] com nota (colisão 7b/23.1/30c apontada em 2026-09-07 na Ação 30 e corrigida nas duas pontas, item 6 da mensagem W). Documental: não muda a busca nem os prompts."}
+      {"date": "2026-10-15", "summary": "Termo 'Termos de Referência' marcado shared_with_acao [23, 30] com nota (colisão 7b/23.1/30c apontada em 2026-09-07 na Ação 30 e corrigida nas duas pontas, item 6 da mensagem W). Documental: não muda a busca nem os prompts."},
+      {"date": "2026-10-15", "summary": "Exercitado, não populado: os ciclos de teste 3-6 rodaram este perfil em 40 processos completos sobre SMG-040_101607_2024 (2026-10-13/15, quatro configurações do gate). Saída: sem evidência 40/40. Nenhum produto teve trecho aceito. Depois do filtro de gênero (ADR-0074) o gate examinou no máximo 7a: 4; 7b: 4 (trechos por produto). profile_maturity segue seed: nenhuma sessão de Stage B usou documento real; promover com base nos ciclos é decisão do usuário."}
     ],
     "population_stages_completed": [
       "A"
