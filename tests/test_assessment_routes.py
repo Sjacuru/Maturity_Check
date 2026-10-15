@@ -252,6 +252,27 @@ def test_submit_review_override_missing_justification_422(client):
     assert resp.status_code == 422
 
 
+def test_submit_review_override_blank_justification_422(client):
+    _upload_file(client, "P001")
+    resp = client.post(
+        "/api/cases/P001/evaluations/1/review",
+        json={"final_score": 1, "is_override": True, "justification": "   "},
+    )
+    assert resp.status_code == 422
+
+
+def test_submit_review_justification_is_stored_stripped(client):
+    _upload_file(client, "P001")
+    resp = client.post(
+        "/api/cases/P001/evaluations/1/review",
+        json={"final_score": 1, "is_override": True, "justification": "  Página 5.  "},
+    )
+    assert resp.status_code == 201
+    assert resp.json()["justification"] == "Página 5."
+    stored = client.get("/api/cases/P001/evaluations/1/review").json()
+    assert stored["justification"] == "Página 5."
+
+
 def test_submit_review_invalid_score_422(client):
     _upload_file(client, "P001")
     resp = client.post(

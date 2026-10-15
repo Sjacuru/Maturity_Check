@@ -91,6 +91,11 @@ def test_override_true_empty_justification_raises():
         ReviewOutcome(**{**_BASE, "is_override": True, "justification": ""})
 
 
+def test_override_true_blank_justification_raises():
+    with pytest.raises(ValidationError):
+        ReviewOutcome(**{**_BASE, "is_override": True, "justification": "   "})
+
+
 def test_override_false_justification_must_be_none():
     with pytest.raises(ValidationError):
         ReviewOutcome(**{**_BASE, "is_override": False, "justification": "some text"})

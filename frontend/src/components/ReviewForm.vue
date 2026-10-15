@@ -19,7 +19,9 @@
         </v-btn>
       </v-btn-toggle>
       <span v-if="isOverride" class="text-caption text-warning">
-        Diferente do proposto ({{ proposedScore }}) — override
+        {{ proposedScore == null
+          ? 'Sem score proposto (sem evidência) — atribuição do auditor'
+          : `Diferente do proposto (${proposedScore}) — override` }}
       </span>
     </div>
 
@@ -40,7 +42,7 @@
     <v-btn
       color="primary"
       :loading="submitting"
-      :disabled="isOverride && !justification.trim()"
+      :disabled="selectedScore == null || (isOverride && !justification.trim())"
       @click="submit"
     >
       Submeter revisão
@@ -67,6 +69,7 @@ const submitError = ref(null)
 const isOverride = computed(() => selectedScore.value !== props.proposedScore)
 
 async function submit() {
+  if (selectedScore.value == null) return
   if (isOverride.value && !justification.value.trim()) return
   submitting.value = true
   submitError.value = null

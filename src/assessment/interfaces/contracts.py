@@ -26,7 +26,7 @@ class ReviewOutcome(BaseModel):
     @model_validator(mode="after")
     def _validate_override_invariants(self) -> ReviewOutcome:
         if self.is_override:
-            if not self.justification:
+            if not self.justification or not self.justification.strip():
                 raise ValueError(
                     "justification is required and must be non-empty when is_override=True"
                 )

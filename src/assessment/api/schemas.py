@@ -44,6 +44,13 @@ class ReviewSubmission(BaseModel):
             raise ValueError(f"final_score must be one of {_VALID_SCORES}, got {v}")
         return v
 
+    @field_validator("justification")
+    @classmethod
+    def _strip_justification(cls, v: str | None) -> str | None:
+        # A note of blanks is no note (ADR-0023): strip it, so the invariant
+        # below sees it empty, and store the text without the padding.
+        return v.strip() if v is not None else None
+
     @model_validator(mode="after")
     def _validate_override_invariants(self) -> ReviewSubmission:
         if self.is_override:
