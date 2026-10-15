@@ -2,8 +2,8 @@
   "_meta": {
     "descricao": "Produtos Esperados cujo critério do IPMP é o próprio instrumento de contratação (contrato ou minuta, edital, termo de referência, matriz de riscos e demais anexos normativos). Para eles o filtro de gênero (ADR-0074) não retira texto de instrumento antes do gate: é exatamente a evidência que o critério pede. Para os demais produtos, trechos de documentos de gênero INSTRUMENTO não chegam ao gate nem ao scorer.",
     "regra": "Um produto é isento quando a frase do IPMP (campo frase, copiada literalmente de data/ipmp/acao_NN.json) pede o instrumento ou uma parte dele. O carregador recusa o arquivo se a frase deixar de ser a do IPMP, se o produto não for pontuado ou se houver duplicata.",
-    "aprovacao": "Lista aprovada pelo usuário em 2026-10-12 (mensagem L).",
-    "ultima_atualizacao": "2026-10-13"
+    "aprovacao": "Lista aprovada pelo usuário em 2026-10-12 (mensagem L). Em 2026-10-15 o usuário retirou o produto 45 (ADR-0074, ciclo 6): o registro da realização do certame está nos atos (ata, resultado, homologação, adjudicação, publicação), de gênero OUTRO; o contrato só os menciona, e a minuta com campos em branco é modelo, não registro.",
+    "ultima_atualizacao": "2026-10-15"
   },
   "isencoes": [
     {
@@ -95,12 +95,6 @@
       "produto": "42d",
       "frase": "Versão final dos documentos com destaque para as seções revisadas.",
       "motivo": "A versão final dos documentos de contratação (edital, minuta, termo de referência) é o próprio produto."
-    },
-    {
-      "acao": 45,
-      "produto": "45",
-      "frase": "Registro da realização do processo licitatório, nos termos da legislação aplicável.",
-      "motivo": "O registro da homologação e da adjudicação consta do contrato e dos atos do certame."
     },
     {
       "acao": 46,

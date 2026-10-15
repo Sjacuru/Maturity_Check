@@ -12,7 +12,7 @@ from ingestion.genre_exemptions import load_genre_exemptions
 
 APPROVED = {
     "22.1", "22.2", "22.2a", "22.2b", "23.1", "23.2", "23.3", "23.4",
-    "25a", "25b", "25c", "25d", "25e", "37", "42d", "45", "46.1",
+    "25a", "25b", "25c", "25d", "25e", "37", "42d", "46.1",
 }
 SHIPPED = Path(__file__).parent.parent / "data" / "ipmp" / "isencoes_genero.json"
 
@@ -29,7 +29,8 @@ def _shipped_entry(produto: str) -> dict:
 
 
 def test_the_shipped_file_lists_exactly_the_approved_products():
-    """The list the user approved on 2026-10-12 (message L)."""
+    """The list the user approved on 2026-10-12 (message L), minus 45, removed on
+    2026-10-15 after test cycle 6 (ADR-0074)."""
     assert get_genre_exemption_store().produtos() == APPROVED
 
 

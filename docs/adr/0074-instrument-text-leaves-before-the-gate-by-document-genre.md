@@ -103,9 +103,11 @@ chunks and persisted next to them.
   changes nothing: 84 marks either way.
 
 **3. Exemptions.** The file is `data/ipmp/isencoes_genero.json`, loaded by
-`ingestion.get_genre_exemption_store()`. It lists the 17 Expected Products whose
-criterion is the instrument itself, each with its IPMP sentence and the reason:
-22.1, 22.2, 22.2a, 22.2b, 23.1–23.4, 25a–25e, 37, 42d, 45 and 46.1.
+`ingestion.get_genre_exemption_store()`. It lists the Expected Products whose
+criterion is the instrument itself, each with its IPMP sentence and the reason.
+The list approved on 2026-10-12 had 17: 22.1, 22.2, 22.2a, 22.2b, 23.1–23.4,
+25a–25e, 37, 42d, 45 and 46.1. Since 2026-10-15 it has 16: 45 left after test
+cycle 6 (the sections at the end).
 
 The loader refuses three things, so the list cannot drift silently from the
 criteria it exempts:
@@ -359,3 +361,271 @@ The user accepted the four recommendations of the cycle-3 report.
   `_1` p.3 with checkable markers; another round is the decision of the user.
 - **The state measured in cycle 3 is committed as the baseline** of the next
   measurements.
+
+## Test cycle 4 (2026-10-13)
+
+The negative patterns of 23.3 and 32a
+(`scripts/diagnostics/candidates_cycle3_residue.py`) were measured as the
+previous section requires.
+
+- **Inside one process** (five passes, production pools), both targets went
+  from accepted to rejected in every pass (`_2` p.145 and `_1` p.303) and no
+  control moved.
+- **Across processes:** ten independent full processes, from 18:39 to 21:09
+  (`scratchpad/acc/ciclo4_run{1..10}`).
+  - Settings: ledger off; genre filter and filtered expansion on; the two
+    patterns applied in memory (`reproducibility.py --runs 1
+    --record-reasoning --candidates … --apply 23.3,32a`).
+  - Result: no errors and no gate failures in 4 973 gate calls.
+- **Baseline:** cycle 3, the same commit without the patterns.
+
+| Measure (points, with `sem evidência` read as 0) | Cycle 3 | Cycle 4 |
+|---|---|---|
+| Ações with the same points in all ten | 38 | 34 |
+| Ações with the same points in 9 or more of 10 | 41 | 41 |
+| Mean agreement with the modal outcome | 95.7 % | 95.2 % |
+| Consistent / tolerable / inconsistent | 38 / 4 / 4 | 34 / 8 / 4 |
+| Batch identical, mean over the 45 pairs of processes | 36.5 | 35.1 |
+| Batch identical in all ten | 31 | 26 |
+| Evidenced bits identical in all ten | 34 | 30 |
+| Coin pairs | 65 | 70 |
+| Point changes (Ação × pair of processes) | 136 | 166 |
+| Gate accepts per process | 34–45 | 34–46 |
+| Gate calls per process | 492–506 | 492–506 |
+| Minutes per process | 14.5–15.6 | 14.7–15.7 |
+
+- **The targets became coins, not rejections.**
+
+  | Product | Page | Cycle 3 | Cycle 4 |
+  |---|---|---|---|
+  | 23.3 | `_2` p.145 | 10 of 10 | 4 of 10 |
+  | 23.3 | `_1` p.60 | 1 of 10 | 0 of 10 |
+  | 32a | `_1` p.303 | 10 of 10 | 3 of 10 |
+
+  Inside one process both targets had been rejected in every pass. That
+  measurement gave the direction of the change, not the constancy
+  (ADR-0071).
+- **Why, from the recorded reasoning.**
+  - *23.3, `_2` p.145.* The page splits the grant-fee payment into one part
+    before signing and one during execution.
+    - The accepts read that split as a schedule tied to execution and never
+      check the marker of the pattern (who pays whom).
+    - The rejects check it.
+  - *32a, `_1` p.303.* The gate checks the marker (whose team it is) on both
+    sides, accepts and rejects. The passage, however, only speaks of the staff
+    involved in the operation and never names the employer, so the gate
+    guesses.
+  - A checkable marker works only if the passage itself decides it.
+- **Ação 32 lost constancy.**
+
+  | Ação 32 | Cycle 3 | Cycle 4 |
+  |---|---|---|
+  | Points per process | 1 0 1 1 1 1 1 1 1 1 | 1 0 1 0 0 0 0 1 0 0 |
+  | Changes against the mode | 1 (tolerable) | 3 (inconsistent) |
+  | Batch identical per pair | 100 % | 53 % |
+  | Bits identical per pair | 100 % | 53 % |
+  | Points identical per pair | 80 % | 53 % |
+
+  The modal outcome is now the right one (`sem evidência`), but the false
+  credit comes back in 3 of 10.
+- **Ação 23 gained constancy in points, for a structural reason.**
+
+  | Ação 23 | Cycle 3 | Cycle 4 |
+  |---|---|---|
+  | Points per process | 1 1 3 3 1 3 1 1 1 1 | 1 1 3 1 1 1 1 1 1 1 |
+  | Changes against the mode | 3 | 1 |
+  | 23.3 judged evidenced by the scorer | 10 of 10 | 3 of 10 |
+  | 23.3 bit identical per pair | 100 % | 47 % |
+  | Bits of the Ação identical per pair | 44 % | 22 % |
+
+  - The gain: a 3 now needs two coins at once, 23.2 and 23.3. At the measured
+    rates that is about one process in ten, against three or four in ten
+    before.
+  - The cost: the batch itself is less constant, as the last two rows show.
+- **A side effect against ADR-0066.**
+  - *The page.* `_2` p.144 is the reply recording that the TR carries no
+    measurement and payment criteria, because the concession does not pay the
+    contractor. It reaches 23.3 only as a neighbour of `_2` p.145.
+  - *Cycle 3.* The gate accepted it in 8 of 10 processes, and the reasoning
+    cited the polarity rule.
+  - *Cycle 4.* It was judged in the 4 processes where p.145 was accepted and
+    rejected all 4 times: the gate read the absence of payment rules as no
+    evidence.
+  - *The effect.* The pattern switched off the polarity rule on the passage
+    that records why 23.3 has no evidence.
+- **The rest is noise, and this cycle measures it.**
+  - *Ações 1 to 22.* They are gated before any changed prompt, so for them the
+    two cycles are twenty processes of one configuration.
+    - Coin pairs: 23 in each cycle, but on different pairs (Ação 22 went from
+      6 to 2, Ação 2 from 6 to 8).
+    - Same points in all ten: 19 in cycle 3, 17 in cycle 4 (Ações 13 and 14
+      moved once each).
+    - Same points in 9 or more of 10: 21 in both.
+  - *After Ação 23.* Ações whose prompts did not change moved both ways: 35
+    and 37 got better; 40, 42 and 45 got worse.
+  - *Points per pair.* The gain of Ação 23 and the loss of Ação 32 cancel
+    exactly. The remaining fall, 43.0 to 42.3, is noise.
+  - *Consequences for the method:*
+    - two cycles of ten processes resolve a change of one Ação only where the
+      change touches that Ação;
+    - the count of Ações with the same points in all ten moves by about two
+      between cycles by chance;
+    - the count with the same points in 9 or more of 10 did not move in the
+      replicate block.
+- **Attribution of the 166 point changes:**
+  - the gate: 139;
+  - the scorer on an identical batch: 18, all in Ação 10;
+  - the cap of ADR-0070: 9, Ação 3 through Ação 2.
+- **The review signal of ADR-0068** fired for 9 of the 12 Ações whose points
+  vary, each time on the highest outcome. It missed Ações 3 (the cap), 10 (the
+  scorer) and 37.
+
+**Outcome under the rule of the previous section: neither pattern is written.**
+
+- Both turned a constant accept into a coin, the loss that rule names.
+- 32a also made its Ação less constant.
+- 23.3 made its Ação more constant in points, but only because the two coins
+  rarely land together, and it switched off the polarity rule on `_2` p.144.
+- Read in points alone, 23.3 would pass for Ação 23; that reading is recorded
+  here for the decision of the user.
+- The candidates stay in `scripts/diagnostics/candidates_cycle3_residue.py`
+  with this result, and the baseline stays the commit of cycle 3.
+
+## Test cycle 6 (2026-10-14)
+
+The user discarded variant G and its scorer counterpart (ADR-0071) and asked
+for the next step toward 42 Ações with the same points in 9 or more of 10. The
+residue of the baseline (Ações 10, 23, 35, 37 and 45) was read by mechanism.
+Three candidates were written in `scripts/diagnostics/candidates_cycle6.py`,
+and the rule for reading them was written before any result
+(`scratchpad/acc/criterio_ciclo6.txt`).
+
+- **Direction, inside one process** (five passes):
+  - *23.3, a second-round negative pattern* (does the value go to the public
+    authority?). It failed. The base rejected `_2` p.145 in 5 of 5; with the
+    pattern, the gate accepted it in 5 of 5, and the reasoning never consults
+    the marker. It stayed out of the cycle.
+  - *35.2e, a second negative pattern* (is the "strategy" the contracting of
+    the object itself?). It entered by the letter of the rule: `_1` p.3 was
+    accepted in 4 of 5 passes with and without it.
+  - *45 out of the exemption list, in memory only.* It entered. Its examined
+    pool falls from 16 instrument chunks to 2 pages of the ETP (`_2` p.157 and
+    p.158), and both were rejected in 5 of 5 for the right reason.
+- **The cycle:**
+  - Ten full processes, from 15:18 to 17:46 (`scratchpad/acc/ciclo6_run{1..10}`).
+  - Settings: ledger off; genre filter and filtered expansion on; the two
+    candidates applied in memory (`reproducibility.py --runs 1
+    --record-reasoning --candidates … --apply 35.2e,45`).
+  - Result: no errors and no gate failures in 4 889 gate calls.
+
+| Measure (points, with `sem evidência` read as 0) | Cycle 3 | Cycle 4 | Cycle 6 |
+|---|---|---|---|
+| Ações with the same points in 9 or more of 10 | 41 | 41 | 42 |
+| … of them in the replicate block (Ações 1–34) | 32 | 32 | 32 |
+| Ações with the same points in all ten | 38 | 34 | 38 |
+| Mean agreement with the modal outcome | 95.7 % | 95.2 % | 95.7 % |
+| Consistent / tolerable / inconsistent | 38 / 4 / 4 | 34 / 8 / 4 | 38 / 4 / 4 |
+| Batch identical in all ten | 31 | 26 | 30 |
+| Evidenced bits identical in all ten | 34 | 30 | 33 |
+| Coin pairs | 65 | 70 | 67 |
+| Point changes (Ação × pair of processes) | 136 | 166 | 128 |
+| Gate calls per process | 492–506 | 492–506 | 486–495 |
+| Minutes per process | 14.5–15.6 | 14.7–15.7 | 14.3–15.6 |
+
+Below 9 of 10: Ações 10, 23, 35, 37 and 45 in cycle 3; Ações 10, 23, 35 and 37
+in cycle 6.
+
+- **35.2e: the second pattern does not hold.**
+  - `_1` p.3 was accepted for 35.2e in 8 of 10 processes. Cycle 3, with the
+    same prompts up to 35.2e, gave 5 of 10; the difference is within chance.
+  - The accepting reasonings never consult the marker ("strategy to avoid risk
+    of interruption by early bidding. That is a risk response strategy
+    (avoid)"). The two rejections use it.
+  - Ação 35 scored 0 1 1 0 1 1 0 1 1 1. Its modal outcome is now 1, a false
+    credit.
+  - The page is the justification of the procurement, genre OUTRO, judged by
+    20 products:
+    - a legitimate target of 1a, 1c and 4a, accepted in every process of
+      cycles 3 to 6;
+    - a coin for 35.2e, 13c, 14a and 2c;
+    - rejected in every process by the other 13.
+- **45: constant, and the 3 of cycle 3 was a false credit.**
+  - Ação 45 scored 0 in 10 of 10, and no chunk was accepted for it. In every
+    process, 38 instrument candidates left before the gate, and the two ETP
+    pages were rejected for the right reason ("planning a new public tender
+    … no session, habilitation, result, homologation, adjudication").
+  - The 3 of cycle 3 (8 of 10) rested on `_2` p.23, the recital of the
+    contract minuta: "conforme o Edital [•] … o Lote 4 da LICITAÇÃO foi
+    homologada … o seu objeto foi adjudicado". The placeholder makes it a
+    template, not a record.
+  - The documents of this case stop at the publication of the edital, so the
+    bidding has not happened, and "not met" is the right outcome. The reading
+    of p.23 as the record of the bidding in the cycle-3 section was wrong.
+  - The reason given for the exemption ("O registro da homologação e da
+    adjudicação consta do contrato e dos atos do certame") holds for a signed
+    contract. Without the exemption, 45 reads only text of genre OUTRO, which
+    is where the acts live: ata, resultado, homologação, adjudicação and
+    publicação, as in the Atendido example of the IPMP.
+  - The cost: in a case whose file holds the signed contract but not the
+    acts, 45 would lose its only evidence.
+  - 46.1 ("Contrato tempestivamente assinado"), also exempt, does not show the
+    problem. The gate rejects the minuta in every process, since it bears no
+    signature, and Ação 46 is `sem evidência` in 10 of 10.
+- **The replicate block replicated.**
+  - Ações 1 to 34 and products 35.1 to 35.2d are gated before the first
+    changed prompt. They kept 32 of 34 at 9 or more in all three cycles.
+  - Ações 13 (13c, `_1` p.3) and 40 (40c, `_2` p.158) moved once each, by
+    chance.
+  - Processes at the same position in two cycles agree no more often than
+    processes at different positions. For Ações 1 to 22, the batch was
+    identical in 17.6 of 22 Ações at the same position and in 17.8 at
+    different positions, so the coin does not follow the position in the
+    cycle.
+- **Ação 23** is in the replicate block. It scored 3 in 5 of 10 here, against
+  3 of 10 in cycle 3.
+  - Both of its swings rest on one page of genre OUTRO, `_2` p.145: the reply
+    of the CCPAR that justifies the judgment criterion and the split payment
+    of the grant fee.
+  - For 23.2 the page is legitimate partial evidence: accepted in 6 of 10,
+    and the rejections argue sufficiency.
+  - For 23.3 it is a false credit, accepted in 10 of 10.
+  - Removing the page from Ação 23 would cost 23.2 a legitimate passage, so no
+    change is proposed.
+- **Attribution of the 128 point changes:**
+  - the gate: 92;
+  - the scorer on an identical batch: 27, in Ações 10 and 35;
+  - the cap of ADR-0070: 9, Ação 3 through Ação 2.
+- **The review signal of ADR-0068** fired for 5 of the 8 Ações whose points
+  vary. It missed Ações 3 (the cap), 10 (the scorer) and 37, the known gaps.
+
+**Outcome under the rule of reading.**
+
+- The pattern of 35.2e is not written.
+- For 45, the rule recommends removing it from the exemption list. The
+  decision belongs to the user, who confirmed the list on 2026-10-12; until
+  then the list stays as it is.
+- The count of 42 comes from 45 alone; without that change the configuration
+  stays at 41.
+- 23.3 and 35.2e have each had two rounds of negative patterns. In both, the
+  gate does not read the marker on the target in most processes.
+
+## Decisions after cycle 6 (2026-10-15)
+
+The user read the cycle-6 report and decided:
+
+- **45 leaves the exemption list.** `data/ipmp/isencoes_genero.json` now holds
+  16 products, and its `_meta` records the removal and the reason. The glossary
+  and the test that fixes the approved list follow. Checked without the GPU:
+  of the 164 production pools, only 45's changed, to the two ETP pages the
+  cycle measured (`_2` p.158 and p.157); 38 instrument candidates leave before
+  its gate, and the run makes 450 gate calls instead of 464.
+- **Ações 10, 23, 35 and 37 stay as they are**, the documented residue, with
+  the review signal of ADR-0068 where it fires (23 and 35) and its known gaps
+  (10, the scorer; 37, accepts that vanish together).
+- **The second pattern of 35.2e is not written** (previous section).
+- **This state is committed as the new baseline.** It differs from the
+  configuration cycle 6 measured in one prompt only, 35.2e's, which returns to
+  its cycle-3 text. Ação 35 is below 9 of 10 under both texts (5 of 10 and 8 of
+  10 accepts of `_1` p.3), so the count of 42 does not depend on that prompt.
+  A confirmation cycle of the committed configuration is pending on the GPU
+  being free.
