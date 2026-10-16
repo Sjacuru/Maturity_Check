@@ -63,9 +63,9 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
 8. **Scope: all 46 Ações.** Phase 1 began with Ação 1 only. Since 2026-09-07 every
    Ação has its IPMP file and retrieval profile, and every assessment evaluates all
    46 (the scope comes from the IPMP store, ADR-0030). Every measurement so far uses
-   one case (SMG-040). The stability margin was accepted on 2026-10-16, and a second
-   case document waits until the scorer has been verified in its whole structure
-   (the user, 2026-10-16).
+   one case (SMG-040). On 2026-10-16 the user accepted the stability margin and closed
+   the scorer verification, the condition set for a second case document; the
+   document is the user's to supply.
 9. **IPMP ingestion: manual.** PDF structure is mixed text/image; data is static.
    Expected products sub-items (a/b/c/d) per action become BM25 search queries.
 10. **Development methodology:** CONTEXT.md → ADR → to-PRD → grill-me per module.
@@ -96,7 +96,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (75 filled, next: 0076-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota)
+│   ├── adr/                     ← Architecture Decision Records (76 filled, next: 0077-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -144,7 +144,7 @@ Maturity_Check/
 │   ├── test_score_margin.py ← ScoreMargin arithmetic: band margin, fragility, score floor (25 tests)
 │   ├── test_genre_{classifier,segmentation,index,exemptions}.py ← genre classifier, document segments, document index, exemptions (ADR-0074, 39 tests)
 │   ├── test_ipmp_structure.py   ← all 46 Ações load; the five transition points; the chapter-4 phase blocks; dimension counts; 164 scored products (5 tests)
-│   └── test_maturity.py         ← the IPMP nota: counting rules, floor, groups, band limits, route (ADR-0075, 9 tests)
+│   └── test_maturity.py         ← the IPMP nota: counting rules, floor, groups, band limits, route, não aplicável (ADR-0075, ADR-0076, 10 tests)
 ├── src/
 │   ├── ingestion/               ← Module 1 (COMPLETE)
 │   │   ├── __init__.py          ← sole public surface
@@ -156,7 +156,7 @@ Maturity_Check/
 │   ├── extraction/              ← Module 2 (COMPLETE — issues #6–10)
 │   │   ├── __init__.py          ← sole public surface: Chunk, extract_document
 │   │   ├── chunk.py             ← Chunk pydantic.BaseModel (9 fields)
-│   │   ├── noise.py             ← strip_extraction_noise(): header/signature/watermark removal (moved here 2026-10-13)
+│   │   ├── noise.py             ← strip_extraction_noise(): header/signature/watermark removal (moved here 2026-10-13; signature stamps widened 2026-10-16)
 │   │   └── pdf.py               ← extract_document() — word-count heuristic + OCR
 │   ├── retrieval/               ← Module 3 (COMPLETE — issues #11–15)
 │   │   ├── __init__.py          ← public surface: configure, index, retrieve_for_acao, RetrievedChunk
@@ -203,15 +203,15 @@ Maturity_Check/
 │       ├── service.py           ← AssessmentService: run_assessment(process_number, document_paths)
 │       ├── maturity.py          ← compute_maturity(): the case's IPMP nota from stored evaluations and reviews, computed on read (ADR-0075)
 │       ├── interfaces/
-│       │   └── contracts.py     ← ReviewOutcome (7 fields, validator invariants); AcaoPoints, MaturityGroup, MaturityIndicator (ADR-0075)
+│       │   └── contracts.py     ← ReviewOutcome (8 fields, validator invariants; `not_applicable` for Ações 45 and 46, ADR-0076); AcaoPoints, MaturityGroup, MaturityIndicator (ADR-0075)
 │       ├── schema/
-│       │   └── ddl.py           ← init_db(): evaluation_results + review_outcomes + document_fingerprints
+│       │   └── ddl.py           ← init_db(): evaluation_results + review_outcomes + document_fingerprints; rebuilds an older review_outcomes in place (ADR-0076)
 │       └── api/
 │           ├── app.py           ← create_app() — FastAPI app; imported by main.py only
 │           ├── routes.py        ← 8 routes: assess and its progress, evaluations (list, one), review (post, get), gate overrides (ADR-0067), maturity (ADR-0075)
 │           └── schemas.py       ← request body Pydantic models (write-side only)
 ├── main.py                      ← runtime entry point: configure → init_db → create_app
-├── frontend/                    ← Vue 3 app (Module 7), built to frontend/dist and served by FastAPI; MaturityIndicator.vue shows the IPMP nota (ADR-0075)
+├── frontend/                    ← Vue 3 app (Module 7), built to frontend/dist and served by FastAPI; MaturityIndicator.vue shows the IPMP nota (ADR-0075); ReviewForm.vue offers "não aplicável" on Ações 45 and 46 (ADR-0076)
 └── data/
     ├── ipmp/
     │   ├── dependencias.json    ← 54 typed citation edges between Ações, with the IPMP sentence (ADR-0070)
@@ -230,6 +230,60 @@ Maturity_Check/
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-16 (76th pass) — THE USER'S MESSAGE Z (verbatim): *"Prompt do scorer. Vamos manter o prompt de hoje. / Momento ideal. Sai, pela regra E. / Trechos de outro escopo (32a, 13c, 35.2e, 42d). Fica como resíduo documentado, junto com 10, 23, 35 e 37. / Encerrar a verificação do scorer. Verificação está encerrada / Datas dos documentos. Não faremos agora. Será trabalho em paralelo. / Faça o commit (CLAUDE.md, reproducibility.py e os dois scripts de medição); / Pare a tarefa 8083 (PID 24416); um /assess novo; Coloque o rótulo “Inicial”; / execute N/A para 45/46; / fazer a promoção dos perfis seed; / a linha de assinatura que o removedor de ruído deixa passar."* THE SCORER VERIFICATION IS CLOSED, and today's scorer prompt stays. Every item of Z is done: five commits before this record (`e7eee19`, `fad53d4`, `d890b97`, `a4d5c3a`, `48f95eb`), a fresh `/assess` of the stored case, and the 8083 task stopped. Nothing was pushed.**
+
+- **Reading of Z:**
+  - today's scorer prompt stays, and the momento leaves by rule E; "tempestiva" stays out until the documents carry dates;
+  - the wrong-scope passages the gate lets through (32a, 13c, 35.2e, 42d) join 10, 23, 35 and 37 as documented residue;
+  - the verification is closed, which meets the condition message X set for a second case document; the document is the user's to supply;
+  - document dates in the document index: later, as parallel work;
+  - the action items ran in this order: the commit, the four changes each with its tests, the `/assess` on the final state, then the 8083 task.
+- **The residue, documented** (no lever in the system today):
+  - 10: the scorer on an identical batch (10a `_2` p.763/p.764);
+  - 23 and 37: coins on legitimate partial targets, together with the scorer (23.2 `_2` p.145; 37's six pages);
+  - 35: 35.2e `_1` p.3, the procurement justification read as an "avoid" strategy, about one process in five;
+  - the wrong-scope passages: 32a `_1` p.303 (the concessionaire's operating-staff cost table, credited in 41 of 47 identical-batch scorings), 13c and 35.2e on `_1` p.3, and 42d on `_1` p.350. Their scope sits in the IPMP's `por_que_importante`; C2 brought that text to the scorer and no outcome changed (M3).
+- **The verification record** (`e7eee19`): the 75th pass in this file, F8 in `reproducibility.py`, and the two measurement scripts (`measure_scorer_reasoning.py`; `measure_scorer_candidates.py` with `--retoma`).
+- **Signature stamps** (`fad53d4`; `src/extraction/noise.py`, `evidence_selection._drop_empty_text`):
+  - The stripper now also removes the "Assinado com senha" and "Autenticado com senha" stamps, a cargo between the signer and the date, the Diário Oficial stamp with the date written out, stamps the chunker cut before or after their date, the url wrapped onto the next line, and the OCR'd system logo.
+  - 59 of the 1 429 chunks change, every change a pure deletion of stamp text, read one by one; an edital clause about signing digitally stays.
+  - 14 chunks are left with no text. An empty candidate or neighbour no longer reaches the gate.
+  - Pools, gate calls (450), document index and genre labels are unchanged on a copy of the database; 64 of the 450 examined pairs carry a cleaner text. `GENRE_RULES_VERSION` is `2026-10-16.1`, so the index is rebuilt.
+  - Its effect on constancy is not measured.
+- **The first phase renamed** (`d890b97`; ADR-0057 amendment): the stored fase of Ações 1–20 is now the Guide's "Estudo das alternativas" (4.2), not the flowchart's "Inicial". The Literal keeps the three chapter-4 names. 74 gate prompts change, on the identity line only; gate digest `6919edcc672b8027` → `0f7c14bd2bdada1d`. The scorer prompt does not carry fase. Constancy not measured.
+- **"Não aplicável" for Ações 45 and 46** (`a4d5c3a`; ADR-0076, with ADR-0023 and ADR-0075 amended):
+  - The Guide admits it as an absolute exception and names 45 and 46 as its typical case (4.1, p. 50). The auditor marks it in the review, with a mandatory motivation; the system never proposes it, and missing evidence stays "não atendida" (0 points).
+  - `ReviewOutcome.not_applicable`, no `final_score`, not an override; the route refuses any other Ação (422).
+  - `review_outcomes` gains the column and a nullable `final_score`, under a CHECK that spells out `IS NOT NULL`; `init_db` rebuilds an older table in place and keeps its rows.
+  - The nota leaves the Ação out of the count, the maximum and the floor; every group reports `n_not_applicable` and stays complete.
+  - Checked end to end in headless Chrome on a scratch copy of the database, at desktop and phone width.
+  - ADR-0075's stored-case figure corrected: 35 of 138 (0.254), not 0.246.
+- **The 19 seed profiles promoted** (`48f95eb`; ADR-0047 amendment): all 46 profiles are `observed`. The basis is the 50 full processes of cycles 3–7 over SMG-040, recorded per profile in `_meta.changelog`; `stage_b_sources` stays empty. No pipeline code reads `profile_maturity`, so nothing in a prompt, pool or score changes.
+- Fast suite 731; gate digest `0f7c14bd2bdada1d`.
+- **Fresh `/assess` of the stored case** (`040_101607_2024` on HEAD `48f95eb`; runner `$W/assess_runner.py`, outputs in `$W/assess_z/`, reader `$W/compara_assess.py` → `$W/assess_z/comparacao.txt`):
+  - **Run:** POST 17:27–17:43, 16.2 min, status 200, 46 Ações. The three PDFs were reused by fingerprint, so nothing was re-extracted. The GPU read LIVRE before the run and at every check during it (one every 2 min). `data/app.db` was backed up first (`$W/assess_z/app_backup.db`); no restore was needed. The runner closed its server and its tunnel.
+  - **Nota 0.109 (15 of 138), band alerta;** floor 13 points (0.094). By phase block 0.133 / 0.137 / 0; transition points 0.2 (Ação 37). The 2026-09-07 evaluation it replaced gave 0.254 (35 of 138); 17 Ações changed against it.
+  - **Against cycle 7, by the accepted margin:** C7 notas 0.058–0.109, median 0.087 (12 points). The new nota is +0.022 from that median, inside ±0.05, and in the same band. Every dimension is within ±0.1 of its C7 median.
+  - **Per Ação:** 45 of 46 sit at their C7 mode, and none took a value C7 never produced.
+    - The exception is Ação 37. It scored 3 (C7: 0 0 0 0 0 0 3 3 0 0) on its documented coin pages (`_1` p.29, `_2` p.145, `_3` p.2).
+    - It alone accounts for the 3 points above the C7 median, and for Comercial's +0.091 (0.212 against 0.121). That is close to the ±0.1 limit: in an 11-Ação dimension one 0↔3 swing is worth 0.091.
+  - **Scores:** 3 for Ações 3 and 37; 1 for 1, 2, 4, 9, 10, 22, 23, 25 and 32; 0 for 26; `sem evidência` for the other 34. No dependency cap was applied.
+  - **Review signal (ADR-0068)** on two Ações; the auditor decides them through a ReviewOutcome:
+    - 2: 2d rests on `_1` p.4 alone; floor 0;
+    - 32: 32a rests on `_1` p.303 alone, the documented wrong-scope credit; floor `sem evidência`.
+  - **The production gate ledger is now populated** (ADR-0067): `gate_verdicts` went from 0 to 478 rows, all for this case. A later `/assess` of this case is answered from the ledger for every gate prompt it repeats. That reproduces the report; it is never a constancy figure.
+  - The four 2026-09-05 evaluations stored under `SMG-040_101607_2024` were left untouched.
+- **The 8083 task stopped** (17:49; `$W/para_8083.ps1` through `$W/ssh_ps_gz.py`, output `$W/assess_z/parada_8083.txt`):
+  - before: llama-server PID 24416 (up since 15/10 15:08) listening on 8083, no client connected, task Running;
+  - `Stop-ScheduledTask` was enough: the llama-server is gone, the task is Ready, port 8083 is closed, and the GPU holds 1 862 of 16 303 MiB; the OCR task 8082 was only read (Ready);
+  - the first attempt ran nothing. In a PowerShell string `$alvo:` is a scoped-variable parse error, so the script failed before its first line (rc=1, no output). The state was read again (unchanged), the line fixed and parse-checked locally, and the script run again;
+  - the server-control scripts are kept in the ignored `scratchpad/servidor/`, with a `LEIAME.txt`. To bring the model back: `gpu_livre.ps1` must read LIVRE, then `sobe_8083.ps1`, then the tunnel and `/health`.
+- **Open for the user:**
+  - a second case document (the next strong test: it would not break in the same items);
+  - document dates in the document index, the precondition for any tempestividade test (later, in parallel);
+  - the effect of the stamp fix and the rename on constancy, not measured; a C8 cycle of 10 full processes measures it;
+  - deferred: 25a, 1b/3a, the password rotation.
 
 **Session 2026-10-16 (75th pass) — THE USER'S MESSAGE X (verbatim): *"As margens estão aceitas, mas não vou apresentar um novo processo até que façamos a verificação completa no esquema e texto que compõe o scorer. Isso era parte do plano. Em geral, verificar se os chunks entregues ao scorer eram consistentes e iguais. Assim, eliminaríamos o gate como indutor de erros no scorer, por fazer variar os chunks que o scorer analisa e com isso varia também suas notas e reasoning. Agora vamos tratar mais detidamente sobre o scorer, após aceitar a margem de +-5%. O scorer precisa ser verificado em toda sua estrutura, verificando se as construções dinâmicas por ação e as contruções fixas carregam um nível adequado de acuracidade, suficiente para reduzir a possibilidade de geração de dúvidas no momento do reasoning. Busca o plano de melhoria que foi combinado no corpo do projeto. Enquanto faz isso, mostra pra mim como ficaram os prompts que vão ao gate, não todos, digamos que 5 não problemáticos, cinco problemáticos e cinco que citam outra ação."* THE STABILITY MARGIN IS ACCEPTED. The second case document stays blocked until the scorer has been verified in its whole structure. Done: the agreed plan was found, the 15 gate prompts were published, the scorer was audited statically, its reasoning was measured on fixed batches (M1), and two output-contract candidates were measured against it (M2). Neither candidate passes the rules written before M2, so nothing is adopted. Message Y (below): C and CH are not adopted. M3 measured C2 and C2M against today's prompt: no candidate passes the rules written before, and by rule E the momento leaves, so today's prompt stays. F8 is in the reproducibility harness. No prompt changed in `src/`.**
 
@@ -1930,7 +1984,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (last updated 2026-10-15: Nota iPMP, Fase, Ponto de Transição)
-- `docs/adr/` — 75 ADRs, next is `0076-`
+- `docs/adr/` — 76 ADRs, next is `0077-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_NN.json` — IPMP source of truth, one file per Ação (46)
