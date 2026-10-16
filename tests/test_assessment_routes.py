@@ -385,3 +385,61 @@ def test_old_path_without_api_prefix_returns_404(client):
             files=[("files", ("EVTEA.pdf", io.BytesIO(_fake_pdf_bytes()), "application/pdf"))],
         )
     assert resp.status_code in (404, 405)  # 405 when StaticFiles mount intercepts
+
+
+# ── não aplicável (ADR-0076) ──────────────────────────────────────────────────
+
+_MOTIVO = "Os documentos do caso param na publicação do edital; a licitação não foi julgada."
+
+
+def test_submit_review_not_applicable_on_acao_45(client):
+    _upload_file(client, "P001")
+    resp = client.post(
+        "/api/cases/P001/evaluations/45/review",
+        json={"is_override": False, "not_applicable": True, "justification": _MOTIVO},
+    )
+    assert resp.status_code == 201, resp.text
+    assert (resp.json()["not_applicable"], resp.json()["final_score"]) == (True, None)
+    stored = client.get("/api/cases/P001/evaluations/45/review").json()
+    assert (stored["not_applicable"], stored["final_score"], stored["justification"]) == (
+        True, None, _MOTIVO,
+    )
+    overall = client.get("/api/cases/P001/maturity").json()["overall"]
+    assert overall["n_not_applicable"] == 1
+    assert overall["n_counted"] == 45
+
+
+def test_submit_review_not_applicable_is_refused_outside_45_and_46(client):
+    _upload_file(client, "P001")
+    resp = client.post(
+        "/api/cases/P001/evaluations/1/review",
+        json={"is_override": False, "not_applicable": True, "justification": _MOTIVO},
+    )
+    assert resp.status_code == 422
+    assert client.get("/api/cases/P001/evaluations/1/review").status_code == 404
+
+
+def test_submit_review_not_applicable_requires_the_motivation(client):
+    _upload_file(client, "P001")
+    for note in (None, "   "):
+        resp = client.post(
+            "/api/cases/P001/evaluations/46/review",
+            json={"is_override": False, "not_applicable": True, "justification": note},
+        )
+        assert resp.status_code == 422
+    assert client.get("/api/cases/P001/evaluations/46/review").status_code == 404
+
+
+def test_submit_review_without_a_score_is_422(client):
+    _upload_file(client, "P001")
+    resp = client.post("/api/cases/P001/evaluations/1/review", json={"is_override": False})
+    assert resp.status_code == 422
+
+
+def test_get_review_of_a_scored_review_is_not_not_applicable(client):
+    _upload_file(client, "P001")
+    client.post(
+        "/api/cases/P001/evaluations/1/review",
+        json={"final_score": 3, "is_override": False},
+    )
+    assert client.get("/api/cases/P001/evaluations/1/review").json()["not_applicable"] is False

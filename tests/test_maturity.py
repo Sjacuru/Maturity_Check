@@ -176,3 +176,43 @@ def test_maturity_route(db):
     assert body["band"] == "intermediate"
     assert [g["label"] for g in body["by_dimension"]][0] == "Estratégica"
     assert client.get("/api/cases/OUTRO/maturity").status_code == 404
+
+
+def _not_applicable(db: Path, acao_id: int) -> None:
+    con = sqlite3.connect(str(db))
+    con.execute(
+        "INSERT INTO review_outcomes (acao_id, process_number, final_score, is_override, "
+        "justification, evidence_references, created_at, not_applicable) "
+        "VALUES (?, ?, NULL, 0, 'Etapa futura.', NULL, '2026-10-16T00:00:00+00:00', 1)",
+        (acao_id, PROC),
+    )
+    con.commit()
+    con.close()
+
+
+def test_not_applicable_leaves_the_count_and_missing_evidence_does_not(db):
+    """Guide 4.1: "não aplicável" takes the Ação out of the nota; missing
+    evidence stays "não atendida" and counts 0 (ADR-0076)."""
+    for n in range(1, 45):
+        _evaluation(db, n, 3)
+    _evaluation(db, 45, no_evidence=True)
+    _evaluation(db, 46, no_evidence=True)
+    before = compute_maturity(PROC, db).overall
+    assert (before.points, before.max_points, before.n_not_applicable) == (132, 138, 0)
+
+    _not_applicable(db, 45)
+    _not_applicable(db, 46)
+    ind = compute_maturity(PROC, db)
+    a45 = _acao(ind, 45)
+    assert (a45.points, a45.source, a45.floor_points) == (None, "not_applicable", None)
+    assert (ind.overall.n_counted, ind.overall.n_not_applicable) == (44, 2)
+    assert (ind.overall.points, ind.overall.max_points, ind.overall.nota) == (132, 132, 1.0)
+    assert ind.overall.complete
+    assert ind.band == "satisfactory"
+    assert ind.n_reviewed == 2
+    comercial = next(g for g in ind.by_dimension if g.label == "Comercial")
+    assert (comercial.n_counted, comercial.n_not_applicable, comercial.complete) == (9, 2, True)
+    last_phase = ind.by_phase[-1]
+    assert (last_phase.n_counted, last_phase.n_not_applicable) == (7, 2)
+    tp = ind.transition_points
+    assert (tp.n_counted, tp.n_not_applicable, tp.max_points, tp.complete) == (3, 2, 9, True)

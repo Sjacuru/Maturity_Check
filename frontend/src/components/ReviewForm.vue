@@ -17,8 +17,18 @@
             Score proposto
           </v-tooltip>
         </v-btn>
+        <v-btn v-if="admitsNotApplicable" :value="NA" size="small">
+          N/A
+          <v-tooltip activator="parent" location="top">
+            Não aplicável: etapa futura que o empreendimento comprovadamente ainda não
+            alcançou (Guia, 4.1)
+          </v-tooltip>
+        </v-btn>
       </v-btn-toggle>
-      <span v-if="isOverride" class="text-caption text-warning">
+      <span v-if="notApplicable" class="text-caption text-warning">
+        Não aplicável — sai da nota. Falta de evidência não é isto: segue "não atendida".
+      </span>
+      <span v-else-if="isOverride" class="text-caption text-warning">
         {{ proposedScore == null
           ? 'Sem score proposto (sem evidência) — atribuição do auditor'
           : `Diferente do proposto (${proposedScore}) — override` }}
@@ -26,10 +36,12 @@
     </div>
 
     <v-textarea
-      v-if="isOverride"
+      v-if="needsNote"
       v-model="justification"
-      label="Justificativa (obrigatória)"
-      hint="Explique por que o score proposto não está correto."
+      :label="notApplicable ? 'Motivação da dispensa (obrigatória)' : 'Justificativa (obrigatória)'"
+      :hint="notApplicable
+        ? 'Registre a motivação técnica e documental: que etapa ainda não foi alcançada, e onde os documentos param (Guia, 4.1).'
+        : 'Explique por que o score proposto não está correto.'"
       persistent-hint
       rows="3"
       class="mb-3"
@@ -42,7 +54,7 @@
     <v-btn
       color="primary"
       :loading="submitting"
-      :disabled="selectedScore == null || (isOverride && !justification.trim())"
+      :disabled="selectedScore == null || (needsNote && !justification.trim())"
       @click="submit"
     >
       Submeter revisão
@@ -66,11 +78,37 @@ const justification = ref('')
 const submitting = ref(false)
 const submitError = ref(null)
 
-const isOverride = computed(() => selectedScore.value !== props.proposedScore)
+// The Ações that admit "não aplicável" (ADR-0076); mirrors NOT_APPLICABLE_ACOES
+// in src/assessment/interfaces/contracts.py, which the route enforces.
+const NOT_APPLICABLE_ACOES = [45, 46]
+const NA = 'na'
+
+const admitsNotApplicable = computed(() => NOT_APPLICABLE_ACOES.includes(props.acaoId))
+const notApplicable = computed(() => selectedScore.value === NA)
+const isOverride = computed(
+  () => !notApplicable.value && selectedScore.value !== props.proposedScore
+)
+const needsNote = computed(() => isOverride.value || notApplicable.value)
+
+function reviewBody() {
+  if (notApplicable.value) {
+    return {
+      final_score: null,
+      is_override: false,
+      not_applicable: true,
+      justification: justification.value.trim(),
+    }
+  }
+  return {
+    final_score: selectedScore.value,
+    is_override: isOverride.value,
+    justification: isOverride.value ? justification.value.trim() : null,
+  }
+}
 
 async function submit() {
   if (selectedScore.value == null) return
-  if (isOverride.value && !justification.value.trim()) return
+  if (needsNote.value && !justification.value.trim()) return
   submitting.value = true
   submitError.value = null
 
@@ -80,11 +118,7 @@ async function submit() {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          final_score: selectedScore.value,
-          is_override: isOverride.value,
-          justification: isOverride.value ? justification.value.trim() : null,
-        }),
+        body: JSON.stringify(reviewBody()),
       }
     )
     if (!resp.ok) {

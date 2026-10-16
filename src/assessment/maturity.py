@@ -35,6 +35,11 @@ class NoEvaluations(LookupError):
     """The case has no stored evaluation, so there is no indicator to compute."""
 
 
+class _StoredReview(NamedTuple):
+    final_score: int | None
+    not_applicable: bool
+
+
 class _StoredEvaluation(NamedTuple):
     proposed_score: int | None
     parse_failed: bool
@@ -86,14 +91,14 @@ def compute_maturity(process_number: str, db_path: Path | None = None) -> Maturi
         by_dimension=by_dimension,
         by_phase=by_phase,
         transition_points=_group("Pontos de transição", [a for a in acoes if a.ponto_transicao]),
-        n_reviewed=sum(a.source == "review" for a in acoes),
+        n_reviewed=sum(a.source in ("review", "not_applicable") for a in acoes),
         acoes=acoes,
     )
 
 
 def _read_case(
     db: Path, process_number: str
-) -> tuple[dict[int, _StoredEvaluation], dict[int, int]]:
+) -> tuple[dict[int, _StoredEvaluation], dict[int, _StoredReview]]:
     con = sqlite3.connect(str(db))
     try:
         eval_rows = con.execute(
@@ -102,7 +107,8 @@ def _read_case(
             (process_number,),
         ).fetchall()
         review_rows = con.execute(
-            "SELECT acao_id, final_score FROM review_outcomes WHERE process_number = ?",
+            "SELECT acao_id, final_score, not_applicable FROM review_outcomes "
+            "WHERE process_number = ?",
             (process_number,),
         ).fetchall()
     finally:
@@ -118,11 +124,16 @@ def _read_case(
         )
         for acao_id, score, parse_failed, no_evidence, raw in eval_rows
     }
-    reviews = {acao_id: final_score for acao_id, final_score in review_rows}
+    reviews = {
+        acao_id: _StoredReview(final_score, bool(not_applicable))
+        for acao_id, final_score, not_applicable in review_rows
+    }
     return evaluations, reviews
 
 
-def _acao_points(acao, stored: _StoredEvaluation | None, review_score: int | None) -> AcaoPoints:
+def _acao_points(
+    acao, stored: _StoredEvaluation | None, review: _StoredReview | None
+) -> AcaoPoints:
     base = {
         "acao_id": acao.acao_id,
         "titulo": acao.titulo,
@@ -130,9 +141,15 @@ def _acao_points(acao, stored: _StoredEvaluation | None, review_score: int | Non
         "fase": acao.fase,
         "ponto_transicao": acao.ponto_transicao,
     }
+    # The auditor's "não aplicável" takes the Ação out of the count (ADR-0076).
+    # Missing evidence is not this: it stays "não atendida" (Guide 4.1).
+    if review is not None and review.not_applicable:
+        return AcaoPoints(**base, points=None, source="not_applicable", floor_points=None)
     # The auditor's final score settles the Ação (ADR-0023).
-    if review_score is not None:
-        return AcaoPoints(**base, points=review_score, source="review", floor_points=review_score)
+    if review is not None:
+        return AcaoPoints(
+            **base, points=review.final_score, source="review", floor_points=review.final_score
+        )
     if stored is None:
         return AcaoPoints(**base, points=None, source="not_evaluated", floor_points=None)
     # Missing evidence stays "não atendida" (Guide 4.1): 0 points, not a gap.
@@ -162,6 +179,7 @@ def _acao_points(acao, stored: _StoredEvaluation | None, review_score: int | Non
 
 def _group(label: str, members: list[AcaoPoints]) -> MaturityGroup:
     counted = [a for a in members if a.points is not None]
+    not_applicable = sum(a.source == "not_applicable" for a in members)
     points = sum(a.points for a in counted)
     floor = sum(a.floor_points for a in counted)
     max_points = 3 * len(counted)
@@ -169,10 +187,11 @@ def _group(label: str, members: list[AcaoPoints]) -> MaturityGroup:
         label=label,
         acao_ids=[a.acao_id for a in members],
         n_counted=len(counted),
+        n_not_applicable=not_applicable,
         points=points,
         max_points=max_points,
         nota=points / max_points if max_points else None,
         floor_points=floor,
         nota_floor=floor / max_points if max_points else None,
-        complete=len(counted) == len(members),
+        complete=len(counted) + not_applicable == len(members),
     )

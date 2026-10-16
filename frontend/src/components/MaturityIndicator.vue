@@ -25,6 +25,9 @@
               {{ counts.atendidas }} atendida(s) · {{ counts.parciais }} parcialmente ·
               {{ counts.naoAtendidas }} não atendida(s), {{ counts.semEvidencia }} delas sem evidência
               <span v-if="counts.naoContadas">· {{ counts.naoContadas }} sem score, fora da conta</span>
+              <span v-if="counts.naoAplicaveis">
+                · {{ counts.naoAplicaveis }} não aplicável(is) pelo auditor, fora da conta
+              </span>
             </div>
             <div class="text-caption text-medium-emphasis">
               Revisadas pelo auditor: {{ indicator.n_reviewed }} de {{ indicator.acoes.length }}
@@ -77,6 +80,9 @@
               <div v-if="!g.complete" class="text-caption text-warning">
                 {{ g.n_counted }} de {{ g.acao_ids.length }} Ações contadas
               </div>
+              <div v-if="g.n_not_applicable" class="text-caption text-medium-emphasis">
+                {{ g.n_not_applicable }} não aplicável(is), fora da conta
+              </div>
             </div>
           </v-col>
         </v-row>
@@ -91,7 +97,7 @@
             :color="scoreColor(a.points)"
             label
           >
-            Ação {{ a.acao_id }}: {{ a.points ?? '—' }}
+            Ação {{ a.acao_id }}: {{ a.source === 'not_applicable' ? 'N/A' : a.points ?? '—' }}
             <v-tooltip activator="parent" location="top">{{ a.titulo }}</v-tooltip>
           </v-chip>
         </div>
@@ -145,7 +151,8 @@ const counts = computed(() => {
     parciais: acoes.filter((a) => a.points === 1).length,
     naoAtendidas: acoes.filter((a) => a.points === 0).length,
     semEvidencia: acoes.filter((a) => a.source === 'no_evidence').length,
-    naoContadas: acoes.filter((a) => a.points === null).length,
+    naoContadas: acoes.filter((a) => a.points === null && a.source !== 'not_applicable').length,
+    naoAplicaveis: acoes.filter((a) => a.source === 'not_applicable').length,
   }
 })
 

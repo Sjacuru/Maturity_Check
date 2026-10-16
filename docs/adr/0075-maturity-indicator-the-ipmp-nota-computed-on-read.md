@@ -45,3 +45,8 @@ No upward claim is made, as in ADR-0068. A rejection that flips to accept is not
 - **Store the indicator with the assessment:** rejected. It would go stale on the first review, and ADR-0030 keeps aggregation out of orchestration.
 - **Count a parse failure as 0:** rejected. That would report the system's own failure as the project's "não atendida".
 - **Draw a radar chart (the Guide's "polígono"):** deferred. Bars carry the same five numbers without a chart library.
+
+## Amendment (2026-10-16)
+
+- **"Não aplicável" is supported for Ações 45 and 46** (ADR-0076), which supersedes the consequence above. Such an Ação has no points and leaves the count, the maximum and the floor. Every group reports `n_not_applicable` and stays complete when its other Ações are counted.
+- **A correction.** The stored 2026-09-07 evaluation of `040_101607_2024` counts 35 of 138 points (0.254), not 0.246 as written above: 6 Ações at 3, 17 at 1, 4 at 0 and 19 `sem evidência`.

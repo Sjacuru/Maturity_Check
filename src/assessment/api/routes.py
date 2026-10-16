@@ -13,7 +13,7 @@ from starlette.concurrency import run_in_threadpool
 from assessment import progress
 from assessment._config import get_db_path
 from assessment.api.schemas import GateOverrideRequest, ReviewSubmission
-from assessment.interfaces.contracts import ReviewOutcome
+from assessment.interfaces.contracts import NOT_APPLICABLE_ACOES, ReviewOutcome
 from assessment.maturity import NoEvaluations, compute_maturity
 from assessment.service import AssessmentService
 
@@ -198,6 +198,14 @@ def submit_review(process_number: str, acao_id: int, body: ReviewSubmission):
     db_path = get_db_path()
 
     _require_evaluation_exists(db_path, process_number, acao_id)
+    if body.not_applicable and acao_id not in NOT_APPLICABLE_ACOES:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"not_applicable is admitted only for Ações {sorted(NOT_APPLICABLE_ACOES)} "
+                "(ADR-0076)."
+            ),
+        )
     _check_no_existing_review(db_path, process_number, acao_id)
 
     now = datetime.now(timezone.utc)
@@ -209,6 +217,7 @@ def submit_review(process_number: str, acao_id: int, body: ReviewSubmission):
         justification=body.justification,
         evidence_references=body.evidence_references,
         created_at=now,
+        not_applicable=body.not_applicable,
     )
     _persist_review_outcome(db_path, outcome)
     return outcome.model_dump(mode="json")
@@ -256,7 +265,7 @@ def _persist_review_outcome(db_path: Path, outcome: ReviewOutcome) -> None:
         con.execute(
             "INSERT INTO review_outcomes "
             "(acao_id, process_number, final_score, is_override, justification, "
-            "evidence_references, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "evidence_references, created_at, not_applicable) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 outcome.acao_id,
                 outcome.process_number,
@@ -265,6 +274,7 @@ def _persist_review_outcome(db_path: Path, outcome: ReviewOutcome) -> None:
                 outcome.justification,
                 refs,
                 outcome.created_at.isoformat(),
+                int(outcome.not_applicable),
             ),
         )
         con.commit()
@@ -281,7 +291,7 @@ def get_review(process_number: str, acao_id: int):
     try:
         row = con.execute(
             "SELECT acao_id, process_number, final_score, is_override, justification, "
-            "evidence_references, created_at "
+            "evidence_references, created_at, not_applicable "
             "FROM review_outcomes WHERE process_number = ? AND acao_id = ?",
             (process_number, acao_id),
         ).fetchone()
@@ -294,7 +304,7 @@ def get_review(process_number: str, acao_id: int):
             detail=f"No review found for acao_id={acao_id}, process_number='{process_number}'.",
         )
 
-    acao_id_db, pn, final_score, is_override, justification, refs_json, created_at = row
+    acao_id_db, pn, final_score, is_override, justification, refs_json, created_at, na = row
     refs = json.loads(refs_json) if refs_json is not None else None
     outcome = ReviewOutcome(
         acao_id=acao_id_db,
@@ -304,6 +314,7 @@ def get_review(process_number: str, acao_id: int):
         justification=justification,
         evidence_references=refs,
         created_at=datetime.fromisoformat(created_at),
+        not_applicable=bool(na),
     )
     return outcome.model_dump(mode="json")
 

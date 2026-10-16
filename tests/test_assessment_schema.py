@@ -128,3 +128,72 @@ def test_review_outcomes_unique_constraint(tmp_db):
             "VALUES (1, 'P001', 1, 0, NULL, NULL, '2026-06-02')"
         )
     con.close()
+
+
+# --- não aplicável (ADR-0076) ---
+
+_LEGACY_REVIEW_OUTCOMES = """
+CREATE TABLE review_outcomes (
+    id                  INTEGER PRIMARY KEY,
+    acao_id             INTEGER NOT NULL,
+    process_number      TEXT    NOT NULL,
+    final_score         INTEGER NOT NULL,
+    is_override         INTEGER NOT NULL,
+    justification       TEXT,
+    evidence_references TEXT,
+    created_at          TEXT    NOT NULL,
+    UNIQUE (acao_id, process_number)
+);
+"""
+
+
+def test_init_db_migrates_a_review_outcomes_table_from_before_adr_0076(tmp_path):
+    db = tmp_path / "old.db"
+    con = sqlite3.connect(str(db))
+    con.execute(_LEGACY_REVIEW_OUTCOMES)
+    con.execute(
+        "INSERT INTO review_outcomes (acao_id, process_number, final_score, is_override, "
+        "justification, evidence_references, created_at) "
+        "VALUES (3, 'P001', 1, 1, 'Nota.', '[2]', '2026-10-15T00:00:00+00:00')"
+    )
+    con.commit()
+    con.close()
+
+    configure(db)
+    init_db(db)
+    init_db(db)  # nothing left to migrate the second time
+
+    con = sqlite3.connect(str(db))
+    rows = con.execute(
+        "SELECT acao_id, process_number, final_score, is_override, justification, "
+        "evidence_references, created_at, not_applicable FROM review_outcomes"
+    ).fetchall()
+    con.execute(
+        "INSERT INTO review_outcomes (acao_id, process_number, final_score, is_override, "
+        "justification, evidence_references, created_at, not_applicable) "
+        "VALUES (45, 'P001', NULL, 0, 'Motivo.', NULL, '2026-10-16T00:00:00+00:00', 1)"
+    )
+    con.commit()
+    tables = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    con.close()
+    assert rows == [(3, "P001", 1, 1, "Nota.", "[2]", "2026-10-15T00:00:00+00:00", 0)]
+    assert "review_outcomes_new" not in tables
+
+
+def test_review_outcomes_check_ties_the_score_to_not_applicable(tmp_db):
+    """A score of 0, 1 or 3 exactly when the review is not "não aplicável".
+    The NULL case needs the explicit IS NOT NULL: SQLite passes a CHECK that
+    evaluates to NULL."""
+    con = sqlite3.connect(str(tmp_db))
+    insert = (
+        "INSERT INTO review_outcomes (acao_id, process_number, final_score, is_override, "
+        "justification, evidence_references, created_at, not_applicable) "
+        "VALUES (?, 'P001', ?, 0, 'Motivo.', NULL, '2026-10-16', ?)"
+    )
+    for acao_id, score, na in ((45, None, 0), (46, 3, 1), (2, 2, 0)):
+        with pytest.raises(sqlite3.IntegrityError):
+            con.execute(insert, (acao_id, score, na))
+    con.execute(insert, (45, None, 1))
+    con.execute(insert, (1, 3, 0))
+    con.commit()
+    con.close()

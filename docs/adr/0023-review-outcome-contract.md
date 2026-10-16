@@ -15,3 +15,8 @@ The Auditor review of an EvaluationResult always produces a Review Outcome carry
 - is_override + justification create a human audit trail that the academic reviewer can inspect.
 - Preserving all three status flags even after override means the LLM's original assessment is never silently rewritten by the Auditor.
 - Manual score assignment on no_evidence_found/parse_failed states allows the Auditor to close evaluations that the system cannot resolve automatically.
+
+## Amendment (2026-10-16): an outcome without a Final Score
+
+- For Ações 45 and 46 the Auditor may mark the Ação "não aplicável" (ADR-0076): the Review Outcome has `not_applicable` true, no `final_score`, is not an override, and carries the motivation in `justification`.
+- Every other Review Outcome still carries a Final Score in {0, 1, 3}.

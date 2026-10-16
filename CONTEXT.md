@@ -23,7 +23,7 @@ _Avoid_: transition dimension, sixth dimension, gate (unqualified)
 **Maturity Score**: The 0/1/3 integer assigned to an Ação after LLM evaluation against the IPMP rubric and scored examples, validated by the Auditor.
 _Avoid_: grade, rating, result, mark
 
-**Nota iPMP**: The IPMP's percentual de atendimento for one **Case**, between 0 and 1: the points counted over three times the Ações counted (138 for all 46). Each Ação gives its **Final Score** when reviewed, else its proposed **Maturity Score**, with `no_evidence_found` counting 0; an Ação without a score is left out and the nota is marked partial. Also reported per **Dimensão**, per **Fase** and over the **Pontos de Transição**, and read against the Guide's two limits, 0.2 and 0.8. Computed on read, never stored (ADR-0075).
+**Nota iPMP**: The IPMP's percentual de atendimento for one **Case**, between 0 and 1: the points counted over three times the Ações counted (138 for all 46). Each Ação gives its **Final Score** when reviewed, else its proposed **Maturity Score**, with `no_evidence_found` counting 0; an Ação the Auditor marked **Não Aplicável** leaves the count; an Ação without a score is left out and the nota is marked partial. Also reported per **Dimensão**, per **Fase** and over the **Pontos de Transição**, and read against the Guide's two limits, 0.2 and 0.8. Computed on read, never stored (ADR-0075).
 _Avoid_: maturity score (that is one Ação's 0/1/3), total score, grade, index
 
 **Auditor**: The human reviewer who validates the system's proposed Maturity Score and retrieved evidence for each Ação before the score is accepted.
@@ -201,14 +201,17 @@ _Avoid_: whitelist, allowed product, instrument product
 **Assessment module**: The Python package (`src/assessment/`) responsible for orchestrating the end-to-end assessment workflow for one Case — accepting Document Artifacts via upload, storing them to disk, calling extraction, indexing, retrieval, and evaluation in sequence, and returning an `EvaluationResult`. Owns the application-service layer; FastAPI routes invoke it; a future CLI may invoke it directly. Does not own HTTP concerns, score persistence, or Auditor rendering. Per-document pipeline: Upload → Store → Extract → Index → Retrieve → Evaluate. (The ingestion module loads IPMP/Rio Manual framework data at startup; it is not a per-document step.)
 _Avoid_: pipeline runner, orchestration layer, workflow engine, ingestion (that term is taken by Module 1)
 
-**Review Outcome**: The Auditor's validated record for one EvaluationResult. Carries: `acao_id`, `process_number`, `final_score` (in {0, 1, 3}), `is_override` (bool), `justification` (str | None — required when `is_override=True`, must be None otherwise), `evidence_references` (list[int] | None — chunk indices into `retrieved_chunks`; None means the Auditor did not use the field; [] means the Auditor explicitly supplied an empty set), and `created_at`. All original EvaluationResult status flags are preserved unchanged. A Review Outcome where `is_override=True` or where a manual score was assigned on a no_evidence_found/parse_failed result is an Auditor Intervention. `created_at` is set at the application/persistence boundary, not from client input.
+**Review Outcome**: The Auditor's validated record for one EvaluationResult. Carries: `acao_id`, `process_number`, `final_score` (in {0, 1, 3}; None only when `not_applicable`), `is_override` (bool), `not_applicable` (bool — **Não Aplicável**, Ações 45 and 46 only), `justification` (str | None — required when `is_override=True` or `not_applicable=True`, must be None otherwise), `evidence_references` (list[int] | None — chunk indices into `retrieved_chunks`; None means the Auditor did not use the field; [] means the Auditor explicitly supplied an empty set), and `created_at`. All original EvaluationResult status flags are preserved unchanged. A Review Outcome where `is_override=True` or where a manual score was assigned on a no_evidence_found/parse_failed result is an Auditor Intervention. `created_at` is set at the application/persistence boundary, not from client input.
 _Avoid_: audit record, final evaluation, validated score, auditor response
 
-**Final Score**: The authoritative Maturity Score for an Ação/Case pair after Auditor review — always in {0, 1, 3}. Produced by accepting `proposed_score` or overriding it. The Final Score coexists with `proposed_score` in storage; they may differ.
+**Final Score**: The authoritative Maturity Score for an Ação/Case pair after Auditor review — always in {0, 1, 3}. Produced by accepting `proposed_score` or overriding it. A Review Outcome marked **Não Aplicável** has none. The Final Score coexists with `proposed_score` in storage; they may differ.
 _Avoid_: confirmed score, definitive score, accepted score
 
 **Auditor Intervention**: A Review Outcome in which the Final Score was produced by the Auditor manually assigning a score rather than accepting the LLM's `proposed_score`. Applies to: any override (is_override=True), and any manual score assignment on a no_evidence_found or parse_failed EvaluationResult.
 _Avoid_: manual override, correction, human correction
+
+**Não Aplicável**: The Auditor's record that an Ação concerns a stage the project has demonstrably not reached, admitted only for Ações 45 and 46 (the selection of the winning bidder and the signing of the contract; Guide 4.1): a **Review Outcome** with no **Final Score** and a mandatory motivation, which takes the Ação out of the **Nota iPMP** (ADR-0076). Never inferred from missing evidence, which stays "não atendida" and counts 0.
+_Avoid_: N/A score, skipped, excluded, not evaluated
 
 ---
 
@@ -235,6 +238,7 @@ _Avoid_: manual override, correction, human correction
 - The **Auditor** produces one **Review Outcome** per **EvaluationResult**, carrying the **Final Score**
 - The **Nota iPMP** of a **Case** counts one **Final Score** or proposed **Maturity Score** per **Ação**; a new **Review Outcome** moves it at once
 - A **Review Outcome** either accepts the `proposed_score` (is_override=False) or overrides it (is_override=True) with a mandatory justification
+- A **Review Outcome** marked **Não Aplicável** carries no **Final Score** and takes its **Ação** out of the **Nota iPMP**; missing evidence never becomes it
 - An **Auditor Intervention** is a **Review Outcome** where the **Final Score** was not derived from the LLM's `proposed_score`
 - A **Case** has one `process_number` (required) and zero or one `contract_number` (optional)
 - A **Case** contains one or more **Document Artifacts**

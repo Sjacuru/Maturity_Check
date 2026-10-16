@@ -18,7 +18,7 @@
           Sem evidência
         </v-chip>
         <v-chip v-if="review" size="small" color="success" label>
-          <v-icon start size="small">mdi-check</v-icon>Revisado ({{ review.final_score }})
+          <v-icon start size="small">mdi-check</v-icon>Revisado ({{ review.not_applicable ? 'N/A' : review.final_score }})
         </v-chip>
       </div>
     </v-expansion-panel-title>
@@ -460,13 +460,14 @@
       <div v-if="review">
         <div class="text-subtitle-2 mb-2">Revisão submetida</div>
         <div class="d-flex align-center flex-wrap mb-2" style="gap: 8px;">
-          <v-chip :color="scoreColor(review.final_score)" label>
+          <v-chip v-if="review.not_applicable" color="info" label>Não aplicável</v-chip>
+          <v-chip v-else :color="scoreColor(review.final_score)" label>
             Score final: {{ review.final_score }}
           </v-chip>
           <v-chip v-if="review.is_override" color="warning" size="small" label>Override</v-chip>
         </div>
         <div v-if="review.justification" class="text-body-2 text-medium-emphasis">
-          Justificativa: {{ review.justification }}
+          {{ review.not_applicable ? 'Motivação' : 'Justificativa' }}: {{ review.justification }}
         </div>
       </div>
       <ReviewForm

@@ -32,15 +32,18 @@ class GateOverrideRequest(BaseModel):
 class ReviewSubmission(BaseModel):
     """Write-side request body for POST /evaluations/{acao_id}/review."""
 
-    final_score: int
+    final_score: int | None = None
     is_override: bool
     justification: str | None = None
     evidence_references: list[int] | None = None
+    # "Não aplicável" (ADR-0076): no score, with the motivation in
+    # `justification`. The route admits it only for NOT_APPLICABLE_ACOES.
+    not_applicable: bool = False
 
     @field_validator("final_score")
     @classmethod
-    def _validate_score(cls, v: int) -> int:
-        if v not in _VALID_SCORES:
+    def _validate_score(cls, v: int | None) -> int | None:
+        if v is not None and v not in _VALID_SCORES:
             raise ValueError(f"final_score must be one of {_VALID_SCORES}, got {v}")
         return v
 
@@ -53,6 +56,18 @@ class ReviewSubmission(BaseModel):
 
     @model_validator(mode="after")
     def _validate_override_invariants(self) -> ReviewSubmission:
+        if self.not_applicable:
+            if self.final_score is not None or self.is_override:
+                raise ValueError(
+                    "a not-applicable review has no final_score and is not an override"
+                )
+            if not self.justification:
+                raise ValueError(
+                    "justification is required and must be non-empty when not_applicable=True"
+                )
+            return self
+        if self.final_score is None:
+            raise ValueError("final_score is required unless not_applicable=True")
         if self.is_override:
             if not self.justification:
                 raise ValueError(
