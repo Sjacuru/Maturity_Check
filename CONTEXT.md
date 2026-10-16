@@ -76,7 +76,7 @@ _Avoid_: data quality, completeness, domain validity
 **Retrieval Profile**: A derived knowledge artifact (`data/retrieval_profiles/acao_NN.json`) containing the evidence ontology for one Ação — Evidence Intent, Retrieval Signal Concepts, Query Terms, Evidence Logic Patterns, and profile maturity level. Synthesised from IPMP, Rio Manual, acronym tables, and real-document observation; distinct from all three because it evolves and is not a canonical normative source.
 _Avoid_: query artifact, query file, search config, retrieval config
 
-**Profile Maturity**: The confidence level of a Retrieval Profile, reflecting how extensively it has been grounded in real PPP case documents. Three levels: `seed` (canonical sources only, not yet trusted for production), `observed` (validated against at least one real case document), `mature` (validated across multiple cases and sectors). Stored as `profile_maturity` in the profile JSON.
+**Profile Maturity**: The confidence level of a Retrieval Profile, reflecting how extensively it has been grounded in real PPP case documents. Three levels: `seed` (canonical sources only, not yet trusted for production), `observed` (validated against at least one real case document: in a population session (Stage B), or in full-process test cycles when the user so decides), `mature` (validated across multiple cases and sectors). Stored as `profile_maturity` in the profile JSON.
 _Avoid_: profile version, profile quality, profile completeness
 
 **Term Status**: The current confidence level of an individual Query Term within a Retrieval Profile, based on accumulated empirical evidence from retrieval testing. Four values: `active` (in use, untested), `experimental` (tentatively added, pending validation), `validated` (confirmed to contribute useful recall), `deprecated` (empirically shown to be noise; retained for auditability). Distinct from **Provenance**, which explains origin rather than confidence.
@@ -251,7 +251,7 @@ _Avoid_: N/A score, skipped, excluded, not evaluated
 - A **Retrieval Profile** contains one **Evidence Ontology** entry per letter-suffixed **Expected Product**
 - Each **Evidence Ontology** entry contains one **Evidence Intent** (Layer A), one or more **Retrieval Signal Concepts** (Layer B), one or more **Query Terms** (Layer C), and zero or more **Evidence Logic Patterns** (Layer D)
 - The ingestion module exposes **Retrieval Profiles** via `get_retrieval_profile_store()` alongside `get_ipmp_store()` and `get_rio_manual_store()`
-- **Profile Maturity** advances from `seed` to `observed` only after at least one real PPP case document has been used in a population session (Stage B)
+- **Profile Maturity** advances from `seed` to `observed` after at least one real PPP case document has been used in a population session (Stage B), or by the user's decision after full-process test cycles on one (the 19 seed profiles, 2026-10-16)
 - A Query Term with `synthetic` **Provenance** always starts at `experimental` **Term Status** — it is a hypothesis until promoted, never assembled into the active BM25 query by default
 
 ---

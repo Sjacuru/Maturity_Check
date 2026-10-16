@@ -223,7 +223,7 @@ Maturity_Check/
     ├── acronyms/
     │   └── acronyms.json        ← complete
     ├── retrieval_profiles/
-    │   └── acao_01.json … acao_46.json ← all 46: 27 observed, 19 seed (the 19 annotated with their cycle 3–6 behaviour, 2026-10-15)
+    │   └── acao_01.json … acao_46.json ← all 46 observed: 27 after a Stage B session, 19 promoted by the user on 2026-10-16 on test cycles 3–7, without one (ADR-0047 amendment)
     └── sector_taxonomy.json     ← versioned reference list of PPP sector labels, added 2026-08-21
 ```
 

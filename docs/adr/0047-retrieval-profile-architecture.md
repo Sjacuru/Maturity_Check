@@ -98,3 +98,11 @@ Each query term carries a `status` field recording current confidence from accum
 **Q6 — Chunk Context Expansion:** Deferred pending retrieval validation. Revisit after Recall@20 results show whether chunk boundaries are the binding constraint on evidence recovery.
 
 **Q7 — Reranking and Agent-Based Evidence Selection:** Deferred pending empirical validation results and revalidation of ADR-0009 (single LLM call per Ação). ADR-0009 was designed under retrieval quality assumptions that require empirical confirmation before extending the pipeline with reranking stages.
+
+## Amendment (2026-10-16): 19 profiles promoted without a population session
+
+- On 2026-10-16 the user had the 19 profiles still at `seed` promoted to `observed` (message Z: "fazer a promoção dos perfis seed"): Ações 6, 7, 16, 18, 19, 21, 24, 26, 27, 28, 29, 30, 34, 37, 38, 39, 41, 44 and 46.
+- The basis is not a population session. Each profile ran over a real case document, SMG-040_101607_2024, in 50 full processes (test cycles 3–7, 2026-10-13/15). Its `_meta.changelog` records the outcomes and the products with an accepted passage, and `stage_b_sources` stays empty.
+- Since ADR-0073 a case document tests a profile and never sources a term, so a session on one case can only test the profile, as these cycles did.
+- The rule above stands for any other promotion, and `mature` still needs more than one case.
+- No pipeline code reads `profile_maturity`, so the promotion changes no prompt, pool or score.
