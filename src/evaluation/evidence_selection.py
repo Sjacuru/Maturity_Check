@@ -347,6 +347,7 @@ def select_evidence(
         n_excluded = 0
         if genres and product_id not in exempt:
             ranked, n_excluded = _drop_instrument_text(ranked, genres)
+        ranked = _drop_empty_text(ranked)
         deduped = _prefilter_near_duplicates(ranked)
         return _select_for_product(
             product_id, deduped, profile_product, process_number, acao, memo=gate_memo,
@@ -514,6 +515,16 @@ def _drop_instrument_text(
     return kept, len(ranked) - len(kept)
 
 
+def _drop_empty_text(
+    ranked: list[tuple[float, RetrievedChunk]],
+) -> list[tuple[float, RetrievedChunk]]:
+    """The candidates that still have text once the extraction noise is
+    stripped. A chunk that is nothing but noise -- the rest of a signature
+    stamp the chunker cut off its page, "em https://..." -- has no passage
+    to judge, so it never takes a place in the examined pool."""
+    return [(score, chunk) for score, chunk in ranked if strip_extraction_noise(chunk.text)]
+
+
 def filter_focal_document(
     acao_id: int,
     process_number: str,
@@ -635,7 +646,8 @@ def _expand_anchors(
     this pass -- a member of the examined pool (skip_keys) or the neighbour of
     an earlier anchor -- is not asked again: its answer is already known, and
     re-asking only duplicated the rejected rows and spent expansion slots on
-    chunks that were already anchors.
+    chunks that were already anchors. A neighbour left with no text once the
+    extraction noise is stripped is not gated either.
     """
     negative_patterns = profile_product.negative_evidence_patterns if profile_product else []
     product_expansions: list[tuple[float, RetrievedChunk]] = []
@@ -658,6 +670,10 @@ def _expand_anchors(
                     stats.n_neighbors_genre_excluded += 1
                 continue
             stripped_text = strip_extraction_noise(neighbor.text)
+            if not stripped_text:
+                # Nothing but extraction noise (the rest of a signature stamp
+                # the chunker cut): there is no passage to judge.
+                continue
             call = _gate_chunk(
                 stripped_text, evidence_intent, concepts, negative_patterns,
                 acao=acao, product_id=product_id,

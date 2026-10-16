@@ -519,6 +519,91 @@ def test_strip_extraction_noise_is_noop_on_clean_text():
     assert es.strip_extraction_noise(text) == text
 
 
+# --- carimbo de assinatura (2026-10-16): o que o removedor deixava passar ---
+
+_URL = "https://acesso.processo.rio/sigaex/public/app/autenticar?n="
+
+
+def test_strip_extraction_noise_removes_a_password_stamp_with_its_wrapped_url():
+    """"Assinado com senha" was not covered: the gate and the scorer read the
+    signer's name and the document number. Only the stamp goes; the sector
+    line above it is the act's own text."""
+    text = (
+        "Conteúdo substantivo do trecho.\n"
+        "SMCG\n"
+        "Assinado com senha por FULANO DE TAL - 15/04/2024 às 20:06:08.\n"
+        f"Documento Nº: 1234567-6610 - consulta à autenticidade em {_URL}1234567-\n"
+        "6610"
+    )
+    assert es.strip_extraction_noise(text) == "Conteúdo substantivo do trecho.\nSMCG"
+
+
+def test_strip_extraction_noise_removes_a_stamp_with_a_cargo_and_the_ocr_logo():
+    text = (
+        "Conteúdo substantivo do trecho.\n\n"
+        "Autenticado com senha por FULANO DE TAL - Assessor / 12345 - 28/05/2024 às 16:10:50.\n\n"
+        f"Documento Nº: 7654321-6610 - consulta à autenticidade em {_URL}7654321-\n"
+        "6610 SIGAA"
+    )
+    assert es.strip_extraction_noise(text) == "Conteúdo substantivo do trecho."
+
+
+def test_strip_extraction_noise_removes_a_stamp_cut_at_the_end_of_the_chunk():
+    """The chunker cuts a page wherever its size runs out, so the stamp can end
+    anywhere: after "consulta à autenticidade", after the dash, in the name."""
+    for corte in (
+        "Autenticado digitalmente por FULANO DE TAL - 15/04/2024 às 20:38:51.\n"
+        "Documento Nº: 123.456-789 - consulta à autenticidade",
+        "Autenticado digitalmente por FULANO DE TAL - 15/04/2024 às 20:38:51.\n"
+        "Documento Nº: 123.456-789 -",
+        "Autenticado digitalmente por FULANO DE",
+    ):
+        text = "Conteúdo substantivo do trecho.\n" + corte
+        assert es.strip_extraction_noise(text) == "Conteúdo substantivo do trecho.", corte
+
+
+def test_strip_extraction_noise_removes_the_rest_of_a_stamp_opening_a_chunk():
+    for resto in (
+        f"em\n{_URL}123.456-789",
+        f"consulta à autenticidade em\n{_URL}123.456-789",
+        "DE TAL - 28/05/2024 às 16:20:57.\n"
+        f"Documento Nº: 123.456-789 - consulta à autenticidade em\n{_URL}123.456-789",
+    ):
+        assert es.strip_extraction_noise(resto) == "", resto
+
+
+def test_strip_extraction_noise_removes_the_official_gazette_stamp():
+    """The Diário Oficial signs its pages with the date written out."""
+    text = (
+        "Conteúdo substantivo do trecho.\n"
+        "Assinado Digitalmente por EMPRESA DE PUBLICAÇÕES S/A - 00.000.000/0001-00 "
+        "Data: Sexta-feira, 24 de Maio de 2024 às 4:01:03 Código de Autenticação: 9af4b9e6"
+    )
+    assert es.strip_extraction_noise(text) == "Conteúdo substantivo do trecho."
+
+
+def test_strip_extraction_noise_removes_a_validation_url_alone_on_its_line():
+    """A scanned page whose stamp the OCR read only in part."""
+    text = (
+        "Conteúdo substantivo do trecho.\n\n"
+        "processo.rio/sigaex/public/app/autenticar?n=123.456-789 SIGA"
+    )
+    assert es.strip_extraction_noise(text) == "Conteúdo substantivo do trecho."
+
+
+def test_strip_extraction_noise_keeps_clauses_about_signatures_and_authenticity():
+    """An edital that rules on signatures is content: no date and time after
+    the signer, no capital letter opening the line, or a name that is not one."""
+    text = (
+        "O documento deve ser assinado pelo representante legal da LICITANTE, ou "
+        "assinado digitalmente, na forma disposta no EDITAL.\n"
+        "Serão admitidos certificados obtidos pela internet, desde que o documento "
+        "contenha a indicação do site em que poderá ser verificada a autenticidade.\n"
+        "Assinado digitalmente por ambas as partes, o contrato entra em vigor."
+    )
+    assert es.strip_extraction_noise(text) == text
+
+
 def test_select_evidence_passes_retrieval_signal_concepts_to_gate(monkeypatch):
     """A chunk that doesn't match evidence_intent's literal framing sentence
     but does match one of the product's retrieval_signal_concepts must still
@@ -1409,3 +1494,43 @@ def test_near_duplicate_within_a_single_product_is_still_dropped(monkeypatch):
     result = select_evidence(1, "P001", {"1a": [(0.9, a), (0.8, b)]})
 
     assert [c.page_number for c in result.accepted] == [10]
+
+
+# --- trecho que so tinha ruido (2026-10-16) ---
+
+def test_a_candidate_that_is_only_noise_never_takes_a_place_in_the_examined_pool(monkeypatch):
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    _no_neighbors(monkeypatch)
+    stub = StubGateClient(lambda system, user: _RELEVANT_NO)
+    eval_cfg._gate_client = stub
+    candidatos = [
+        (0.9, make_chunk(page_number=1, text=f"em\n{_URL}123.456-789")),
+        (0.8, make_chunk(page_number=2, text="trecho com conteudo")),
+    ]
+
+    result = select_evidence(1, "P001", {"1a": candidatos})
+
+    assert _asked_texts(stub) == ["trecho com conteudo"]
+    assert result.product_reports[0].n_examined == 1
+
+
+def test_a_neighbour_that_is_only_noise_is_not_gated(monkeypatch):
+    """The rest of a stamp the chunker cut is the next chunk of the page, so it
+    came back as the neighbour of every accepted passage of that page."""
+    import ingestion.retrieval_profile as _rp
+    monkeypatch.setattr(_rp, "_store", _profile_with_evidence_intent("1a", "evidencia de X"))
+    vizinho = make_chunk(page_number=1, chunk_index=1,
+                         text=f"consulta à autenticidade em\n{_URL}123.456-789")
+    monkeypatch.setattr(es, "fetch_neighbor_chunks", lambda *a, **k: (None, vizinho))
+    monkeypatch.setattr(es, "_chunk_genres", lambda pn: {
+        ("doc.pdf", 1, 0): "OUTRO", ("doc.pdf", 1, 1): "OUTRO",
+    })
+    stub = StubGateClient(lambda system, user: _RELEVANT_YES)
+    eval_cfg._gate_client = stub
+
+    anchor = make_chunk(page_number=1, chunk_index=0, text="ancora aceita")
+    result = select_evidence(1, "P001", {"1a": [(0.05, anchor)]})
+
+    assert len(stub.calls) == 1                       # only the anchor was asked
+    assert [c.chunk_index for c in result.accepted] == [0]

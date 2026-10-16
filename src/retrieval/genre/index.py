@@ -24,10 +24,12 @@ from retrieval.genre.classifier import INSTRUMENT, OTHER, classify_chunks
 from retrieval.genre.segmentation import pages_by_file, segment_file
 from retrieval.schema.ddl import GENRE_TABLES_DDL
 
-# Bump on any change to the classifier markers, the type lexicon or the
-# segmentation rules: an index built under another version is rebuilt on its
-# next read.
-GENRE_RULES_VERSION = "2026-10-13.1"
+# Bump on any change to the classifier markers, the type lexicon, the
+# segmentation rules or the noise stripper both of them read
+# (extraction.noise): an index built under another version is rebuilt on its
+# next read. 2026-10-16.1: the stripper also removes the signature stamps it
+# used to let through.
+GENRE_RULES_VERSION = "2026-10-16.1"
 
 
 @dataclass(frozen=True)
