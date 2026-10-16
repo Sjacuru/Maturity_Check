@@ -15,6 +15,14 @@ call or to the scorer (the 2026-10-03 acceptance runs could not: only the
 final evidence set was kept, and one gate flip cascades through the anchor
 target, the cross-product dedup and the budget trim into a different set).
 
+Since 2026-10-16 (finding F8 of the scorer verification) the file also keeps,
+per Ação per run, what the scorer wrote: the justificativa of each product, the
+reasoning field, the uncertainty flag, and the model's analysis channel with the
+finish reason and the token count ("scorer"). The production client's complete()
+is complete_detailed().content, so the tap sends the same request and returns the
+same bytes; it only keeps what complete() throws away. --no-record-scorer turns
+it off.
+
 Target: >=90% modal agreement per Ação across 10 runs, whatever the score is.
 
 Deliberately does NOT persist: a measurement run must never clobber the stored
@@ -105,6 +113,60 @@ def _reasoning_detail(result) -> list:
         for r in result.rejected_chunks
     ]
     return rows
+
+
+RECORD_SCORER = True
+
+
+class _ScorerTap:
+    """Wraps the production scorer client (F8, 2026-10-16). complete() goes through
+    complete_detailed(), as the client's own complete() does, and keeps the last
+    completion: the analysis channel, the finish reason and the token count, which
+    complete() discards. Every other attribute is the wrapped client's."""
+
+    def __init__(self, inner):
+        object.__setattr__(self, "_inner", inner)
+        object.__setattr__(self, "last", None)
+
+    def complete(self, system, user, schema=None):
+        c = self._inner.complete_detailed(system, user, schema)
+        object.__setattr__(self, "last", c)
+        return c.content
+
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
+
+    def __setattr__(self, name, value):
+        setattr(self._inner, name, value)
+
+
+def _install_scorer_tap():
+    """Put the tap in front of the configured scorer client, if it can give details."""
+    from evaluation import configure_llm_client
+    from evaluation._config import get_llm_client, get_model, get_provider
+
+    inner = get_llm_client()
+    if not hasattr(inner, "complete_detailed"):
+        print("scorer tap NOT installed: the scorer client has no complete_detailed()")
+        return None
+    tap = _ScorerTap(inner)
+    configure_llm_client(tap, provider=get_provider(), model=get_model())
+    print("scorer tap installed: justificativa, reasoning and analysis channel are kept")
+    return tap
+
+
+def _scorer_detail(result, tap) -> dict:
+    """What the scorer wrote for one Ação in one run (F8). analise is None when the
+    scorer was not called (no evidence) or the tap is off."""
+    c = tap.last if tap is not None else None
+    return {
+        "justificativas": {v.product_id: v.justificativa for v in result.product_verdicts},
+        "reasoning": result.reasoning,
+        "uncertainty": result.uncertainty_flag,
+        "analise": getattr(c, "reasoning", None),
+        "finish": getattr(c, "finish_reason", None),
+        "tokens": getattr(c, "completion_tokens", None),
+    }
 
 
 def _gate_detail(result) -> dict:
@@ -361,9 +423,15 @@ def main() -> int:
         help="store the gate reasoning of every verdict in the JSON (gate.reasoning), so the "
              "target-product confusion rate can be read across independent processes",
     )
+    ap.add_argument(
+        "--no-record-scorer", action="store_true",
+        help="do not keep the scorer's justificativa, reasoning and analysis channel in the "
+             "JSON (kept by default since 2026-10-16, finding F8 of the scorer verification)",
+    )
     args = ap.parse_args()
-    global RECORD_REASONING
+    global RECORD_REASONING, RECORD_SCORER
     RECORD_REASONING = args.record_reasoning
+    RECORD_SCORER = not args.no_record_scorer
     if args.gate_variant:
         _install_gate_variant(args.gate_variant)
     patch = _apply_candidates(args.candidates, args.apply) if args.candidates else {}
@@ -389,6 +457,8 @@ def main() -> int:
         configure_gate_ledger(GateLedger(ledger_path))
         print(f"gate verdict ledger ON: {ledger_path} ({GateLedger(ledger_path).count()} verdicts before this run)")
 
+    tap = _install_scorer_tap() if RECORD_SCORER else None
+
     acao_ids = sorted(get_ipmp_store().acoes)
     if args.acoes:
         wanted = {int(x) for x in args.acoes.split(",")}
@@ -412,6 +482,7 @@ def main() -> int:
     accepted_counts: dict[int, list[int]] = collections.defaultdict(list)
     errors: dict[int, list[str]] = collections.defaultdict(list)
     details: dict[int, list[dict]] = collections.defaultdict(list)
+    scorer: dict[int, list[dict]] = collections.defaultdict(list)
 
     for run in range(1, args.runs + 1):
         started = time.monotonic()
@@ -420,6 +491,8 @@ def main() -> int:
         # a production run that failed on the missing ones (unknown -> no cap).
         prior: dict[int, object] = {}
         for acao_id in acao_ids:
+            if tap is not None:
+                object.__setattr__(tap, "last", None)
             try:
                 accepted, rejected, gate_reports = _retrieve_and_select(acao_id, args.process)
                 result = evaluate(
@@ -437,11 +510,13 @@ def main() -> int:
                 signatures[acao_id].append(())
                 accepted_counts[acao_id].append(0)
                 details[acao_id].append({})
+                scorer[acao_id].append({})
                 continue
             outcomes[acao_id].append(_outcome(result))
             signatures[acao_id].append(_accepted_signature(result))
             accepted_counts[acao_id].append(len(result.retrieved_chunks))
             details[acao_id].append(_gate_detail(result))
+            scorer[acao_id].append(_scorer_detail(result, tap) if RECORD_SCORER else {})
         print(f"  run {run}/{args.runs} done in {time.monotonic()-started:.0f}s")
 
     print("\n" + "=" * 86)
@@ -501,6 +576,10 @@ def main() -> int:
             # Gate rejections, per-product counts and scorer verdicts per run
             # (see _gate_detail). Added after the 2026-10-03 acceptance runs.
             "gate": {str(a): details[a] for a in acao_ids},
+            # F8 (2026-10-16): per Ação per run, the scorer's justificativas, reasoning,
+            # uncertainty and analysis channel (see _scorer_detail); empty when off.
+            "scorer": {str(a): scorer[a] for a in acao_ids},
+            "record_scorer": RECORD_SCORER,
             # The in-memory candidate patch this process ran with (empty = the
             # profiles as they are on disk).
             "patch": patch,

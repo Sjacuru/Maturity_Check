@@ -21,7 +21,7 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
 
 ---
 
-## Strategic Decisions (as of 2026-05-20; #2, #4 and #8 updated 2026-10-15)
+## Strategic Decisions (as of 2026-05-20; #2 and #4 updated 2026-10-15, #8 on 2026-10-16)
 
 1. **Primary reference: IPMP** — operationalises each action into concrete expected
    products, scoring rubrics (0/1/3), and scored examples
@@ -63,8 +63,9 @@ human-validated — the system surfaces evidence, the auditor confirms scores.
 8. **Scope: all 46 Ações.** Phase 1 began with Ação 1 only. Since 2026-09-07 every
    Ação has its IPMP file and retrieval profile, and every assessment evaluates all
    46 (the scope comes from the IPMP store, ADR-0030). Every measurement so far uses
-   one case (SMG-040); a second case document waits until the score is shown stable
-   or within an accepted margin (the user, 2026-10-15).
+   one case (SMG-040). The stability margin was accepted on 2026-10-16, and a second
+   case document waits until the scorer has been verified in its whole structure
+   (the user, 2026-10-16).
 9. **IPMP ingestion: manual.** PDF structure is mixed text/image; data is static.
    Expected products sub-items (a/b/c/d) per action become BM25 search queries.
 10. **Development methodology:** CONTEXT.md → ADR → to-PRD → grill-me per module.
@@ -229,6 +230,159 @@ Maturity_Check/
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-16 (75th pass) — THE USER'S MESSAGE X (verbatim): *"As margens estão aceitas, mas não vou apresentar um novo processo até que façamos a verificação completa no esquema e texto que compõe o scorer. Isso era parte do plano. Em geral, verificar se os chunks entregues ao scorer eram consistentes e iguais. Assim, eliminaríamos o gate como indutor de erros no scorer, por fazer variar os chunks que o scorer analisa e com isso varia também suas notas e reasoning. Agora vamos tratar mais detidamente sobre o scorer, após aceitar a margem de +-5%. O scorer precisa ser verificado em toda sua estrutura, verificando se as construções dinâmicas por ação e as contruções fixas carregam um nível adequado de acuracidade, suficiente para reduzir a possibilidade de geração de dúvidas no momento do reasoning. Busca o plano de melhoria que foi combinado no corpo do projeto. Enquanto faz isso, mostra pra mim como ficaram os prompts que vão ao gate, não todos, digamos que 5 não problemáticos, cinco problemáticos e cinco que citam outra ação."* THE STABILITY MARGIN IS ACCEPTED. The second case document stays blocked until the scorer has been verified in its whole structure. Done: the agreed plan was found, the 15 gate prompts were published, the scorer was audited statically, its reasoning was measured on fixed batches (M1), and two output-contract candidates were measured against it (M2). Neither candidate passes the rules written before M2, so nothing is adopted. Message Y (below): C and CH are not adopted. M3 measured C2 and C2M against today's prompt: no candidate passes the rules written before, and by rule E the momento leaves, so today's prompt stays. F8 is in the reproducibility harness. No prompt changed in `src/`.**
+
+- **Reading of X:**
+  - the margin is accepted as proposed in the 73rd pass: the nota within ±0.05 of the cycle median, the same Guide band, and each dimension within ±0.1, each in at least 9 of 10 processes. C4, C6 and C7 meet it;
+  - no new case until the scorer (schema, fixed text and per-Ação text) is verified for accuracy enough to reduce doubt in its reasoning;
+  - in the user's own diagnosis (CICLO1 §7) the batch had to be made constant before the scorer; that is done through C7, and the scorer is next.
+- **The agreed plan, found:** `scratchpad/CICLO1_2026-10-04.md` §4.3, item 3 (recommended order 1 → 3 → 2).
+  - Capture the scorer's reasoning on both sides on fixed batches, N passes at medium, and classify each doubt as criterion ambiguity or noise.
+  - A prompt candidate (for example the profile's `evidence_intent` in the scorer's product block) enters only as a proposal with before and after.
+  - Any prompt change waits for the user's OK.
+- **The 15 gate prompts:** https://claude.ai/artifact/MjfMVmE5cHwMM7dhnoYuvM (private; version 2 corrects the citation counts). Built by `$W/monta_amostras_gate.py` and `$W/gera_pagina_gate.py`.
+  - Five stable (3a, 22.2a, 40b, 18b, 25e), five problematic (32a, 23.3, 35.2e, 37, 2c), five citing another Ação (33a, 35.2c, 22.1, 27a, 26a).
+  - In C3, C6 and C7 the gate judged chunks for 93 products. 61 only rejected, always the same way. 32 accepted something at least once, and only 3a never flipped a page.
+  - 77 of the 164 gate prompts cite another Ação by number:
+    - 68 in negative patterns (83 of the 195 patterns);
+    - 10 through the sibling list;
+    - 3 in the product's own IPMP text (33a, 34b, 35.1);
+    - 1 in the criterion itself (43a).
+    The first count (71) missed the plural forms ("Ações 26 e 27", "ações … (10, 26, 27 e 28)"). The detector is now `$W/citacoes_ipmp.py`.
+  - Side finding, not fixed: the noise stripper leaves the signature line in 43 of the 1 429 chunks. These are signatures that read "Assinado com senha por …", or signature blocks cut at a chunk boundary. Gate and scorer read the signer's name and the document number there; the page redacts the names.
+- **The scorer on identical batches** (stored data from C2–C7, no GPU; `$W/scorer_lote_identico.py`):
+  - All 904 evaluations with evidence have `score_source=computed`, so the schema and the parser are reliable.
+  - 93 (Ação, identical batch) groups recur. They hold 328 product verdicts given on byte-identical prompts, and 25 of them vary.
+  - 32a is credited in 41 of 47. The batch is one chunk, `_1` p.303, the concessionaire's operating-staff cost table. IPMP 32a is the cost of the órgão's own team, so the right verdict is F.
+  - 10a is credited in 27 of 45 on p.763 + p.764, and in 2 of 12 on p.763 alone.
+  - Smaller cases: 22.2b 37/38, 35.2e 14/16, 13c 6/7, 26a 2/6.
+- **Static audit of the scorer** (`$W/audita_scorer.py`, `$W/recontagem_citacoes.py`; the 46 scorer system prompts digest to `33034493dec5743e`).
+  - Fixed text:
+    - F1: the instruction asks for "reasoning", "score" and "uncertainty". It never names `products`, `evidenced` or `justificativa`, the field that decides the score (ADR-0058), and "evidenciado" is never defined.
+    - F2: one boolean, two thresholds ("claramente evidenciados" for a 3, plain "evidenciados" for a 1).
+    - F3: no rule for a product that is present but deficient, which the IPMP's Parcialmente examples treat as partial.
+    - F4: the uncertainty rule includes "produto sem nenhuma evidência recuperada". This contradicts the empty-block rule and makes the flag fire almost always (38 of 54 calls at medium, 2026-10-03).
+    - F5: the system prompt says "evidências fornecidas acima", but the evidence comes after it, in the user message.
+    - F6: the typo "processo licitário".
+    - F7: the summary line says "com evidência" where it means "com trechos aceitos pelo gate".
+    - F8: `complete()` discards the analysis channel, and the cycle JSONs keep neither the justificativa nor the reasoning.
+    - F9: the Guide's definitions of the three levels (§4.1) are in neither the fixed text nor the IPMP fields.
+    - F10: the passages are called "evidências" (role, titles, marker, summary) before the scorer judges them.
+    - F11: in the 6 Ações with one scored product (3, 37, 38, 39, 44, 45), the counted score can only be 0 or 3.
+  - Per-Ação text:
+    - D1: 33 Ações have a non-scored header ending in ':', and 134 of the 164 scored products complete its sentence. Each evidence block shows only the fragment: 32a reads "Composição da equipe e estrutura de governança." without "custos de".
+    - D2: the scorer prompts of 22 Ações cite another Ação by number, and the scorer never sees the cited Ação.
+    - D3: `por_que_importante` and `momento_ideal` never reach the scorer, and 10 Ações cite others there. The 41/40 and 34/33 scope distinctions live only there; the 35/22 one is also in the `excecoes` of Ação 35.
+    - D4: the worked examples are 42 % of the system prompt (median 5 860 chars).
+    - D5: the gate reads the profile (concepts on 164 products, negatives on 125, 195 patterns), and the scorer reads only the IPMP text. A confound the gate lets through therefore meets no exclusion at the scorer.
+  - Candidates (none applied; each needs a measurement and the user's OK):
+    - define "evidenciado" with one threshold, and explain the `products` field;
+    - repeat the header qualifier in the titles of fragment blocks;
+    - bring the IPMP's own scope-distinction sentences into the scorer prompt;
+    - drop the empty-product clause from the uncertainty rule;
+    - fix "acima" and "licitário";
+    - reword the summary line;
+    - capture the analysis channel;
+    - a three-state verdict (changes ADR-0058).
+    Editing IPMP texts also changes gate prompts, while builder changes touch only the scorer. Any change to all scorer prompts is judged by full-process cycles.
+- **M1, today's scorer on fixed batches** (`scripts/diagnostics/measure_scorer_reasoning.py`, new):
+  - **Run:** 20 batches × 10 passes = 200 calls, 0 errors, 01:41–02:11. Outputs `scratchpad/acc/scorer_raciocinio.{json,log}`; readers `$W/analisa_scorer_raciocinio.py` and `$W/duvidas_scorer.py` → `$W/acc_scorer_raciocinio.txt`.
+  - **Setup:** the gate is not called. The stored gate verdicts of a C6/C7 process are replayed inside `select_evidence`, and the rebuilt batch equals the stored one (20/20). The production prompt is byte-identical in every pass.
+  - **Batches:** 13 consistent, 4 tolerable, 3 inconsistent (A13 4, A37-C7r6 4, A46 3); 18 changes against the mode.
+  - **Justifications:** read one by one, 7 of the 8 varying products have the same reading in all 10 passes. What varies is the translation of "parcialmente atendido" into the boolean `evidenced`. 4 calls contradict their own justification (26a ×2, 37, 10a).
+  - **Uncertainty:** true in 150 of 200 calls, and 75 analyses tie it to an empty product (F4). 0 of 200 reasonings cite another Ação, and the analysis never mentions the Exceções section.
+  - **32a:** the concessionaire's operating-staff cost table is credited in 10/10, and no call asks whose costs they are.
+  - **Classification** (the agreed plan's question): criterion ambiguity in the output contract, not reading noise.
+- **M2, two candidates against today's prompt** (`scripts/diagnostics/measure_scorer_candidates.py`, new):
+  - **Run:** arms atual, C and CH on the same 20 batches, 10 passes, the (batch, arm) order shuffled in each pass. 600 calls, 02:14–03:47, 1 timeout. The criterion was written before the first call (`scratchpad/acc/criterio_candidatos_scorer.txt`). Outputs `scratchpad/acc/scorer_candidatos.{json,log}`; readers `$W/analisa_candidatos.py` → `$W/acc_candidatos_final.txt`, `$W/duvidas_candidatos.py`, `$W/compara_sessoes_scorer.py`, `$W/le_justificativas_m2.py`, `$W/le_inversoes_m2.py`.
+  - **C:** the Guide §4.1 three levels per product. The schema field is `nivel` (atendido / parcial / nao_atendido), the justification comes before it, and each level is defined. The count gives 3 if all products are atendido, 1 if any is atendido or parcial, else 0. F4–F7, F9 and F10 are fixed.
+  - **CH:** C plus the non-scored header repeated in the title of each fragment block (D1).
+  - **Results (atual / C / CH):**
+    - batches consistent 11/15/16, tolerable 7/2/2, inconsistent 2/3/2;
+    - changes against the mode 16/14/12; points outside the mode 28/17/14;
+    - right outcome on the 14 batches with a fixed reading 103/94/94 of 140;
+    - uncertainty 155 of 199 / 27 / 22 of 200;
+    - field against its own justification 3/0/0 (read by hand); the model's own score ≠ the counted one 16/0/0;
+    - tokens per call 854 / 1 061 / 1 126.
+  - **Rules A–E:** A fails for both (the inconsistent batches are not fewer). B fails for both (94 < 103). C passes for both. D is reported: 3a stays 3, the three 37 batches move to mode 1 (the Guide's "parcial"), and 10a r5 moves from mode 0 to 1. E: CH is not preferred over C, being identical on the scope batches. **Neither candidate is adopted.**
+  - **What three levels fix:** the translation doubt. 13c, 2c, 32a, 26a and 10a r10 are constant 10/10; contradictions go 3 → 0; the model's score equals the counted one in all 400 candidate calls; uncertainty tied to an empty product goes 71 → 4 and 2.
+  - **What they do not fix:** the gate's wrong-scope confusions (32a, 13c, 35.2e, 42d) are credited "parcial" in every pass.
+    - Today's binary credits them most of the time and refuses by chance, and rule B counts those refusals as right.
+    - No call in any arm asks whose team 32a's costs belong to.
+    - The profiles' negative patterns, which only the gate reads, do not name these classes (13c has none).
+    - The scope sits in the IPMP's `por_que_importante` (for 32: "recursos de suporte à gestão do projeto"), which the scorer never receives.
+  - **Where the doubt now sits:** the facts are the same in every pass, and the level oscillates between neighbours.
+    - 46.1 (6 parcial, 4 nao_atendido): a risk-matrix line telling the signing to follow due process. Does a rule about an act record that it happened?
+    - 37, a single product: how much of the set is enough. A level step is now worth 1 or 2 points, not 3.
+    - The hesitation index of the analysis channel does not fall.
+  - **Session effect in the scorer:** today's prompt is byte-identical in M1 and M2 (20/20 hash pairs).
+    - Yet 46.1 was credited 7/10 in M1 and 1/10 in M2 (37 r6: 6 vs 4; 13c: 6 vs 7), so a rate from one session is not the batch's rate.
+    - Pooled, today's arm is right in 200 of 280 calls (71 %), against 94 of 140 (67 %) for C and CH.
+    - By mode (not pre-registered): atual 10 of 14 batches in M2 and 9 in M1, C and CH 9. The only batch lost is 46.1.
+  - **Size of C2:** `por_que_importante` + `momento_ideal` add a median 1 738 characters, +30 % on the median system prompt.
+- **Page:** https://claude.ai/artifact/1Hn43gG8baHoZpdojDKxuP (private; built by `$W/gera_pagina_scorer.py` from `$W/sintese_m2.json`).
+- **Message Y (verbatim):** *"Adotar C ou CH agora? não. / Medir C2? C2 é C mais o "Por que é importante" e o "Momento ideal". No entanto, o "momento ideal" é abstrato para o scorer. A importância é um conceito estático daquele produto, mas o momento não é capturado só com conceito, pois é temporal e procedimental. Para usar momento ideal é preciso cercar o prompt com ideais que o ambientem naquela ação. Se isso for possível, mantemos e testamos, se isso não for possível, avalie retirar do prompt para evitar halucinação por prover informação que não apresenta contexto. / Tempestividade. A definição de Atendido do Guia pede evidência "clara, completa e tempestiva"; C deixou "tempestiva" de fora, mas incluir tempestiva requer um contexto similar ao tópico anterior. Se eu digo que é tempestiva, tenho que fornecer parâmetros que a LLM possa trabalhar para identificar essa tempestividae, caso contrário o retorno será o que a LLM achar adequado, que simplificadamente é um tiro no escuro, pode me dar qualquer resultado. / Registro do scorer. Continua adiado. / Telemetria (F8). Os JSON de ciclo não guardam justificativa nem reasoning, e o cliente descarta o canal de análise. Guardá-los no harness de reprodutibilidade evita um harness à parte em cada verificação como esta. / Itens que independem disto: o commit (CLAUDE.md e os dois scripts de medição); parar a tarefa 8083 (PID 24416); um /assess novo; o rótulo "Inicial"; N/A para 45/46; a promoção dos perfis seed; a linha de assinatura que o removedor de ruído deixa passar."*
+- **Reading of Y:**
+  - C and CH are not adopted.
+  - C2 = C + "Por que é importante". The "Momento ideal" enters only if it can be situated in the Ação; if not, it leaves, so as not to give the scorer information without context.
+  - "tempestiva" enters only with parameters the model can work with.
+  - The scorer ledger stays deferred.
+  - F8 is read as approved, in the diagnostics harness only.
+  - The independent items were listed without a decision; none was acted on.
+- **Momento and tempestividade, evaluated:**
+  - The Guide defines tempestividade (§5.1.1, p. 196; FAQ 6, p. 239): a document counts only if it was produced before the decision it supports or before the contracting, and "estudos bem estruturados, mas intempestivos" do not fulfil the action. Applying it needs each document's production date and the decision's date.
+  - The scorer sees only `[Arquivo | Página]` per passage. The pipeline extracts no document date, and the document index (ADR-0074) stores boundaries, title and genre, not dates. So the scorer cannot test tempestividade, and "tempestiva" stays out of every arm. A later route: extract document dates into the document index and show them in the passage header (a separate change).
+  - `momento_ideal`: 17 Ações (1–5, 11–17) share "Fase inicial de estudo de viabilidade do empreendimento." and 9 (29–36, 38) share "Após a definição da melhor alternativa e antes da licitação."; the others name a milestone or another Ação.
+  - The Ação can be situated with canonical data: its fase and block (1–20, 21–37, 38–46), the five transition points, and the typed edges of `dependencias.json` with the titles of the related Ações. The passages cannot be situated. So the momento enters only as context, with a usage rule (the passages carry no date; no level is granted or denied on an assumption about when a document was produced), and only in a separate arm, C2M, so that a hallucination would show against C2.
+- **M3, C2 and C2M against today's prompt** (arms added to `scripts/diagnostics/measure_scorer_candidates.py`; criterion written before the first call: `scratchpad/acc/criterio_c2_scorer.txt`):
+  - C2 = C + the IPMP's `por_que_importante`, verbatim, between the Ação and "O que esperar".
+  - C2M = C2 + "Momento desta Ação no processo" after the products: fase and block, transition point, `momento_ideal`, related Ações with titles, and the usage rule.
+  - Arms atual, C, C2 and C2M on the same 20 batches, 10 passes, seed 20261018. Runner `$W/scorer_c2_runner.py`, started 11:31 with the GPU free (0 %); outputs `scratchpad/acc/scorer_c2.{json,log}`; reader `$W/analisa_c2.py` (it reproduces M2's totals exactly) → `$W/acc_m3_final.txt`; hand reading `$W/le_m3.py` → `$W/acc_m3_leitura.txt`.
+  - **Interrupted and resumed.** At 12:49, in pass 7, the local SSH tunnel dropped (WinError 10054, then 10061), and three failures in a row stopped the run. The server did not restart (the same llama-server since 15/10).
+    - `measure_scorer_candidates.py` gained `--retoma`: it checks seed, arms, passes and the prompt hashes, keeps the calls without error and redoes the rest in the same order (the seed reshuffles every pass).
+    - It also retries each call twice more, 45 s apart; failures are kept in `falhas_anteriores`.
+    - Resumed at 12:57 by `$W/scorer_c2_retoma_runner.py`: 498 calls kept, the 3 failed ones redone in place. It ended at 13:44 with `FIM rc=0` and closed the tunnel. 800 calls without error.
+  - Rules: A, B and C as in M2. B2 is new: the right modes on the 14 fixed batches must not fall. E decides the momento: C2M must not be worse than C2 on changes, inconsistent batches, right calls and right modes, and no product may fall from atendido or parcial to nao_atendido on timing-based justifications.
+  - **Results (atual / C / C2 / C2M):**
+    - batches consistent 11/16/15/16, tolerable 5/2/2/3, inconsistent 4/2/3/1;
+    - changes against the mode 24/11/15/7; points outside the mode 38/11/15/8;
+    - right calls on the 14 fixed batches 102/92/93/99 of 140; right modes 9/9/9/10 of 14;
+    - uncertainty 155/29/24/24 of 200; the model's own score ≠ the counted one 22/0/0/0;
+    - field against its own justification, read by hand: atual 1 (46.1, pass 2), candidates 0;
+    - tokens per call 861 / 1 077 / 1 050 / 1 078.
+  - **Rules:** A passes for the three candidates; B fails for the three (92, 93 and 99 < 102); B2 passes (9, 9 and 10 vs 9); C passes. **No candidate passes A, B, B2 and C, so none is proposed and today's prompt stays.**
+  - **Where B is lost:** on the four batches where the gate let through a passage of another scope (32a, 13c, 35.2e, 42d), the mode is wrong in all four arms. There the atual gets 8 of 40 calls right by refusing at random, and the candidates none ("parcial" in every pass). On the other 10 fixed batches C2M gets 99 of 100 right and the atual 94; the difference is 46.1.
+  - **`por_que_importante` (C2 against C):** nothing measurable (changes 15 vs 11, inconsistent 3 vs 2, right calls 93 vs 92, right modes 9 vs 9, all within the session effect). No C2 or C2M justification asks whose team 32a's costs belong to.
+  - **Rule E, the momento:**
+    - C2M beats C2 on all four numbers (changes 7 vs 15, inconsistent 1 vs 3, right calls 99 vs 93, right modes 10 vs 9).
+    - But 46.1's mode fell from parcial to nao_atendido with 9 of 9 justifications flagged by the timing detector, so **by the letter the momento leaves**.
+    - Read one by one, those justifications say the passage is a rule about the signing procedure, not the record that the contract was signed: the right outcome (expected 0). The detector fired on "tempestivamente", a word of 46.1's own criterion, present in every arm's prompt.
+    - No justification and no analysis cites the momento section ("momento ideal" 0 times; "fase" only as "fase anterior" or "em fase de elaboração"). The other fall, 37 r3 (C2 parcial 6/4, C2M nao_atendido 7/3), cites no timing (0 of 7).
+    - The decision does not hinge on E: C2M fails B anyway.
+  - **Session effect again:** with a byte-identical prompt the atual moved between sessions (M2: 16 changes, 2 inconsistent; M3: 24 and 4), so rule A passes now where it failed in M2; C barely moved (14 and 3 → 11 and 2). 46.1 under the atual: credited 7/10 in M1, 1/10 in M2, 6/10 in M3.
+  - **What the verification found:**
+    - With fixed batches the scorer reads passages consistently; its doubt is criterion ambiguity in the output contract (a boolean over a three-level rubric).
+    - The three levels remove that doubt but do not make these outcomes more right, because the remaining error is upstream: passages of another scope that the gate lets through, which no scorer text tested separates (CH, C2, C2M).
+    - Residual doubt between neighbouring levels: 46.1 (does a rule about an act record it?) and 37 (how much of the set is enough).
+  - Page updated: https://claude.ai/artifact/1Hn43gG8baHoZpdojDKxuP (private). Texts in `$W/sintese_m3.json`, written by `$W/escreve_sintese_m3.py`; the M3 section is `$W/pagina_m3.py`.
+- **F8, done** (`scripts/diagnostics/reproducibility.py`, diagnostics only):
+  - Per Ação per run, the JSON keeps the scorer's justificativas, reasoning, uncertainty and analysis channel (`scorer`). On by default; `--no-record-scorer` turns it off.
+  - The tap calls `complete_detailed()`, as the client's own `complete()` does, so the request and the returned bytes are the same.
+  - Checked offline with a fake client (`$W/testa_f8.py`): same bytes, attributes and writes delegated, reset between Ações, no analysis when the scorer is not called.
+- **Open for the user:**
+  - the scorer prompt: by the rules written before, none of C, C2 or C2M is proposed, and today's prompt stays (recommended). Revisiting the criterion is the user's call; it would lead to a confirmation in another session on full processes (re-score the 10 C7 processes on their own batches, criterion written before), never to an adoption from M3;
+  - the momento leaves (rule E); not recommended to test again now; if it returns, the timing detector must exclude the criterion's own words;
+  - the wrong-scope passages (32a, 13c, 35.2e, 42d), born at the gate: the next work item, or documented residue with 10, 23, 35 and 37;
+  - closing the scorer verification, and with it unblocking the second case document;
+  - document dates in the document index, the precondition for any tempestividade test;
+  - the commit (this CLAUDE.md, `reproducibility.py` and the two measurement scripts; `measure_scorer_candidates.py` now carries `--retoma` and the call retry);
+  - stopping the 8083 task (PID 24416);
+  - a fresh `/assess`;
+  - the "Inicial" label;
+  - N/A for 45/46;
+  - promoting the seed profiles;
+  - the signature-line gap in the noise stripper.
 
 **Session 2026-10-15 (74th pass) — C7, THE CONFIRMATION CYCLE OF THE COMMITTED HEAD `4824b14`, RAN on the user message *"Servidor livre. Pode continuar o teste."* (item 1 of message W). 42 of 46 Ações have the same points in 9 or more of 10, as expected, and the proposed stability margin is met. Cycle 7 replaces cycle 3 as the constancy baseline. Recorded in ADR-0074 ("Confirmation cycle 7").**
 
