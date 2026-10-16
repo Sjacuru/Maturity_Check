@@ -250,7 +250,7 @@ def le_atual(conteudo, ids):
 
 # ---------------------------------------------------------------- braços C2 e C2M
 FAIXA_FASE = {
-    "Inicial": (1, 20),
+    "Estudo das alternativas": (1, 20),
     "Aprimoramento da alternativa escolhida": (21, 37),
     "Consulta pública, Revisões e atualizações": (38, 46),
 }

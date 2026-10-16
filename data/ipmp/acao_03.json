@@ -2,7 +2,7 @@
   "acao_id": 3,
   "titulo": "Defina o escopo potencial",
   "dimensao": "Estratégica",
-  "fase": "Inicial",
+  "fase": "Estudo das alternativas",
   "ponto_transicao": false,
   "por_que_importante": "Definir um escopo inicial claro evita desvios de entendimento entre os envolvidos e orienta corretamente o desenvolvimento das alternativas técnicas. Quando essa etapa é negligenciada, os estudos de viabilidade podem evoluir sem um norte bem estabelecido, resultando em soluções que não correspondem às necessidades reais ou que extrapolam o objeto pretendido, comprometendo o alinhamento com os objetivos estratégicos. É comum que, na ausência de um escopo preliminar delimitado, o estudo avance incluindo trechos ou intervenções que não foram previamente verificadas, o que pode gerar retrabalhos, conflito de expectativas entre entes federativos ou dificuldades futuras para obtenção de licenças e interesse do mercado. Por exemplo, um estudo pode prever variantes e vias marginais sem que essas tenham sido explicitamente consideradas como parte do projeto, criando discrepâncias entre o que se pretende entregar e o que foi efetivamente analisado. Quando bem definida, essa ação ajuda a dar transparência ao planejamento, direciona corretamente os estudos ambientais, orçamentários e de engenharia, e reduz o risco de disputas técnicas ou institucionais ao longo do ciclo do projeto.",
   "descricao_acao": "Definir, em nível estratégico, um escopo inicial para o projeto, o qual será usado para desenvolver a ampla gama de opções na Ação 6.",

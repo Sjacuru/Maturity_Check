@@ -74,7 +74,7 @@ def _acao(products: list[tuple[str, str, bool]], acao_id: int = 7) -> AcaoIPMP:
         acao_id=acao_id,
         titulo="Título da Ação",
         dimensao="Gerencial",
-        fase="Inicial",
+        fase="Estudo das alternativas",
         ponto_transicao=False,
         por_que_importante="",
         descricao_acao="",
@@ -98,7 +98,7 @@ def test_identity_block_names_acao_product_and_sibling_count():
     prompt = build_relevance_system_prompt("critério B", acao=_acao(_THREE), product_id="7b")
     assert "## O que está sendo avaliado" in prompt
     assert "Ação 7 — Título da Ação" in prompt
-    assert "Dimensão Gerencial, fase Inicial." in prompt
+    assert "Dimensão Gerencial, fase Estudo das alternativas." in prompt
     assert "Produto Esperado 7b, um dos 3 Produtos Esperados avaliados nesta Ação." in prompt
     assert rb._SCOPE_RULE in prompt
 

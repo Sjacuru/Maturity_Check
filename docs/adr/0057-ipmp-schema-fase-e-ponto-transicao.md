@@ -47,3 +47,10 @@ inform vocabulary register when a synthesis session drafts Query Terms for a new
   - The `fase` field follows chapter 4's boundaries but labels the first block "Inicial". "Intermediária" and "Final" stay in the Literal, used by no file.
 - **The label is not renamed here.** `fase` enters every gate prompt ("Dimensão X, fase Y."). Renaming "Inicial" changes the 20 gate prompts of Ações 1-20 and would need a measurement. That is the user's decision.
 - **The fields now have a consumer.** The maturity indicator (ADR-0075) groups the Ações by `fase` and over the transition points.
+
+## Amendment (2026-10-16): the first block renamed
+
+- **The user's decision** (message Z): the stored label of Ações 1-20 is now "Estudo das alternativas", the Guide's own name for that block (4.2, "Fase de estudo das alternativas (Ações 1 a 20)"). It matches the other two labels, which already drop the "Fase de" prefix.
+- **The Literal holds the three chapter-4 names only.** "Inicial", "Intermediária" and "Final" are the flowchart phases (Figuras 3-5), with other boundaries, and no file uses them. A file carrying one now fails validation, which `tests/test_ipmp_structure.py` catches (all 46 must load).
+- **What it changes.** The identity line of the gate prompt ("Dimensão X, fase Y.") of the 74 scored products of Ações 1-20; nothing else in those prompts. The gate digest goes from `6919edcc672b8027` to `0f7c14bd2bdada1d`, and the gate-ledger keys of those prompts change with it. The scorer prompt does not carry `fase`. The maturity indicator shows the new label.
+- **Not measured.** Its effect on constancy has not been measured. A borderline chunk can flip on any byte of its prompt, so a cycle of full processes is the check, as for any prompt-wide change.

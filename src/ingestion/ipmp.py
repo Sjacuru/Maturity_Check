@@ -39,10 +39,12 @@ class AcaoIPMP(BaseModel):
     acao_id: int
     titulo: str
     dimensao: Literal["Estratégica", "Econômica", "Comercial", "Financeira", "Gerencial"]
+    # The three blocks of chapter 4 of the Guide (4.2-4.4): Ações 1-20, 21-37
+    # and 38-46. The flowcharts (Figuras 3-5) name their phases Inicial,
+    # Intermediária and Final, with other boundaries; those names are not
+    # stored (ADR-0057, 2026-10-16).
     fase: Literal[
-        "Inicial",
-        "Intermediária",
-        "Final",
+        "Estudo das alternativas",
         "Aprimoramento da alternativa escolhida",
         "Consulta pública, Revisões e atualizações",
     ]

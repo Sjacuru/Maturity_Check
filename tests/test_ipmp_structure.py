@@ -42,6 +42,7 @@ def test_phases_are_the_guides_three_blocks(store):
         set(range(21, 38)),
         set(range(38, 47)),
     ]
+    assert by_phase["Estudo das alternativas"] == set(range(1, 21))
     assert by_phase["Aprimoramento da alternativa escolhida"] == set(range(21, 38))
     assert by_phase["Consulta pública, Revisões e atualizações"] == set(range(38, 47))
 
