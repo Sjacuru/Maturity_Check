@@ -734,3 +734,109 @@ in cycle 7.
   - Every dimension was within ±0.1 of its median in 9 or more of 10;
     Estratégica, through the cap, in exactly 9.
   - Cycles 4, 6 and 7 meet that margin; cycles 3 and 5 miss only Comercial.
+
+## Confirmation cycle 8 (2026-10-17)
+
+The user asked for a battery of ten full processes "usando só código do
+projeto sem orquestração sua para rodar lacunas" (message AB). It measured
+HEAD `eee4a45`, which differs from cycle 7 in two inputs of the pipeline:
+
+- `fad53d4`: the noise stripper removes more signature stamps. Against the
+  cycle-7 stripper, 59 chunks on 45 pages read differently, and 14 chunks
+  become empty; an empty chunk no longer reaches the gate.
+- `d890b97`: the stored phase of Ações 1 to 20 is "Estudo das alternativas".
+  It changes the identity line of their gate prompts (digest
+  `0f7c14bd2bdada1d`); the scorer prompt carries no phase.
+
+The reading rule was written before the launch
+(`scratchpad/acc/criterio_ciclo8.txt`). It is a measurement, so nothing is
+approved or rejected.
+
+- **The cycle:**
+  - One invocation, `reproducibility.py --runs 10 --record-reasoning`, from
+    08:09 to 10:33 (`scratchpad/acc/ciclo8.json`, split per process into
+    `ciclo8_run{1..10}`). Cycles 3 to 7 were ten invocations of one process
+    each, called by a runner that resumed after a failure; here nothing was
+    resumed or repeated.
+  - Settings: ledger off; genre filter and filtered expansion on; no
+    candidate and no variant.
+  - A separate script kept the SSH tunnel open and read the GPU every five
+    minutes, read-only, without touching the run: 29 readings, all free. The
+    tunnel never dropped.
+  - Result: no errors and no gate failures; 476 to 486 gate calls and 13.9 to
+    15.2 minutes per process.
+
+| Measure (points, with `sem evidência` read as 0) | Cycle 7 | Cycle 8 |
+|---|---|---|
+| Ações with the same points in 9 or more of 10 | 42 | 40 |
+| Ações with the same points in all ten | 39 | 36 |
+| Mean agreement with the modal outcome | 97.4 % | 95.0 % |
+| Consistent / tolerable / inconsistent | 39 / 6 / 1 | 36 / 6 / 4 |
+| Batch identical in all ten | 33 | 28 |
+| Evidenced bits identical in all ten | 36 | 31 |
+| Coin pairs | 63 | 66 |
+| Point changes (Ação × pair of processes) | 96 | 161 |
+| Judgements of chunks the new stripper empties | 40 | 0 |
+
+Below 9 of 10: Ações 10, 23, 32 and 37 in cycle 7; Ações 2, 3, 10, 23, 32 and
+37 in cycle 8. Over cycles 3 to 7 the first row ranged from 40 to 42, the batch
+identical in all ten from 26 to 33, the bits from 30 to 36, the coin pairs
+from 63 to 76 and the point changes from 96 to 166.
+
+- **By rule:**
+  - *A, as expected (42 ± 2):* 40.
+  - *B, two outside the documented residue, from one event:* Ação 2 fell to
+    `sem evidência` in processes 3 and 9, and the dependency cap (ADR-0070)
+    took Ação 3 from 3 to 1 in the same two processes. Cycles 3, 4, 6 and 7
+    had one such fall each.
+  - *C, the stability margin, not met:*
+    - The nota stayed within ±0.05 of its median (0.094; range 0.080 to
+      0.123) and in the alert band in all ten.
+    - Estratégica was within ±0.1 of its median in only 8: each of those two
+      processes moves 3 of its 18 points (0.167).
+    - Read with Ações 45 and 46 not applicable, Estratégica fails the same
+      way, and Comercial (9 Ações) passes at 9 of 10.
+  - *D:* the three Ações newly outside "the same in all ten" (13, 35 and 42)
+    each took accepts in a single process: 13c and 35.2e on `_1` p.3, and
+    42d on `_1` p.350 with `_3` p.10. `_1` p.3 and `_1` p.350 are documented
+    wrong-scope pages.
+  - *E:* no errors.
+- **Against the 40 earlier processes.** For Ações whose prompts were
+  identical in cycles 3, 4, 6 and 7 (all but 23, 32, 35 and 45), those 40
+  processes are replicates of one configuration; cycle 5 ran another gate
+  variant and is left out.
+  - No Ação differs from them in points beyond chance (Fisher, every
+    p ≥ 0.36). Ação 2 fell in 4 of the 40.
+  - Pairs on pages whose text changed: 17 ever accepted, none moved
+    (p < 0.05).
+  - Pairs in Ações 1 to 20, whose phase line changed: 2 of 27 moved, both
+    toward fewer accepts. Pairs with no change in their input: 1 of 42 moved.
+  - At the product level, 2c moved: evidence delivered in 29 of 40 processes
+    before, in 2 of 10 now (p = 0.004).
+    - Its main page, `_1` p.302, holds the concession's investment, revenue
+      and cost figures. The gate read it as a diagnosis of the current
+      situation in cycle 7 and as figures of the future project in cycle 8,
+      which is the right reading for 2c.
+    - The gate's reasoning never cites the phase: in every cycle from 3 to 8,
+      3.6 to 4.0 % of its reasonings on Ações 1 to 20 mention a phase, stage
+      or alternative.
+    - With 2c credited less, Ação 2 rests on 2d's `_1` p.4 (7 of 10) and
+      falls more often: the coin-removal path.
+- **Reading:**
+  - The stamp fix did what it was for (no empty chunk reaches the gate) and
+    moved nothing measurable.
+  - The rename moved no Ação beyond chance; it re-tossed a borderline page of
+    2c, the right way.
+  - The margin's dimension criterion turns on one coin: Ação 2 falling, with
+    the cap following. Estratégica has six Ações, so that event alone exceeds
+    ±0.1. At the 40-process rate (4 of 40) it fails the criterion in about one
+    cycle in four; at cycle 8's rate (2 of 10), in about six in ten.
+
+## Decision after cycle 8 (2026-10-17)
+
+The user kept the stability margin as accepted on 2026-10-16, and recorded the
+coupling of Ações 2 and 3 as documented residue, with Ações 10, 23, 32, 35 and
+37 (message AC). The coupling is one coin: Ação 2 falls to `sem evidência`,
+and the dependency cap (ADR-0070) takes Ação 3 from 3 to 1 in the same
+process. A cycle that misses the margin only on Estratégica through this event
+is read as within the documented residue, not as a regression.
