@@ -12,10 +12,16 @@ from starlette.concurrency import run_in_threadpool
 
 from assessment import progress
 from assessment._config import get_db_path
-from assessment.api.schemas import GateOverrideRequest, ReviewSubmission
+from assessment.api.schemas import GateOverrideRequest, ReevaluationRequest, ReviewSubmission
 from assessment.interfaces.contracts import NOT_APPLICABLE_ACOES, ReviewOutcome
 from assessment.maturity import NoEvaluations, compute_maturity
-from assessment.service import AssessmentService
+from assessment.service import (
+    INFRASTRUCTURE_FAILURES,
+    AssessmentService,
+    pending_gate_overrides,
+    reviews_at_stake,
+)
+from ingestion import get_ipmp_store
 
 router = APIRouter()
 _service = AssessmentService()
@@ -164,8 +170,9 @@ def get_evaluation(process_number: str, acao_id: int):
 @router.post("/cases/{process_number}/evaluations/{acao_id}/gate-overrides", status_code=200)
 def override_gate_verdict(process_number: str, acao_id: int, body: GateOverrideRequest):
     """Auditor overturns one frozen gate verdict (ADR-0067). The row must exist
-    and belong to this Ação; the new verdict applies from the next assessment
-    of the case onward (the stored evaluation is not rewritten)."""
+    and belong to this Ação. The stored evaluation is not rewritten: the new
+    verdict applies when the Ação is re-evaluated (ADR-0078) or the case is
+    assessed again; until then it is listed as pending."""
     from evaluation._config import get_gate_ledger
 
     ledger = get_gate_ledger()
@@ -187,8 +194,70 @@ def override_gate_verdict(process_number: str, acao_id: int, body: GateOverrideR
         "source": entry.source,
         "overridden_at": entry.overridden_at,
         "override_justification": entry.override_justification,
-        "applies_from": "next assessment of this case",
+        "applies_from": "next re-evaluation of this Ação or assessment of this case",
     }
+
+
+# ── GET /cases/{process_number}/reevaluation/pending ─────────────────────────
+
+@router.get("/cases/{process_number}/reevaluation/pending")
+def get_pending_reevaluation(process_number: str):
+    """Auditor overrides not yet reflected in the stored evaluations (ADR-0078)."""
+    overrides = pending_gate_overrides(get_db_path(), process_number)
+    return {
+        "acao_ids": sorted({o["acao_id"] for o in overrides}),
+        "overrides": overrides,
+    }
+
+
+# ── POST /cases/{process_number}/reevaluate ──────────────────────────────────
+
+@router.post("/cases/{process_number}/reevaluate", status_code=200)
+async def reevaluate(process_number: str, body: ReevaluationRequest):
+    """Re-evaluate the given Ações from the documents already indexed (ADR-0078).
+
+    Only those Ações run the gate and the scorer again; the ledger replays the
+    frozen verdicts and the auditor's overrides. Their reviews are deleted, and
+    the Ações that depend on them have the cap recalculated. Without
+    `delete_reviews`, a request that would delete reviews gets 409.
+    """
+    db_path = get_db_path()
+    known = get_ipmp_store().acoes
+    unknown = [a for a in body.acao_ids if a not in known]
+    if unknown:
+        raise HTTPException(status_code=422, detail=f"Unknown acao_ids: {unknown}.")
+    for acao_id in body.acao_ids:
+        _require_evaluation_exists(db_path, process_number, acao_id)
+
+    targets, dependents = reviews_at_stake(db_path, process_number, body.acao_ids)
+    if (targets or dependents) and not body.delete_reviews:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": (
+                    "Re-evaluation deletes the reviews of the re-evaluated Ações and of the "
+                    "dependent Ações whose score changes. Pass delete_reviews=true to proceed."
+                ),
+                "reviewed_targets": targets,
+                "reviewed_dependents": dependents,
+            },
+        )
+
+    try:
+        report = await run_in_threadpool(
+            _service.run_reevaluation, process_number, body.acao_ids
+        )
+    except INFRASTRUCTURE_FAILURES as exc:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                f"Servidor de inferência indisponível ({type(exc).__name__}); "
+                "nenhuma Ação foi reavaliada."
+            ),
+        )
+    if report["interrupted"]:
+        raise HTTPException(status_code=503, detail=report)
+    return report
 
 
 # ── POST /cases/{process_number}/evaluations/{acao_id}/review ────────────────

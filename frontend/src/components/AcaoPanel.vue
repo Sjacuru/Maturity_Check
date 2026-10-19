@@ -17,6 +17,9 @@
         <v-chip v-if="evaluation.no_evidence_found" size="small" color="error" label>
           Sem evidência
         </v-chip>
+        <v-chip v-if="pendingOverride" size="small" color="warning" variant="outlined" label>
+          <v-icon start size="small">mdi-refresh</v-icon>Override pendente — reavaliar
+        </v-chip>
         <v-chip v-if="review" size="small" color="success" label>
           <v-icon start size="small">mdi-check</v-icon>Revisado ({{ review.not_applicable ? 'N/A' : review.final_score }})
         </v-chip>
@@ -490,9 +493,11 @@ import ReviewForm from './ReviewForm.vue'
 const props = defineProps({
   evaluation: Object,
   processNumber: String,
+  // ADR-0078: an auditor override recorded after this evaluation was produced.
+  pendingOverride: Boolean,
 })
 
-const emit = defineEmits(['reviewed'])
+const emit = defineEmits(['reviewed', 'overridden'])
 
 const review = ref(null)
 
@@ -510,7 +515,8 @@ function sourceLabel(src) {
 }
 
 // ADR-0067: the auditor overturns one frozen gate verdict. The stored evaluation
-// is not rewritten; the new verdict applies when the case is assessed again.
+// is not rewritten; the new verdict applies when the Ação is re-evaluated
+// (ADR-0078, the "Reavaliação" block at the top of the case).
 async function overrideGate(promptHash, relevant) {
   const justification = window.prompt(
     `Justificativa para marcar este trecho como ${relevant ? 'RELEVANTE' : 'NÃO relevante'} (obrigatória):`
@@ -531,7 +537,8 @@ async function overrideGate(promptHash, relevant) {
     if (!resp.ok) throw new Error(data.detail || `HTTP ${resp.status}`)
     overrideMessage.value =
       `Veredito do gate substituído pelo auditor (${data.product_id}, relevante=${data.relevant}). ` +
-      'Vale a partir da próxima avaliação deste caso; esta avaliação não foi reescrita.'
+      'Entra no score quando esta Ação for reavaliada (bloco "Reavaliação", no topo do caso).'
+    emit('overridden', data)
   } catch (e) {
     overrideError.value = true
     overrideMessage.value = `Não foi possível registrar o override: ${e.message}`

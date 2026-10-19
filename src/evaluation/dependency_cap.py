@@ -20,6 +20,10 @@ IPMP (data/ipmp/dependencias.json):
     com o teto à vista. Medido em 2026-10-09 (ADR-0070 §risco).
   * uma dependência não avaliada (falha, corrida parcial, parse_failed) não
     engata o teto: só a citada conhecidamente em 0 / sem evidência.
+  * quando uma citada é REAVALIADA (ADR-0078), o seu score proposto muda e o
+    teto das citantes é recalculado sobre os resultados gravados
+    (`recompute_dependency_cap`): mesma evidência, mesmos vereditos, só a
+    aritmética de novo. A revisão continua sem se propagar.
 
 É aritmética sobre dados já existentes: mesma entrada, mesmo teto. Nada vai
 para o prompt do scorer (decisão 4 de 2026-10-05).
@@ -36,6 +40,8 @@ from evaluation.interfaces.contracts import (
     ProductVerdict,
     ScoreMargin,
 )
+from evaluation.margin import compute_score_margin
+from ingestion import get_ipmp_store
 from ingestion.dependencias import Dependencia, DependencyStore
 
 _CAP = 1
@@ -154,6 +160,43 @@ def apply_dependency_cap(
     return new_score, score_margin.model_copy(update={
         "score_floor": clip(score_margin.score_floor),
         "score_ceiling": clip(score_margin.score_ceiling),
+    })
+
+
+def recompute_dependency_cap(
+    result: EvaluationResult,
+    prior_results: Mapping[int, EvaluationResult],
+    store: DependencyStore,
+) -> EvaluationResult:
+    """The stored `result` with its cap computed again against `prior_results`.
+
+    Used after a cited Ação is re-evaluated (ADR-0078). The evidence and the
+    scorer's verdicts of this Ação do not change, only the arithmetic over the
+    scores it cites: the counted score is recovered from the stored cap, the
+    margin is rebuilt from the stored evidence and verdicts exactly as
+    evaluate() built it, and the new cap is applied. A no-evidence or
+    parse-failed result never carries a cap and is returned unchanged.
+    """
+    if result.no_evidence_found or result.parse_failed:
+        return result
+    old = result.dependency_cap
+    counted = old.score_before_cap if old is not None and old.applied else result.proposed_score
+    expected = [
+        p.id for p in get_ipmp_store().acoes[result.acao_id].produtos_esperados if p.scored
+    ]
+    margin = compute_score_margin(
+        verdicts=list(result.product_verdicts),
+        chunks=list(result.retrieved_chunks),
+        expected_product_ids=expected,
+        proposed_score=counted,
+    )
+    cap = compute_dependency_cap(
+        result.acao_id, counted, prior_results, store,
+        product_verdicts=result.product_verdicts,
+    )
+    score, margin = apply_dependency_cap(counted, margin, cap)
+    return result.model_copy(update={
+        "proposed_score": score, "score_margin": margin, "dependency_cap": cap,
     })
 
 

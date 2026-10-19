@@ -96,7 +96,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (77 filled, next: 0078-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46; 0077 = narrative sections of instrument documents reach the gate)
+│   ├── adr/                     ← Architecture Decision Records (78 filled, next: 0079-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46; 0077 = narrative sections of instrument documents reach the gate; 0078 = re-evaluate selected Ações after gate overrides)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -145,7 +145,8 @@ Maturity_Check/
 │   ├── test_genre_{classifier,segmentation,index,exemptions}.py ← genre classifier, document segments, document index, exemptions (ADR-0074, 39 tests)
 │   ├── test_genre_narrative.py  ← narrative sections of instrument documents (ADR-0077, 26 tests)
 │   ├── test_ipmp_structure.py   ← all 46 Ações load; the five transition points; the chapter-4 phase blocks; dimension counts; 164 scored products (5 tests)
-│   └── test_maturity.py         ← the IPMP nota: counting rules, floor, groups, band limits, route, não aplicável (ADR-0075, ADR-0076, 10 tests)
+│   ├── test_maturity.py         ← the IPMP nota: counting rules, floor, groups, band limits, route, não aplicável (ADR-0075, ADR-0076, 10 tests)
+│   └── test_reevaluation.py     ← re-evaluation of selected Ações: recomputed cap equals a fresh evaluate, dependents recalculated, reviews deleted only on change, routes 422/404/409/503, pending overrides (ADR-0078, 13 tests)
 ├── src/
 │   ├── ingestion/               ← Module 1 (COMPLETE)
 │   │   ├── __init__.py          ← sole public surface
@@ -210,7 +211,7 @@ Maturity_Check/
 │       │   └── ddl.py           ← init_db(): evaluation_results + review_outcomes + document_fingerprints; rebuilds an older review_outcomes in place (ADR-0076)
 │       └── api/
 │           ├── app.py           ← create_app() — FastAPI app; imported by main.py only
-│           ├── routes.py        ← 8 routes: assess and its progress, evaluations (list, one), review (post, get), gate overrides (ADR-0067), maturity (ADR-0075)
+│           ├── routes.py        ← 10 routes: assess and its progress, evaluations (list, one), review (post, get), gate overrides (ADR-0067), maturity (ADR-0075), re-evaluation and its pending overrides (ADR-0078)
 │           └── schemas.py       ← request body Pydantic models (write-side only)
 ├── main.py                      ← runtime entry point: configure → init_db → create_app
 ├── frontend/                    ← Vue 3 app (Module 7), built to frontend/dist and served by FastAPI; MaturityIndicator.vue shows the IPMP nota (ADR-0075); ReviewForm.vue offers "não aplicável" on Ações 45 and 46 (ADR-0076)
@@ -232,6 +233,19 @@ Maturity_Check/
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-19 (81st pass) — THE USER'S REQUESTS AJ–AK: close the frontend for testing the stored case through the current UI, then *"O botão de marcar como relevante está lá, mas como fazer para o sistema reavaliar aquele caso? Após, deve ser possível aplicar novo score para aquela ação. Justificativa é importante."* and the answers *"O auditor pode ver todos e reexecutar no final ou reexecutar todos, sob sua conta e risco"*, reviewed Ação *"apagar com confirmação"*, no justification on accept, *"recalcula as dependentes"*, *"Pode commitar"*. Re-evaluation of selected Ações is built (ADR-0078). Two commits; nothing pushed.**
+
+- **Commit `176ec3c`:** `main.py` defaults `LLAMACPP_BASE_URL` to the tunnel (`http://127.0.0.1:18083`); UploadView opens a stored case and replaces an assessment (force, with a confirmation, ADR-0026); AcaoPanel gains the "Fora por gênero" column and drops the alert asking for a per-Ação re-run that did not exist.
+- **Re-evaluation (ADR-0078):**
+  - `POST /api/cases/{p}/reevaluate {acao_ids, delete_reviews}`: retrieval, genre filter, gate and scorer again for each listed Ação from the indexed documents; the ledger replays every recorded verdict and override, only unseen chunks reach the model. 422 unknown Ação or empty list, 404 no evaluation, 409 with the reviewed targets and reviewed dependents until `delete_reviews=true`, 503 server down (nothing changed) or lost midway (report with `not_reached`).
+  - Dependents: one ascending walk; an Ação citing with effect (ADR-0070) an Ação whose score changed gets `recompute_dependency_cap` on its stored result (no model, row keeps its `created_at`); its review is deleted only if its score changed, and its own dependents follow.
+  - `GET /api/cases/{p}/reevaluation/pending`: overrides recorded after the evaluation of their Ação.
+  - UI: a "Reavaliação" block on the case page ("Reavaliar Ações com override pendente", "Reavaliar todas as Ações" with its own confirmation, progress, report), a chip "Override pendente — reavaliar" on each pending Ação; the 409 becomes a confirmation listing the reviews to be deleted. A new score comes through the existing review (accept without a note, override with a justification, ADR-0023).
+  - Code: `src/evaluation/dependency_cap.py` (`recompute_dependency_cap`), `src/assessment/service.py` (`run_reevaluation`, `pending_gate_overrides`, `reviews_at_stake`), `routes.py`, `schemas.py` (`ReevaluationRequest`), `AssessmentResultView.vue`, `AcaoPanel.vue`. CONTEXT.md: Reavaliação, Override Pendente; ledger and cap entries amended.
+- **Checks:** `tests/test_reevaluation.py` (13); fast suite **770**. Headless Chrome on a copy of `data/app.db` with stub gate and scorer: the pending path re-evaluated Ação 17 (sem evidência → 1 on the auditor's `_2` p.160 for 17a), emptied the pending list, kept the 45/46 reviews, 2 gate misses; the all path showed both confirmations, deleted the 45/46 reviews on the copy, 28 gate misses (narrative sections and cleaner stamp text since 2026-10-16). No overflow at 400 px. `data/app.db` untouched.
+- **State left:** the model, tunnel and app are down (the user authorized it). The user's test override (Ação 17, 17a, `_2` p.160, justification "Teste") is in the real ledger and will show as pending; revert it with an override "não relevante" before re-evaluating if it was only a test. To use re-evaluation: `gpu_livre.ps1`, `sobe_8083.ps1`, tunnel, app.
+- **Known limits:** the scorer is not ledgered, so re-evaluating an unchanged batch can still move a score (about 9 %); an override in the same second as its evaluation is not listed as pending.
 
 **Session 2026-10-19 (80th pass) — THE USER'S REQUESTS AG–AI: cycle 11 (variant S: narrative sections of instrument documents reach the gate), then "para o universo de um processo ... vale a pena manter a lógica de S", then "Retire cronograma da lista e pode implementar S no código com o ADR". S is IN `src/` without CRONOGRAMA (ADR-0077). Uncommitted until the user's OK.**
 
@@ -2057,7 +2071,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (last updated 2026-10-15: Nota iPMP, Fase, Ponto de Transição)
-- `docs/adr/` — 77 ADRs, next is `0078-`
+- `docs/adr/` — 78 ADRs, next is `0079-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_NN.json` — IPMP source of truth, one file per Ação (46)

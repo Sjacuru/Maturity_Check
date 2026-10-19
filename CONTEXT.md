@@ -156,6 +156,11 @@ _Avoid_: provider (that is the LLM provider label), origin
 **Gate Verdict Ledger**: The `gate_verdicts` table, owned by the evaluation module in the shared app DB, that records the first verdict the **Relevance Gate** gives for a (model, **Reasoning Effort**, system prompt, user prompt) tuple under its SHA-256 key and answers every later identical call from the record; the **Auditor** can overturn a row with a mandatory justification. A profile correction changes the prompts — and therefore the keys — of exactly the products it touches. Switched off in the measurement harness, which must measure the engine, not the ledger (ADR-0067).
 _Avoid_: cache (it never expires and is a judgement record, not a performance device), verdict memo, gate memory
 
+**Reavaliação**: Replacing the stored evaluation of selected **Ações** from the documents already indexed: the **Relevance Gate** runs again with the **Gate Verdict Ledger** answering every recorded verdict and every **Auditor** override, the scorer runs again, the **Review Outcome** of each re-evaluated Ação is deleted after a confirmation, and the Ações that cite one of them with effect have their **Dependency Cap** recalculated on the stored result (ADR-0078).
+_Avoid_: re-run (ambiguous with a forced assessment of the whole Case), reassessment, refresh
+
+**Override Pendente**: An **Auditor** override in the **Gate Verdict Ledger** recorded after the evaluation of its **Ação** was produced, so the stored score does not reflect it until a **Reavaliação** (ADR-0078).
+
 **Score Margin**: The deterministic uncertainty reported beside a **Proposed Score** — how many accepted chunks hold each Expected Product's `evidenced` bit, how far the Ação sits from a different 0/1/3 band, and the resulting score interval. Computed in code from the verdicts and the accepted evidence, so the same input gives the same margin as well as the same score; never sent to the scorer (ADR-0068).
 _Avoid_: confidence, confidence score, probability, certainty (all imply a model-sampled quantity — this one is arithmetic)
 
@@ -171,7 +176,7 @@ _Avoid_: score range, min/max score, error bar
 **Dependência**: A typed edge from a citing Ação to an Ação its IPMP text names, recorded in `data/ipmp/dependencias.json` with the citing sentence. Only two of the eight types have an effect: `pre` (the cited Ação is an input the citing one builds on) raises the **Dependency Cap**; `artefato` (the citing Ação is the later version of the same document) raises a review signal. `fraco`, `sucessora`, `contraste`, `delega`, `sequencia` and `lacuna` document the reading and do nothing (ADR-0070).
 _Avoid_: cross-reference, citation, prerequisite (that is the `pre` type, not the edge in general), link
 
-**Dependency Cap**: The rule that an Ação whose `pre` **Dependência** was found in 0 / `no_evidence_found` in the same run cannot receive 3: a counted 3 becomes 1, with the counted score kept in `score_before_cap`. Arithmetic over the run's own proposed scores, applied after the counted score and never sent to the scorer; a **Review Outcome** on the cited Ação does not propagate (ADR-0070).
+**Dependency Cap**: The rule that an Ação whose `pre` **Dependência** was found in 0 / `no_evidence_found` in the same run cannot receive 3: a counted 3 becomes 1, with the counted score kept in `score_before_cap`. Arithmetic over the run's own proposed scores, applied after the counted score and never sent to the scorer; a **Review Outcome** on the cited Ação does not propagate (ADR-0070). A **Reavaliação** that changes a cited Ação's score recalculates the cap of every Ação citing it with effect, on the stored result and without the model (ADR-0078).
 _Avoid_: penalty, downgrade, cascade, dependency check (the gate does no such check)
 
 **Operational continuity**: The property of the ingestion module that allows the system to start and run even when individual source-of-truth artifacts have non-fatal Pydantic validation failures, provided fatal integrity errors are absent.
@@ -231,7 +236,7 @@ _Avoid_: N/A score, skipped, excluded, not evaluated
 - The **evaluation module** consumes `list[RetrievedChunk]` from the retrieval module and IPMP data from the ingestion module to produce one **EvaluationResult** per Ação/Case pair
 - The **evaluation module** calls one **LLMClient** per scorer evaluation and one per **Relevance Gate** decision; in production both are a `LlamaCppClient` pointed at the **Servidor GPU** (ADR-0059), the gate's with **Reasoning Effort** `low` and one call **In Flight** (ADR-0065)
 - The **Relevance Gate** judges each candidate **Chunk** for one **Expected Product** at a time; a chunk accepted for two products carries both ids and one **Gate Reasoning** and **Gate Source** entry per product
-- A **Gate Verdict Ledger** row answers exactly one gate question; a change to a **Retrieval Profile** re-judges exactly the products whose prompts it changes, and an **Auditor** override applies from the next assessment on
+- A **Gate Verdict Ledger** row answers exactly one gate question; a change to a **Retrieval Profile** re-judges exactly the products whose prompts it changes, and an **Auditor** override applies from the next **Reavaliação** of its **Ação** or assessment of the **Case**
 - An **EvaluationResult** carries the proposed **Maturity Score**, full audit trail, and three orthogonal status flags for the **Auditor**
 - An **EvaluationResult** also carries one **Score Margin**: one entry per **Expected Product**, the Ação's **Band Margin**, and the **Score Interval** around the proposed score
 - A **Fragile Product** is the unit the **Score Interval**'s floor is computed from; an Ação is signalled for optional **Auditor** review only when a Fragile Product's fall would change the band

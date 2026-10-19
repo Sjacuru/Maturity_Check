@@ -8,7 +8,8 @@ _VALID_SCORES = {0, 1, 3}
 class GateOverrideRequest(BaseModel):
     """Write-side body for POST /evaluations/{acao_id}/gate-overrides (ADR-0067):
     the auditor overturns one recorded gate verdict, identified by the ledger
-    key shown on the chunk. Takes effect on the next assessment of the case."""
+    key shown on the chunk. Takes effect when the Ação is re-evaluated
+    (ADR-0078) or the case is assessed again."""
 
     prompt_hash: str
     relevant: bool
@@ -27,6 +28,23 @@ class GateOverrideRequest(BaseModel):
         if not v or not v.strip():
             raise ValueError("justification is required and must be non-empty")
         return v.strip()
+
+
+class ReevaluationRequest(BaseModel):
+    """Write-side body for POST /cases/{process_number}/reevaluate (ADR-0078).
+
+    `delete_reviews` is the auditor's confirmation: without it, a request that
+    would delete reviews is refused with 409 and the list of them."""
+
+    acao_ids: list[int]
+    delete_reviews: bool = False
+
+    @field_validator("acao_ids")
+    @classmethod
+    def _validate_ids(cls, v: list[int]) -> list[int]:
+        if not v:
+            raise ValueError("acao_ids must name at least one Ação")
+        return sorted(set(v))
 
 
 class ReviewSubmission(BaseModel):

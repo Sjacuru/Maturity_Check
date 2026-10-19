@@ -11,6 +11,57 @@
       :refresh-key="reviewsLanded"
     />
 
+    <!-- ADR-0078: the auditor's gate overrides enter the score only when the
+         Ação is re-evaluated, from the documents already indexed. -->
+    <v-card v-if="!loading && evaluations.length" variant="outlined" class="mb-4">
+      <v-card-text>
+        <div class="text-subtitle-2 mb-1">Reavaliação</div>
+        <div v-if="pendingAcoes.length" class="text-body-2 mb-3">
+          {{ pendingOverrides.length }} override(s) do gate ainda fora do score:
+          Ação(ões) {{ pendingAcoes.join(', ') }}. Reavalie para que entrem na avaliação.
+        </div>
+        <div v-else class="text-body-2 text-medium-emphasis mb-3">
+          Nenhum override do gate pendente. Marque trechos nas Ações e reavalie ao final.
+        </div>
+        <div class="d-flex flex-wrap" style="gap: 8px;">
+          <v-btn
+            color="primary"
+            :disabled="!pendingAcoes.length || reevaluating"
+            :loading="reevaluating && reevalMode === 'pending'"
+            @click="reevaluate(pendingAcoes, 'pending')"
+          >
+            Reavaliar Ações com override pendente
+          </v-btn>
+          <v-btn
+            variant="outlined"
+            color="warning"
+            :disabled="reevaluating"
+            :loading="reevaluating && reevalMode === 'all'"
+            @click="reevaluate(evaluations.map((e) => e.acao_id), 'all')"
+          >
+            Reavaliar todas as Ações
+          </v-btn>
+        </div>
+        <v-list v-if="reevaluating && reevalEvents.length" density="compact" class="mt-2">
+          <v-list-item v-for="ev in reevalEvents.slice(-5)" :key="ev.seq" class="py-0">
+            <v-list-item-title class="text-caption" style="white-space: normal;">
+              {{ ev.message }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+        <v-alert
+          v-if="reevalMessage"
+          :type="reevalError ? 'error' : 'success'"
+          variant="tonal"
+          density="compact"
+          class="mt-3"
+          style="white-space: pre-line;"
+        >
+          {{ reevalMessage }}
+        </v-alert>
+      </v-card-text>
+    </v-card>
+
     <v-progress-circular
       v-if="loading"
       indeterminate
@@ -51,17 +102,19 @@
 
       <AcaoPanel
         v-for="ev in evaluations"
-        :key="ev.acao_id"
+        :key="`${ev.acao_id}-${reloads}`"
         :evaluation="ev"
         :process-number="processNumber"
+        :pending-override="pendingAcoes.includes(ev.acao_id)"
         @reviewed="reviewsLanded++"
+        @overridden="loadPending"
       />
     </v-expansion-panels>
   </v-container>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AcaoPanel from '../components/AcaoPanel.vue'
 import MaturityIndicator from '../components/MaturityIndicator.vue'
@@ -94,18 +147,144 @@ function levelIcon(level) {
   return LEVEL_META[level]?.icon ?? 'mdi-circle-small'
 }
 
+const caseUrl = `/api/cases/${encodeURIComponent(processNumber)}`
+
+async function loadEvaluations() {
+  const resp = await fetch(`${caseUrl}/evaluations`)
+  if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
+  const rows = await resp.json()
+  evaluations.value = rows.sort((a, b) => a.acao_id - b.acao_id)
+}
+
+// ── Re-evaluation (ADR-0078) ─────────────────────────────────────────────────
+const pendingOverrides = ref([])
+const pendingAcoes = computed(() => [...new Set(pendingOverrides.value.map((o) => o.acao_id))])
+const reevaluating = ref(false)
+const reevalMode = ref(null)
+const reevalEvents = ref([])
+const reevalMessage = ref('')
+const reevalError = ref(false)
+// Bumped after a re-evaluation so every panel remounts and reloads its review.
+const reloads = ref(0)
+
+async function loadPending() {
+  try {
+    const resp = await fetch(`${caseUrl}/reevaluation/pending`)
+    if (resp.ok) pendingOverrides.value = (await resp.json()).overrides
+  } catch {
+    // The list is a convenience; the buttons still work without it.
+  }
+}
+
+function postReevaluation(acaoIds, deleteReviews) {
+  return fetch(`${caseUrl}/reevaluate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ acao_ids: acaoIds, delete_reviews: deleteReviews }),
+  })
+}
+
+function describeReport(report) {
+  const line = (c) =>
+    `Ação ${c.acao_id}: ${c.before} → ${c.after}${c.review_deleted ? ' (revisão apagada)' : ''}`
+  const parts = []
+  if (report.reevaluated?.length) parts.push('Reavaliadas:\n' + report.reevaluated.map(line).join('\n'))
+  if (report.dependents?.length) {
+    parts.push('Dependentes recalculadas (teto por dependência):\n' + report.dependents.map(line).join('\n'))
+  }
+  if (report.failed?.length) parts.push(`Falharam (avaliação e revisão mantidas): ${report.failed.join(', ')}`)
+  if (report.not_reached?.length) parts.push(`Não reavaliadas: ${report.not_reached.join(', ')}`)
+  if (report.interrupted) parts.unshift(report.interrupted)
+  return parts.join('\n\n') || 'Nada mudou.'
+}
+
+async function reevaluate(acaoIds, mode) {
+  if (!acaoIds.length) return
+  if (
+    mode === 'all' &&
+    !window.confirm(
+      `Reavaliar as ${acaoIds.length} Ações deste processo? Os documentos já indexados são ` +
+        'reaproveitados e o gate repete os vereditos gravados, com os overrides do auditor; ' +
+        'o avaliador roda de novo e pode dar outro score. As revisões das Ações reavaliadas ' +
+        'serão apagadas.'
+    )
+  ) {
+    return
+  }
+  reevaluating.value = true
+  reevalMode.value = mode
+  reevalEvents.value = []
+  reevalMessage.value = ''
+  reevalError.value = false
+  let since = 0
+  const timer = setInterval(async () => {
+    try {
+      const r = await fetch(`${caseUrl}/assess/progress?since=${since}`)
+      if (!r.ok) return
+      const body = await r.json()
+      reevalEvents.value.push(...body.events)
+      since = body.next_since
+    } catch {
+      // Progress is a convenience; the request itself reports the outcome.
+    }
+  }, 1500)
+  try {
+    let resp = await postReevaluation(acaoIds, false)
+    if (resp.status === 409) {
+      const detail = (await resp.json()).detail ?? {}
+      const targets = detail.reviewed_targets ?? []
+      const dependents = detail.reviewed_dependents ?? []
+      let text = ''
+      if (targets.length) {
+        text += `As revisões das Ações ${targets.join(', ')} serão apagadas: ` +
+          'referem-se a uma avaliação que deixará de existir.'
+      }
+      if (dependents.length) {
+        text += `${text ? '\n\n' : ''}As revisões das Ações dependentes ${dependents.join(', ')} ` +
+          'serão apagadas se o score delas mudar com o recálculo do teto.'
+      }
+      if (!window.confirm(`${text}\n\nContinuar?`)) {
+        reevalMessage.value = 'Reavaliação cancelada; nada foi alterado.'
+        return
+      }
+      resp = await postReevaluation(acaoIds, true)
+    }
+    const data = await resp.json().catch(() => ({}))
+    if (!resp.ok) {
+      reevalError.value = true
+      reevalMessage.value =
+        typeof data.detail === 'object' && data.detail
+          ? describeReport(data.detail)
+          : `Não foi possível reavaliar: ${data.detail || `HTTP ${resp.status}`}`
+    } else {
+      reevalMessage.value = describeReport(data)
+    }
+    // A partial run (server lost midway) also changed stored evaluations.
+    if (resp.ok || resp.status === 503) {
+      await loadEvaluations()
+      reloads.value++
+      reviewsLanded.value++
+    }
+  } catch (e) {
+    reevalError.value = true
+    reevalMessage.value = `Não foi possível reavaliar: ${e.message}`
+  } finally {
+    clearInterval(timer)
+    reevaluating.value = false
+    reevalMode.value = null
+    await loadPending()
+  }
+}
+
 onMounted(async () => {
   try {
-    const resp = await fetch(
-      `/api/cases/${encodeURIComponent(processNumber)}/evaluations`
-    )
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
-    evaluations.value = await resp.json()
+    await loadEvaluations()
   } catch (e) {
     fetchError.value = e.message
   } finally {
     loading.value = false
   }
+  await loadPending()
 
   try {
     const resp = await fetch(

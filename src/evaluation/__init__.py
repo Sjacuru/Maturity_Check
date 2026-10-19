@@ -7,6 +7,7 @@ from evaluation._config import (
     configure_llm,
     configure_llm_client,
 )
+from evaluation.dependency_cap import recompute_dependency_cap
 from evaluation.gate_ledger import GateLedger
 from evaluation.evaluator import evaluate
 from evaluation.evidence_selection import (
@@ -33,6 +34,7 @@ __all__ = [
     "configure_gate_ledger",
     "GateLedger",
     "evaluate",
+    "recompute_dependency_cap",
     "select_evidence",
     "filter_focal_document",
     "EvidenceSelectionResult",

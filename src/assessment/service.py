@@ -13,13 +13,14 @@ from evaluation import (
     RejectedChunk,
     evaluate,
     filter_focal_document,
+    recompute_dependency_cap,
     select_evidence,
 )
 from evaluation._config import get_gate_llm_client, get_llm_client
 from evaluation.llm.llamacpp import LlamaCppBusy, LlamaCppTimeout, LlamaCppUnavailable
 from evaluation.progress import set_reporter
 from extraction import extract_document
-from ingestion import get_ipmp_store
+from ingestion import get_dependency_store, get_ipmp_store
 from retrieval import (
     index,
     invalidate_document_index,
@@ -41,6 +42,8 @@ logger = logging.getLogger(__name__)
 # are really "nothing was ever asked". Any OTHER per-Ação exception is recorded
 # and the run continues, so one bad Ação does not discard 45 good ones.
 _INFRASTRUCTURE_FAILURES = (LlamaCppUnavailable, LlamaCppTimeout, LlamaCppBusy)
+# The re-evaluation route turns these into 503 (ADR-0078).
+INFRASTRUCTURE_FAILURES = _INFRASTRUCTURE_FAILURES
 
 
 class AssessmentService:
@@ -58,6 +61,136 @@ class AssessmentService:
             raise
         finally:
             set_reporter(None)
+
+    def run_reevaluation(self, process_number: str, acao_ids: list[int]) -> dict:
+        """Re-evaluate the given Ações from the documents already indexed (ADR-0078)."""
+        progress.start_run(process_number)
+        set_reporter(progress.make_reporter(process_number))
+        try:
+            return self._run_reevaluation(process_number, acao_ids)
+        except Exception as exc:
+            progress.emit(process_number, "erro", f"Falha na reavaliação: {exc}", "error")
+            raise
+        finally:
+            set_reporter(None)
+
+    def _run_reevaluation(self, process_number: str, acao_ids: list[int]) -> dict:
+        """One ascending walk over the Ações (ADR-0078).
+
+        A target is evaluated again: retrieval and the gate run as in an
+        assessment, so the ledger replays every frozen verdict and every
+        auditor override (ADR-0067); the scorer runs again. Its evaluation is
+        replaced and its review deleted. Any other Ação that cites, with
+        effect (ADR-0070), an Ação whose score changed has its cap recomputed
+        on the stored result, without the model; when that changes its score,
+        its review is deleted too and its own dependents follow. Every
+        dependency points backwards, so one ascending pass reaches them all.
+
+        An infrastructure failure stops the model calls; the Ações already
+        re-evaluated stay, and their dependents are still recalculated.
+        """
+        get_llm_client()
+        get_gate_llm_client()
+        db_path = get_db_path()
+        targets = sorted(set(acao_ids))
+
+        progress.emit(
+            process_number, "reavaliacao",
+            f"Reavaliando {len(targets)} Ação(ões) com os documentos já indexados: "
+            f"{', '.join(str(a) for a in targets)}.",
+        )
+        _preflight_llm(process_number)
+
+        current = _load_stored_results(db_path, process_number)
+        dep_store = get_dependency_store()
+        report: dict = {
+            "process_number": process_number,
+            "reevaluated": [],
+            "failed": [],
+            "not_reached": [],
+            "dependents": [],
+            "interrupted": None,
+        }
+        changed: set[int] = set()
+        for acao_id in sorted(get_ipmp_store().acoes):
+            if acao_id < targets[0]:
+                continue
+            prior = {k: v for k, v in current.items() if k < acao_id}
+            if acao_id in targets:
+                if report["interrupted"]:
+                    report["not_reached"].append(acao_id)
+                    continue
+                before = current.get(acao_id)
+                try:
+                    accepted, rejected, gate_reports = _retrieve_and_select(acao_id, process_number)
+                    result = evaluate(
+                        acao_id,
+                        process_number,
+                        accepted,
+                        rejected_chunks=rejected,
+                        product_gate_reports=gate_reports,
+                        prior_results=prior,
+                    )
+                except _INFRASTRUCTURE_FAILURES as exc:
+                    report["interrupted"] = (
+                        f"Servidor de inferência indisponível na Ação {acao_id} "
+                        f"({type(exc).__name__})."
+                    )
+                    report["not_reached"].append(acao_id)
+                    progress.emit(
+                        process_number, "erro",
+                        report["interrupted"] + " As Ações já reavaliadas foram mantidas; "
+                        "as restantes não foram reavaliadas.",
+                        "error",
+                    )
+                    continue
+                except Exception as exc:  # noqa: BLE001 — one Ação must not kill the run
+                    logger.exception("Re-evaluation of Ação %s failed.", acao_id)
+                    report["failed"].append(acao_id)
+                    progress.emit(
+                        process_number, "erro",
+                        f"Ação {acao_id} falhou ({type(exc).__name__}: {exc}) — a avaliação "
+                        "gravada e a revisão foram mantidas.",
+                        "error",
+                    )
+                    continue
+                _persist_evaluation_result(db_path, result)
+                review_deleted = _delete_review(db_path, process_number, acao_id)
+                current[acao_id] = result
+                changed.add(acao_id)
+                report["reevaluated"].append(_change(acao_id, before, result, review_deleted))
+                continue
+
+            before = current.get(acao_id)
+            if before is None or not any(
+                d.citada in changed for d in dep_store.com_efeito(acao_id)
+            ):
+                continue
+            after = recompute_dependency_cap(before, prior, dep_store)
+            if after.model_dump() == before.model_dump():
+                continue
+            # Same gate and scorer run: the row keeps its created_at, so an
+            # override recorded on this Ação still reads as pending.
+            _update_evaluation_result(db_path, after)
+            current[acao_id] = after
+            review_deleted = False
+            if after.proposed_score != before.proposed_score:
+                changed.add(acao_id)
+                review_deleted = _delete_review(db_path, process_number, acao_id)
+            report["dependents"].append(_change(acao_id, before, after, review_deleted))
+            progress.emit(
+                process_number, "dependencia",
+                f"Ação {acao_id}: teto por dependência recalculado — "
+                f"{_score_label(before)} → {_score_label(after)}.",
+            )
+
+        progress.emit(
+            process_number, "concluido",
+            f"Reavaliação concluída — {len(report['reevaluated'])} Ação(ões) reavaliada(s), "
+            f"{len(report['dependents'])} dependente(s) recalculada(s).",
+            "warning" if (report["failed"] or report["interrupted"]) else "success",
+        )
+        return report
 
     def _run_assessment(
         self,
@@ -348,3 +481,136 @@ def _persist_evaluation_result(db_path: Path, result: EvaluationResult) -> None:
         con.commit()
     finally:
         con.close()
+
+
+# ── re-evaluation helpers (ADR-0078) ─────────────────────────────────────────
+
+def _load_stored_results(db_path: Path, process_number: str) -> dict[int, EvaluationResult]:
+    """The stored evaluations of the case. A row that no longer validates is
+    left out: for the cap it then reads as unknown, which never caps."""
+    con = sqlite3.connect(str(db_path))
+    try:
+        rows = con.execute(
+            "SELECT acao_id, raw_json FROM evaluation_results WHERE process_number = ?",
+            (process_number,),
+        ).fetchall()
+    finally:
+        con.close()
+    out: dict[int, EvaluationResult] = {}
+    for acao_id, raw in rows:
+        try:
+            out[acao_id] = EvaluationResult.model_validate_json(raw)
+        except ValueError:
+            logger.warning("Stored evaluation of Ação %s does not validate; left out.", acao_id)
+    return out
+
+
+def _update_evaluation_result(db_path: Path, result: EvaluationResult) -> None:
+    con = sqlite3.connect(str(db_path))
+    try:
+        con.execute(
+            "UPDATE evaluation_results SET proposed_score = ?, raw_json = ? "
+            "WHERE acao_id = ? AND process_number = ?",
+            (result.proposed_score, result.model_dump_json(), result.acao_id,
+             result.process_number),
+        )
+        con.commit()
+    finally:
+        con.close()
+
+
+def _delete_review(db_path: Path, process_number: str, acao_id: int) -> bool:
+    con = sqlite3.connect(str(db_path))
+    try:
+        cur = con.execute(
+            "DELETE FROM review_outcomes WHERE process_number = ? AND acao_id = ?",
+            (process_number, acao_id),
+        )
+        con.commit()
+        return cur.rowcount > 0
+    finally:
+        con.close()
+
+
+def _score_label(result: EvaluationResult | None) -> str:
+    if result is None:
+        return "sem avaliação"
+    if result.parse_failed:
+        return "falha de parsing"
+    if result.no_evidence_found or result.proposed_score is None:
+        return "sem evidência"
+    return str(result.proposed_score)
+
+
+def _change(
+    acao_id: int,
+    before: EvaluationResult | None,
+    after: EvaluationResult,
+    review_deleted: bool,
+) -> dict:
+    return {
+        "acao_id": acao_id,
+        "before": _score_label(before),
+        "after": _score_label(after),
+        "review_deleted": review_deleted,
+    }
+
+
+def pending_gate_overrides(db_path: Path, process_number: str) -> list[dict]:
+    """Auditor overrides recorded after the evaluation of their Ação was
+    produced: the stored score does not reflect them yet (ADR-0078)."""
+    con = sqlite3.connect(str(db_path))
+    try:
+        if con.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'gate_verdicts'"
+        ).fetchone() is None:
+            return []
+        rows = con.execute(
+            "SELECT g.acao_id, g.product_id, g.filename, g.page_number, g.chunk_index, "
+            "g.relevant, g.overridden_at, g.override_justification, e.created_at "
+            "FROM gate_verdicts g JOIN evaluation_results e "
+            "ON e.process_number = g.process_number AND e.acao_id = g.acao_id "
+            "WHERE g.process_number = ? AND g.overridden_at IS NOT NULL "
+            "ORDER BY g.acao_id, g.product_id, g.filename, g.page_number, g.chunk_index",
+            (process_number,),
+        ).fetchall()
+    finally:
+        con.close()
+    out: list[dict] = []
+    for acao_id, pid, filename, page, chunk, relevant, at, why, evaluated_at in rows:
+        if datetime.fromisoformat(at) <= datetime.fromisoformat(evaluated_at):
+            continue
+        out.append({
+            "acao_id": acao_id, "product_id": pid, "filename": filename,
+            "page_number": page, "chunk_index": chunk, "relevant": bool(relevant),
+            "overridden_at": at, "justification": why,
+        })
+    return out
+
+
+def reviews_at_stake(
+    db_path: Path, process_number: str, acao_ids: list[int]
+) -> tuple[list[int], list[int]]:
+    """(reviewed targets, reviewed possible dependents) of a re-evaluation.
+
+    A target's review is always deleted. A dependent's review is deleted only
+    if its score changes, which is known only after the run, so every
+    reviewed Ação that cites, with effect and transitively, a target is listed.
+    """
+    dep_store = get_dependency_store()
+    targets = set(acao_ids)
+    reach = set(targets)
+    for acao_id in sorted(get_ipmp_store().acoes):
+        if acao_id not in reach and any(d.citada in reach for d in dep_store.com_efeito(acao_id)):
+            reach.add(acao_id)
+    con = sqlite3.connect(str(db_path))
+    try:
+        reviewed = {
+            a for (a,) in con.execute(
+                "SELECT acao_id FROM review_outcomes WHERE process_number = ?",
+                (process_number,),
+            )
+        }
+    finally:
+        con.close()
+    return sorted(reviewed & targets), sorted(reviewed & (reach - targets))
