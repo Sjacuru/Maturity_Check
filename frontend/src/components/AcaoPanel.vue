@@ -105,7 +105,7 @@
         <strong>{{ gateFailureCount }} chamada(s) ao gate falharam</strong> — resposta truncada,
         ilegível ou recusada pelo servidor. Os trechos correspondentes foram descartados
         <em>sem julgamento de mérito</em>, então o score abaixo pode estar subestimado.
-        Reexecute esta Ação antes de validar.
+        Leve isso em conta na revisão.
       </v-alert>
 
       <!-- score_source = "model" means the per-product verdicts were absent or
@@ -179,6 +179,7 @@
             <tr>
               <th>Produto</th>
               <th class="text-center">Evidenciado</th>
+              <th class="text-center" title="Candidatos de documentos de instrumento (contrato, edital, TR) retirados antes do gate (ADR-0074); seções narrativas não saem (ADR-0077)">Fora por gênero</th>
               <th class="text-center">Examinados</th>
               <th class="text-center">Aceitos</th>
               <th class="text-center">Descartados</th>
@@ -200,6 +201,7 @@
                 </v-chip>
                 <span v-else class="text-medium-emphasis">—</span>
               </td>
+              <td class="text-center">{{ row.nGenreExcluded ?? '—' }}</td>
               <td class="text-center">{{ row.nExamined ?? '—' }}</td>
               <td class="text-center">{{ row.nAccepted ?? '—' }}</td>
               <td class="text-center">{{ row.nRejected ?? '—' }}</td>
@@ -632,6 +634,8 @@ const productRows = computed(() => {
       nAccepted: r.n_accepted,
       nRejected: r.n_rejected,
       nFailures: r.n_gate_failures ?? 0,
+      // Absent on rows persisted before the genre filter (2026-10-13).
+      nGenreExcluded: r.n_genre_excluded ?? null,
     })
   }
   for (const v of productVerdicts.value) {
@@ -641,6 +645,7 @@ const productRows = computed(() => {
       nAccepted: null,
       nRejected: null,
       nFailures: null,
+      nGenreExcluded: null,
     }
     row.evidenced = v.evidenced
     row.justificativa = v.justificativa ?? ''

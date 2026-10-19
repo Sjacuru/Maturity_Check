@@ -10,6 +10,15 @@
           :disabled="loading"
           class="mb-2"
         />
+        <v-checkbox
+          v-model="replaceExisting"
+          :disabled="loading"
+          density="compact"
+          hide-details
+          color="warning"
+          class="mb-2"
+          label="Substituir avaliação existente deste processo (apaga as revisões já submetidas)"
+        />
         <v-file-input
           v-model="files"
           label="Documentos (PDF)"
@@ -26,7 +35,7 @@
           @click:close="error = null"
         >{{ error }}</v-alert>
       </v-card-text>
-      <v-card-actions class="pa-4 pt-0">
+      <v-card-actions class="pa-4 pt-0 flex-wrap" style="gap: 8px;">
         <v-btn
           color="primary"
           :disabled="!canSubmit"
@@ -34,6 +43,14 @@
           @click="runAssessment"
         >
           Executar Avaliação
+        </v-btn>
+        <v-btn
+          variant="outlined"
+          color="primary"
+          :disabled="!processNumber.trim() || loading"
+          @click="openExisting"
+        >
+          Abrir avaliação
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -117,6 +134,9 @@ const router = useRouter()
 
 const processNumber = ref('')
 const files = ref([])
+// ADR-0026: a case that already has a review is replaced only on request,
+// and replacing it deletes its evaluations and reviews.
+const replaceExisting = ref(false)
 const loading = ref(false)
 const error = ref(null)
 const documents = ref([])
@@ -236,13 +256,26 @@ function stopPolling() {
 
 onUnmounted(stopPolling)
 
+function openExisting() {
+  router.push(`/cases/${encodeURIComponent(processNumber.value.trim())}`)
+}
+
 async function runAssessment() {
+  const pn = processNumber.value.trim()
+  if (
+    replaceExisting.value &&
+    !window.confirm(
+      `Substituir a avaliação do processo ${pn}? As avaliações e as revisões já submetidas ` +
+        'deste processo serão apagadas.'
+    )
+  ) {
+    return
+  }
   error.value = null
   documents.value = []
   resetProgress()
   loading.value = true
 
-  const pn = processNumber.value.trim()
   const form = new FormData()
   for (const file of files.value) {
     form.append('files', file)
@@ -251,11 +284,19 @@ async function runAssessment() {
   startPolling(pn)
 
   try {
-    const resp = await fetch(`/api/cases/${encodeURIComponent(pn)}/assess`, {
+    const query = replaceExisting.value ? '?force=true' : ''
+    const resp = await fetch(`/api/cases/${encodeURIComponent(pn)}/assess${query}`, {
       method: 'POST',
       body: form,
     })
     await pollProgress(pn) // catch any trailing events emitted right before completion
+    if (resp.status === 409) {
+      throw new Error(
+        'Este processo já tem revisões submetidas. Para avaliá-lo de novo, marque ' +
+          '"Substituir avaliação existente" (as revisões serão apagadas), ou use ' +
+          '"Abrir avaliação" para ver a avaliação gravada.'
+      )
+    }
     if (!resp.ok) {
       const detail = await resp.json().catch(() => ({ detail: resp.statusText }))
       throw new Error(detail.detail ?? `HTTP ${resp.status}`)
