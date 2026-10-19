@@ -840,3 +840,73 @@ coupling of Ações 2 and 3 as documented residue, with Ações 10, 23, 32, 35 a
 and the dependency cap (ADR-0070) takes Ação 3 from 3 to 1 in the same
 process. A cycle that misses the margin only on Estratégica through this event
 is read as within the documented residue, not as a regression.
+
+## Variants tried after cycle 8 (2026-10-18/19)
+
+Two variants were measured, each as one ten-process invocation of
+`reproducibility.py` against cycle 8, under a criterion written before the
+first model call (`scratchpad/acc/criterio_ciclo9.txt`,
+`criterio_ciclo10.txt`). Both failed it and are discarded. Both stay in the
+harness as the record of what was tried; `src/` is unchanged.
+
+- **Standing rule (the user, 2026-10-18):** never give instrument text back to
+  the gate as a general rule, never take query terms from this case, never
+  write negative patterns tailored to its pages. A product reaches instrument
+  text only with a canonical reason from the IPMP text. The candidates checked
+  (8c, 9d, 30c, 41a, 42a, 43c) had none: in cycle 2, before the filter, they
+  reached only generic clauses, and the IPMP's own Não Atendido example for
+  Ação 8 rejects a contract model that appears only in later documents.
+- **A correction of an earlier reading.** The procurement justification
+  `_1` p.3 (genre OUTRO) names the agents, the changes (transition between
+  concessionaires, management by type of furniture, new duties, BRT and Bike
+  Rio), a mitigation (bidding early to avoid an abrupt interruption), the
+  current state (about 3 000 units, contracts until 12/12/2026) and the
+  benefits (i) to (v). It is partial legitimate evidence for 13c, 2c and 14a
+  (and 13a, which does not reach it), debatable for 15a, 15c and 35.2e. It was
+  recorded as false for 13c: wrong. The filter does not remove it; the gate
+  rejects it on sufficiency (cycle 8: 13c 1 of 11, 2c and 14a 0 of 10), and
+  when it was accepted the scorer read "parcialmente evidenciado".
+- **Cycle 9, variant Q** (`gate_qualifiers.py`,
+  `--gate-variant qualificadores`): one sentence after the polarity clause
+  saying the criterion's qualifiers (complete, detailed, categorized,
+  structured, monetized, formal, grounded) are the final stage's condition,
+  not the gate's. 2026-10-18 22:10 to 00:37, no errors.
+  - A passed (41/46; cycle 8: 40) and C3 passed (0 new flips).
+  - B failed: 2 of 8 targets gained 3+ accepts (1a `_2` p.157, 23.2 `_2`
+    p.138), 4d `_2` p.161 lost 3; the justification moved little (14a 0 to 1,
+    13c 1 to 2, 2c 0 to 0 of 10).
+  - C1 failed: the annex-list pointer 25a `_2` p.232 went 0 to 4 of 10, the
+    reasoning quoting the new sentence.
+  - C2 failed: accepts 40.3 to 50.4 per process (+25 %), two thirds in exempt
+    instrument products (23.x, 25c, 37).
+  - Reading: what holds the justification back is not the criterion's
+    qualifier words; loosening sufficiency without naming what is not the
+    element lets pointers through, as with G.
+- **Cycle 10, variant F20** (`lane_genre_filter.py`, `--lane-genre-filter`):
+  the genre filter inside each lane, before the RRF fusion; each lane of a
+  non-exempt product goes down until it holds 20 chunks that are neither
+  instrument text nor empty. Checked without a model against the production
+  path: 2 199 pool calls per process and the 164 examined pools identical, in
+  order, to the projection. 2026-10-19 01:01 to 07:36, 39.5 min per process.
+  The SSH tunnel dropped at 04:10 for 18 s: Ações 32 to 36 of process 5 erred
+  and were not refilled.
+  - A failed: 34/46 (cycle 8: 40); below 9 of 10: 6 13 14 17 20 23 27 31 35
+    37 41 42.
+  - B passed: 11 pre-listed target pages newly accepted in 5+ of 10, among
+    them 2d `_1` p.3 and `_2` p.156, 13a `_1` p.3 (5/10), 8c `_1` p.3, 1c `_2`
+    p.161.
+  - C1 failed: about 20 of the 42 new non-target accepts are confusions, most
+    from the Estudo Econômico de Referência: the concessionaire's staff costs
+    as the project team's cost (32a) and training cost (32b), taxes and
+    amortization as critical success factors (36a), revenue and cost-of-capital
+    sources as the post-consultation revision (40a, 40d), the lots as a WBS
+    (31.1b), the concessionaire's quality standards per stage (31.1g).
+  - C2 failed: modal points rose on confusions in 12, 31, 32, 36 and 40 (on
+    legitimate evidence in 8, 13, 15 and 19). Accepts 40 to 107 per process,
+    68 new coins in 35 products, nota median 0.094 to 0.196, 3 of 10
+    processes past the 0.2 band limit.
+  - Reading: deeper lanes reach the narrow band of legitimate pages (the
+    justification, ETP `_2` p.156 to 161) and, with it, the economic study,
+    which the gate credits for any product about cost, team, revenue or
+    sources. Reaching only the band would need a per-product choice of
+    documents, a manual map, which the user ruled out.

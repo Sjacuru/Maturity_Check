@@ -234,12 +234,29 @@ def _install_gate_variant(name: str) -> None:
     ..., versao='g2'), the bytes measure_gate_positioning.py --condicoes g,g2
     measured. Its product pattern for 18b goes with --candidates
     scripts/diagnostics/candidates_g2.py --apply 18b.
+
+    'qualificadores' (variant Q, cycle 9, 2026-10-18): one sentence after the
+    polarity clause saying the criterion's qualifiers are the final stage's
+    condition (gate_qualifiers.qualifica). Failed its pre-registered rule and
+    discarded (ADR-0074, "Variants tried after cycle 8"); kept as the record.
     """
     sys.path.insert(0, str(ROOT / "scripts" / "diagnostics"))
     import measure_sibling_text as mst
 
     from evaluation import evidence_selection as es
 
+    if name == "qualificadores":
+        import gate_qualifiers as gq
+
+        original = es.build_relevance_system_prompt
+
+        def qualified(evidence_intent, concepts=None, negative_patterns=None, *, acao=None, product_id=None):
+            return gq.qualifica(
+                original(evidence_intent, concepts, negative_patterns, acao=acao, product_id=product_id))
+
+        es.build_relevance_system_prompt = qualified
+        print(f"gate variant '{name}' installed in memory")
+        return
     if name in ("posicionado", "posicionado2"):
         import gate_positioning as gp
 
@@ -411,12 +428,19 @@ def main() -> int:
     )
     ap.add_argument("--apply", default=None, help="comma-separated product ids from --candidates")
     ap.add_argument(
-        "--gate-variant", default=None, choices=("rotulado", "posicionado", "posicionado2"),
+        "--gate-variant", default=None, choices=("rotulado", "posicionado", "posicionado2", "qualificadores"),
         help="measure a gate-prompt variant across independent processes, in memory only "
              "(src/ untouched). 'rotulado': the product under evaluation labelled like its "
              "siblings (measure_sibling_text.rotula_alvo). 'posicionado': the gate's place in "
              "the process stated in the prompt (gate_positioning.posiciona, variant G). "
-             "'posicionado2': variant G2, G plus the NOMEAR paragraph.",
+             "'posicionado2': variant G2, G plus the NOMEAR paragraph. 'qualificadores': variant Q, "
+             "one sentence saying the criterion's qualifiers belong to the final stage (gate_qualifiers.qualifica).",
+    )
+    ap.add_argument(
+        "--lane-genre-filter", action="store_true",
+        help="variant F20 (cycle 10, 2026-10-19; failed and discarded, kept as the record, "
+             "ADR-0074): the genre filter inside each lane, before the RRF fusion; each lane of a non-exempt product goes down until it has 20 chunks that "
+             "are not instrument text and not empty (lane_genre_filter.instala). In memory only.",
     )
     ap.add_argument(
         "--record-reasoning", action="store_true",
@@ -434,6 +458,12 @@ def main() -> int:
     RECORD_SCORER = not args.no_record_scorer
     if args.gate_variant:
         _install_gate_variant(args.gate_variant)
+    if args.lane_genre_filter:
+        sys.path.insert(0, str(ROOT / "scripts" / "diagnostics"))
+        import lane_genre_filter
+
+        lane_genre_filter.instala()
+        print("lane genre filter (F20) installed in memory")
     patch = _apply_candidates(args.candidates, args.apply) if args.candidates else {}
     if args.expansion and args.no_expansion:
         ap.error("--expansion and --no-expansion contradict each other")
@@ -584,6 +614,7 @@ def main() -> int:
             # profiles as they are on disk).
             "patch": patch,
             "gate_variant": args.gate_variant,
+            "lane_genre_filter": args.lane_genre_filter,
             # ADR-0074: the switches this process ran with and the rules of the
             # document index, so runs under different filters are never mixed.
             "expansion": _es.EXPANSION_ENABLED,
