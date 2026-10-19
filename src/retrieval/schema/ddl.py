@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS chunk_genre (
     segment_index  INTEGER NOT NULL,
     chunk_label    TEXT    NOT NULL,
     genre          TEXT    NOT NULL,
+    narrative_section TEXT,
     rules_version  TEXT    NOT NULL,
     PRIMARY KEY (process_number, filename, page_number, chunk_index)
 );
@@ -81,14 +82,25 @@ CREATE TABLE IF NOT EXISTS document_index_state (
 GENRE_TABLES_DDL = (_CREATE_DOCUMENT_INDEX, _CREATE_CHUNK_GENRE, _CREATE_DOCUMENT_INDEX_STATE)
 
 
+def create_genre_tables(con: sqlite3.Connection) -> None:
+    """Create the document-index tables. They hold derived data only, so a
+    chunk_genre table of an older shape (before the narrative_section column,
+    ADR-0077) is dropped with its state and rebuilt on the next read."""
+    columns = {row[1] for row in con.execute("PRAGMA table_info(chunk_genre)")}
+    if columns and "narrative_section" not in columns:
+        for table in ("document_index_state", "chunk_genre", "document_index"):
+            con.execute(f"DROP TABLE IF EXISTS {table}")
+    for ddl in GENRE_TABLES_DDL:
+        con.execute(ddl)
+
+
 def init_db(db_path: str | Path) -> None:
     con = sqlite3.connect(str(db_path))
     try:
         con.execute("PRAGMA journal_mode=WAL;")
         con.execute(_CREATE_CHUNKS)
         con.execute(_CREATE_CHUNKS_FTS)
-        for ddl in GENRE_TABLES_DDL:
-            con.execute(ddl)
+        create_genre_tables(con)
         con.commit()
     finally:
         con.close()

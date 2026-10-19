@@ -61,6 +61,16 @@ EXPANSION_ENABLED = True
 # diagnostics: reproducibility.py --no-genre-filter.
 GENRE_FILTER_ENABLED = True
 
+# Narrative sections (ADR-0077). Inside an instrument document, the passages
+# of a section titled as narrative (introduction, context, history,
+# justification, conclusion...) are not the normative text the filter exists
+# to remove: the index marks them and the filter lets them through, for every
+# product. Test cycle 11 (10 full processes): constancy 40/46 as in cycle 8,
+# no confusion accepted in 5+ of 10, the TR's statement of the concession's
+# objectives accepted for 1c in 10/10. Switchable for diagnostics:
+# reproducibility.py --no-narrative-sections.
+NARRATIVE_SECTIONS_ENABLED = True
+
 # Worst-case bound on candidates examined per product before giving up, even
 # if fewer than _ANCHOR_TARGET were accepted. Without this, a strict gate
 # model traverses the full fused BM25+vector candidate pool (up to ~40, since
@@ -495,12 +505,13 @@ def _natural_key(chunk: RetrievedChunk) -> tuple[str, int, int]:
 
 
 def _chunk_genres(process_number: str) -> dict[tuple[str, int, int], str]:
-    """Genre of every chunk of the process, by its document (ADR-0074).
+    """Genre of every chunk of the process, by its document (ADR-0074), with
+    the narrative sections of instrument documents read as OUTRO (ADR-0077).
 
     The one seam to the canonical document index: tests replace it, production
     reads (and, when stale, rebuilds) the index next to the chunks.
     """
-    return get_chunk_genres(process_number)
+    return get_chunk_genres(process_number, release_narrative_sections=NARRATIVE_SECTIONS_ENABLED)
 
 
 def _drop_instrument_text(

@@ -4,6 +4,9 @@ For every file of a process: the documents it bundles (segmentation.py), the
 genre of each document, and the genre every chunk inherits from its document.
 A document's genre is its title's type when the title names a known type,
 otherwise the majority of its chunk labels (classifier.py), a tie being OUTRO.
+Inside an instrument document, a chunk that lies in a narrative section
+(introduction, history, justification...; narrative.py, ADR-0077) is marked
+with that section's title; get_chunk_genres treats it as OUTRO.
 
 The index is derived data, persisted next to the chunks it describes. It is
 rebuilt whenever the chunks of the process change (a checksum of their keys
@@ -21,15 +24,17 @@ from datetime import datetime, timezone
 
 from retrieval._config import get_db_path
 from retrieval.genre.classifier import INSTRUMENT, OTHER, classify_chunks
+from retrieval.genre.narrative import narrative_sections
 from retrieval.genre.segmentation import pages_by_file, segment_file
-from retrieval.schema.ddl import GENRE_TABLES_DDL
+from retrieval.schema.ddl import create_genre_tables
 
 # Bump on any change to the classifier markers, the type lexicon, the
 # segmentation rules or the noise stripper both of them read
 # (extraction.noise): an index built under another version is rebuilt on its
 # next read. 2026-10-16.1: the stripper also removes the signature stamps it
-# used to let through.
-GENRE_RULES_VERSION = "2026-10-16.1"
+# used to let through. 2026-10-19.1: narrative sections of instrument
+# documents (ADR-0077).
+GENRE_RULES_VERSION = "2026-10-19.1"
 
 
 @dataclass(frozen=True)
@@ -49,19 +54,43 @@ class DocumentSegment:
     rules_version: str
 
 
-def get_chunk_genres(process_number: str) -> dict[tuple[str, int, int], str]:
-    """{(filename, page_number, chunk_index): genre of the chunk's document}."""
+def get_chunk_genres(
+    process_number: str, release_narrative_sections: bool = True,
+) -> dict[tuple[str, int, int], str]:
+    """{(filename, page_number, chunk_index): the genre the filter reads}.
+
+    The genre of the chunk's document, except that a chunk in a narrative
+    section of an instrument document reads OUTRO (ADR-0077), unless
+    release_narrative_sections is False.
+    """
     con = _connect()
     try:
         _ensure(con, process_number)
         rows = con.execute(
-            "SELECT filename, page_number, chunk_index, genre FROM chunk_genre "
+            "SELECT filename, page_number, chunk_index, genre, narrative_section FROM chunk_genre "
             "WHERE process_number = ?",
             (process_number,),
         ).fetchall()
     finally:
         con.close()
-    return {(f, p, c): genre for f, p, c, genre in rows}
+    return {(f, p, c): OTHER if (release_narrative_sections and section) else genre
+            for f, p, c, genre, section in rows}
+
+
+def get_narrative_sections(process_number: str) -> dict[tuple[str, int, int], str]:
+    """{(filename, page_number, chunk_index): narrative section title} of the
+    chunks of instrument documents that lie in one (ADR-0077)."""
+    con = _connect()
+    try:
+        _ensure(con, process_number)
+        rows = con.execute(
+            "SELECT filename, page_number, chunk_index, narrative_section FROM chunk_genre "
+            "WHERE process_number = ? AND narrative_section IS NOT NULL",
+            (process_number,),
+        ).fetchall()
+    finally:
+        con.close()
+    return {(f, p, c): section for f, p, c, section in rows}
 
 
 def get_document_index(process_number: str) -> list[DocumentSegment]:
@@ -112,8 +141,7 @@ def invalidate_document_index(process_number: str) -> None:
 
 def _connect() -> sqlite3.Connection:
     con = sqlite3.connect(str(get_db_path()))
-    for ddl in GENRE_TABLES_DDL:
-        con.execute(ddl)
+    create_genre_tables(con)
     return con
 
 
@@ -155,6 +183,7 @@ def _rebuild(
         (process_number,),
     ).fetchall()
     labels = classify_chunks(rows)
+    text_of = {(f, p, c): t for f, p, c, t in rows}
 
     segments: list[DocumentSegment] = []
     chunk_rows: list[tuple] = []
@@ -170,6 +199,11 @@ def _rebuild(
                 # a tie is OUTRO, the classifier's doubt rule.
                 genre = INSTRUMENT if n_instrument > len(keys) - n_instrument else OTHER
                 basis = "majority"
+            sections = (
+                narrative_sections([(p, c, text_of[(filename, p, c)]) for _f, p, c in keys],
+                                   segment.title)
+                if genre == INSTRUMENT else {}
+            )
             segments.append(DocumentSegment(
                 process_number=process_number,
                 filename=filename,
@@ -187,7 +221,7 @@ def _rebuild(
             ))
             chunk_rows.extend(
                 (process_number, f, p, c, segment_index, labels[(f, p, c)][0], genre,
-                 GENRE_RULES_VERSION)
+                 sections.get((p, c)), GENRE_RULES_VERSION)
                 for f, p, c in keys
             )
 
@@ -207,7 +241,8 @@ def _rebuild(
         )
         con.executemany(
             "INSERT INTO chunk_genre (process_number, filename, page_number, chunk_index, "
-            "segment_index, chunk_label, genre, rules_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "segment_index, chunk_label, genre, narrative_section, rules_version) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             chunk_rows,
         )
         con.execute(

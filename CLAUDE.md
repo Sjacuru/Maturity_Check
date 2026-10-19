@@ -96,7 +96,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (76 filled, next: 0077-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46)
+│   ├── adr/                     ← Architecture Decision Records (77 filled, next: 0078-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46; 0077 = narrative sections of instrument documents reach the gate)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -143,6 +143,7 @@ Maturity_Check/
 │   ├── test_evaluate_orchestration.py ← evaluate() full flow with StubLLMClient (12 tests)
 │   ├── test_score_margin.py ← ScoreMargin arithmetic: band margin, fragility, score floor (25 tests)
 │   ├── test_genre_{classifier,segmentation,index,exemptions}.py ← genre classifier, document segments, document index, exemptions (ADR-0074, 39 tests)
+│   ├── test_genre_narrative.py  ← narrative sections of instrument documents (ADR-0077, 26 tests)
 │   ├── test_ipmp_structure.py   ← all 46 Ações load; the five transition points; the chapter-4 phase blocks; dimension counts; 164 scored products (5 tests)
 │   └── test_maturity.py         ← the IPMP nota: counting rules, floor, groups, band limits, route, não aplicável (ADR-0075, ADR-0076, 10 tests)
 ├── src/
@@ -168,6 +169,7 @@ Maturity_Check/
 │   │   ├── genre/               ← canonical document index (ADR-0074)
 │   │   │   ├── classifier.py    ← chunk label INSTRUMENTO/OUTRO from drafting conventions; doubt → OUTRO
 │   │   │   ├── segmentation.py  ← where each document starts/ends in a bundled PDF (title, cover, numbering restart)
+│   │   │   ├── narrative.py     ← narrative sections of instrument documents, read as OUTRO by the filter (ADR-0077)
 │   │   │   └── index.py         ← get_chunk_genres / get_document_index / invalidate; rebuilt on chunk fingerprint or GENRE_RULES_VERSION
 │   │   ├── indexing/
 │   │   │   └── writer.py        ← index(process_number, chunks) — idempotent INSERT OR IGNORE
@@ -230,6 +232,14 @@ Maturity_Check/
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-19 (80th pass) — THE USER'S REQUESTS AG–AI: cycle 11 (variant S: narrative sections of instrument documents reach the gate), then "para o universo de um processo ... vale a pena manter a lógica de S", then "Retire cronograma da lista e pode implementar S no código com o ADR". S is IN `src/` without CRONOGRAMA (ADR-0077). Uncommitted until the user's OK.**
+
+- **Cycle 11** (`--narrative-sections`, one ten-process invocation, 10:03–12:32; criterion `scratchpad/acc/criterio_ciclo11.txt`): A passed (40/46, as C8); B failed (1 of 6 targets: TR objectives `_1` p.140 for 1c in 10/10; the four 4a targets coins at 2/10); C1/C2 passed (0 confusions in 5+, no modal change, all 17 pre-listed confusions rejected 10/10); C3: 4 new coins, the schedule annex `_2` p.974 once for 31.1f (target confusion with 31.1c, one point to Ação 31 in process 6). Process 9 lost Ação 23 to gate timeouts, not refilled. Readers: session scratchpad `c11/analisa_ciclo11.py`, `c11/leitor_c11.py`.
+- **Decision (the user):** keep S despite rule E (no relevant loss, small correct gain; 1c now holds in 10/10 with an independent page, was 9/10); drop CRONOGRAMA (its only effect was a confusion; elsewhere it could release a contract's físico-financeiro annex). New rule for evidence-recovery changes: non-inferiority (A, C1, C2) plus one legitimate target (ADR-0077).
+- **Code:** `src/retrieval/genre/narrative.py`; `chunk_genre.narrative_section` (an old-shape table is dropped and rebuilt, derived data); `get_chunk_genres(..., release_narrative_sections=True)` reads released chunks as OUTRO; `get_narrative_sections`; `GENRE_RULES_VERSION` 2026-10-19.1; `evidence_selection.NARRATIVE_SECTIONS_ENABLED`; harness `--no-narrative-sections` (`--narrative-sections` stays as the cycle-11 record). `tests/test_genre_narrative.py` (26); fast suite 757.
+- **Checked without a model** (session scratchpad `c12/confere_s_src.py`, `c12/projeta_s_src.py`): 30 released chunks = cycle 11's 33 minus the schedule annex; examined pools = cycle 11's except `_2` p.973/974 leave 20d, 31.1f, 35.2b, 45; 473 pool calls per process. `data/app.db`'s index rebuilds on its next read.
+- **Infra, disclosed:** model started 10:02 after `gpu_livre.ps1` LIVRE, stopped 12:35 (`para_8083.ps1` via `ssh_ps_file.py`); `infra_c11.py` kept the tunnel and read the GPU every 5 min (all LIVRE).
 
 **Session 2026-10-18/19 (79th pass) — THE USER'S REQUESTS AD–AF: items 1–4 on instrument text (which products may read it, a second look at 12 13 15 24 35 36 42, the window depth, the gate judging sufficiency), then "Um ciclo para a variante estreita do gate", then "Vamos aplicar o filtro conforme sua sugestão e analisar o resultado". Two variants measured, each as ONE ten-process invocation of the harness under a criterion written before the first model call; both FAILED and are discarded, kept in the harness as the record. Recorded in ADR-0074 ("Variants tried after cycle 8"). `src/` unchanged.**
 
@@ -2016,7 +2026,7 @@ User-defined 5-component plan to bring Ação 2 to parity with Ação 1, execute
 
 **Latency:** ~17-20 min/Ação (ADR-0051 scope: one Ação at a time). Pre-gate dedup saves ~6 gate calls (3 for 1b conclusion copies, 3 for 1d boilerplate). Further reduction requires non-LLM pre-filter or fine-tuned small model (deferred).
 
-**Tests (2026-07-01):** 386 fast + 12 slow = 398 total (2026-10-15: 708 fast). Run with `pytest -m "not slow"` for fast path.
+**Tests (2026-07-01):** 386 fast + 12 slow = 398 total (2026-10-19: 757 fast). Run with `pytest -m "not slow"` for fast path.
 
 Install with: `SETUPTOOLS_USE_DISTUTILS=stdlib pip install -e .`
 Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TESSERACT_CMD` env var).
@@ -2047,7 +2057,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (last updated 2026-10-15: Nota iPMP, Fase, Ponto de Transição)
-- `docs/adr/` — 76 ADRs, next is `0077-`
+- `docs/adr/` — 77 ADRs, next is `0078-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_NN.json` — IPMP source of truth, one file per Ação (46)

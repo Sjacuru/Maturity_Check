@@ -910,3 +910,10 @@ harness as the record of what was tried; `src/` is unchanged.
     which the gate credits for any product about cost, team, revenue or
     sources. Reaching only the band would need a per-product choice of
     documents, a manual map, which the user ruled out.
+- **Cycle 11, variant S** (`narrative_sections.py`, `--narrative-sections`;
+  2026-10-19 10:03 to 12:32): chunks of instrument documents inside a section
+  with a narrative title (introduction, context, history, justification,
+  conclusion, schedule) read as OUTRO. A passed (40/46), C1 and C2 passed (no
+  confusion accepted in 5+ of 10, no modal change), B failed (1 of 6 targets:
+  the TR's objectives for 1c in 10/10). The user kept it without CRONOGRAMA:
+  ADR-0077, which narrows the standing rule above.

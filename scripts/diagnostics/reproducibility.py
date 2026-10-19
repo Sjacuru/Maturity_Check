@@ -443,6 +443,19 @@ def main() -> int:
              "are not instrument text and not empty (lane_genre_filter.instala). In memory only.",
     )
     ap.add_argument(
+        "--narrative-sections", action="store_true",
+        help="variant S as measured in test cycle 11 (2026-10-19): chunks of instrument documents "
+             "that sit in a section titled INTRODUÇÃO, HISTÓRICO, JUSTIFICATIVA, CONCLUSÃO, CRONOGRAMA "
+             "and the like count as OUTRO for the genre filter (narrative_sections.instala). In memory "
+             "only. Kept as the record: production carries S without CRONOGRAMA since ADR-0077, so "
+             "on top of it this flag only adds the CRONOGRAMA sections back.",
+    )
+    ap.add_argument(
+        "--no-narrative-sections", action="store_true",
+        help="turn OFF the release of the narrative sections of instrument documents (ADR-0077): "
+             "the genre filter removes every chunk of an instrument document again, as in cycles 3 to 10.",
+    )
+    ap.add_argument(
         "--record-reasoning", action="store_true",
         help="store the gate reasoning of every verdict in the JSON (gate.reasoning), so the "
              "target-product confusion rate can be read across independent processes",
@@ -464,6 +477,12 @@ def main() -> int:
 
         lane_genre_filter.instala()
         print("lane genre filter (F20) installed in memory")
+    if args.narrative_sections:
+        sys.path.insert(0, str(ROOT / "scripts" / "diagnostics"))
+        import narrative_sections
+
+        narrative_sections.instala()
+        print("narrative sections of instrument documents (S) released in memory")
     patch = _apply_candidates(args.candidates, args.apply) if args.candidates else {}
     if args.expansion and args.no_expansion:
         ap.error("--expansion and --no-expansion contradict each other")
@@ -475,6 +494,9 @@ def main() -> int:
     if args.no_genre_filter:
         _es.GENRE_FILTER_ENABLED = False
         print("genre filter DISABLED for this run")
+    if args.no_narrative_sections:
+        _es.NARRATIVE_SECTIONS_ENABLED = False
+        print("narrative sections of instrument documents NOT released for this run")
     if args.no_prompt_cache:
         from evaluation._config import get_gate_llm_client, get_llm_client
         for _client in (get_llm_client(), get_gate_llm_client()):
@@ -505,6 +527,9 @@ def main() -> int:
         print(f"document index (rules {GENRE_RULES_VERSION}): {len(documents)} documents, "
               f"{len(instrument)} instrument text, "
               f"{sum(d.n_chunks for d in instrument)}/{sum(d.n_chunks for d in documents)} chunks")
+        if _es.NARRATIVE_SECTIONS_ENABLED:
+            from retrieval import get_narrative_sections
+            print(f"narrative sections released (ADR-0077): {len(get_narrative_sections(args.process))} chunks")
     print("results are NOT persisted\n")
 
     outcomes: dict[int, list[str]] = collections.defaultdict(list)
@@ -615,10 +640,12 @@ def main() -> int:
             "patch": patch,
             "gate_variant": args.gate_variant,
             "lane_genre_filter": args.lane_genre_filter,
+            "narrative_sections": args.narrative_sections,
             # ADR-0074: the switches this process ran with and the rules of the
             # document index, so runs under different filters are never mixed.
             "expansion": _es.EXPANSION_ENABLED,
             "genre_filter": _es.GENRE_FILTER_ENABLED,
+            "narrative_sections_released": _es.NARRATIVE_SECTIONS_ENABLED,
             "genre_rules_version": GENRE_RULES_VERSION,
         }
         Path(args.json_out).write_text(json.dumps(payload, indent=2), encoding="utf-8")

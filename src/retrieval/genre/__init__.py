@@ -10,6 +10,7 @@ from retrieval.genre.index import (
     ensure_document_index,
     get_chunk_genres,
     get_document_index,
+    get_narrative_sections,
     invalidate_document_index,
 )
 
@@ -23,5 +24,6 @@ __all__ = [
     "ensure_document_index",
     "get_chunk_genres",
     "get_document_index",
+    "get_narrative_sections",
     "invalidate_document_index",
 ]
