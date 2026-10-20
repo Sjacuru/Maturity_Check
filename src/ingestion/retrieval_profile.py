@@ -63,6 +63,10 @@ class ExpectedProductProfile(BaseModel):
     query_terms: list[PhraseQueryTerm | NearQueryTerm]
     evidence_logic_patterns: list[str] = []
     negative_evidence_patterns: list[str] = []
+    # ADR-0079: each lane (BM25, vector) is cut at 20 AFTER the genre filter for this
+    # product, so instrument text cannot fill the 20 places. Ignored on genre-exempt
+    # products, which read instrument text by design.
+    genre_filter_before_lane_cut: bool = False
 
 
 class AcaoRetrievalProfile(BaseModel):

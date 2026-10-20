@@ -201,6 +201,9 @@ _Avoid_: page map, genre cache, document map
 _Avoid_: relevance filter, pre-filter (that is `_prefilter_near_duplicates`), gate
 
 **Narrative Section**: A section of an instrument document whose title is narrative by drafting convention (introdução, contexto, histórico, justificativa, diagnóstico, breve análise, considerações, conclusão; not cronograma), running to the next title of the same level or higher; its chunks are the instrument's own account of the project and read as OUTRO for the **Genre Filter** (ADR-0077).
+
+**Idea of the Document**: What a named document must say (the comparison of alternatives, the risks found, the measures against them), searched as content wherever it is written instead of by the document's name; for 8a, 15a and 15c the product's `evidence_intent` states it and its lanes are cut after the **Genre Filter** (`genre_filter_before_lane_cut`, ADR-0079).
+_Avoid_: alma do documento (the user's phrase, not a field), document type
 _Avoid_: preamble, considerandos (a minuta's recitals are not a section)
 
 **Genre-Exempt Product**: An Expected Product whose IPMP criterion is the instrument itself, so its candidates keep their **Instrument Text**. Examples: the contractual structure, the risk matrix as an annex, the edital and minuta, the payment rules, the finalised documents, the signed contract. Each is listed with its IPMP sentence in `data/ipmp/isencoes_genero.json`. There are 16: 22.1, 22.2, 22.2a, 22.2b, 23.1–23.4, 25a–25e, 37, 42d and 46.1 (45 left the list on 2026-10-15: the record of a bidding lives in the acts, not in the contract).

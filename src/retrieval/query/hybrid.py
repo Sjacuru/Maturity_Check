@@ -1,6 +1,15 @@
 from __future__ import annotations
 
-from ingestion import get_acronym_store, get_ipmp_store, get_retrieval_profile_store, get_rio_manual_store
+from extraction.noise import strip_extraction_noise
+from ingestion import (
+    get_acronym_store,
+    get_genre_exemption_store,
+    get_ipmp_store,
+    get_retrieval_profile_store,
+    get_rio_manual_store,
+)
+from retrieval.genre.classifier import INSTRUMENT
+from retrieval.genre.index import get_chunk_genres
 from retrieval.interfaces.contracts import RetrievedChunk
 from retrieval.query import vector as vector_mod
 from retrieval.query.bm25 import MAX_CHUNKS_PER_ACAO, fetch_bm25_candidates
@@ -15,6 +24,10 @@ _CANDIDATE_POOL_SIZE = 20
 # after fusion/ranking. 4 IPMP products + rio_hints x 5 = 25 candidates, minus
 # physical duplicates -> capped at MAX_CHUNKS_PER_ACAO.
 _PER_PRODUCT_TARGET = 5
+
+# ADR-0079: how far down a lane goes when a product cuts it after the genre
+# filter — the whole lane (a case has a few thousand chunks at most).
+_LANE_DEPTH_AFTER_FILTER = 100_000
 
 _Key = tuple  # (filename, page_number, chunk_index)
 
@@ -38,11 +51,16 @@ def _fused_candidates_for_product(
     profile_product,
     acronym_map: dict[str, str],
     process_number: str,
+    cut_after_genre_filter: bool = False,
 ) -> list[tuple[float, RetrievedChunk]]:
     """BM25 + vector candidates for one product, fused via RRF, sorted best-first.
 
-    Returns up to _CANDIDATE_POOL_SIZE (score, chunk) pairs, NOT capped to
-    _PER_PRODUCT_TARGET — callers decide how many to keep.
+    Returns up to _CANDIDATE_POOL_SIZE (score, chunk) pairs per lane, NOT capped
+    to _PER_PRODUCT_TARGET — callers decide how many to keep.
+
+    With cut_after_genre_filter (ADR-0079), each lane goes down until it has
+    _CANDIDATE_POOL_SIZE chunks that are not instrument text and are not empty
+    once extraction noise is stripped, instead of taking its first 20.
     """
     if profile_product and profile_product.query_terms:
         bm25_query = build_query_from_terms(profile_product.query_terms)
@@ -51,16 +69,27 @@ def _fused_candidates_for_product(
 
     vector_query = _vector_query_text(profile_product, product.texto)
 
+    n = _CANDIDATE_POOL_SIZE
+    depth = _LANE_DEPTH_AFTER_FILTER if cut_after_genre_filter else n
     bm25_hits = (
-        fetch_bm25_candidates(bm25_query, process_number, product.id, limit=_CANDIDATE_POOL_SIZE)
+        fetch_bm25_candidates(bm25_query, process_number, product.id, limit=depth)
         if bm25_query
         else []
     )
     vector_hits = (
-        vector_mod.search_vector(process_number, vector_query, k=_CANDIDATE_POOL_SIZE)
+        vector_mod.search_vector(process_number, vector_query, k=depth)
         if vector_query
         else []
     )
+    if cut_after_genre_filter:
+        genres = get_chunk_genres(process_number)
+
+        def kept(c: RetrievedChunk) -> bool:
+            return (genres.get(_natural_key(c)) != INSTRUMENT
+                    and bool(strip_extraction_noise(c.text)))
+
+        bm25_hits = [c for c in bm25_hits if kept(c)][:n]
+        vector_hits = [c for c in vector_hits if kept(c)][:n]
     if not bm25_hits and not vector_hits:
         return []
 
@@ -106,6 +135,7 @@ def retrieve_hybrid_candidates_for_acao(
 
     profile_acao = get_retrieval_profile_store().acoes.get(acao_id)
     acronym_map = get_acronym_store()
+    exempt = get_genre_exemption_store().produtos(acao_id)
 
     candidates: dict[str, list[tuple[float, RetrievedChunk]]] = {}
     for product in acao.produtos_esperados:
@@ -114,7 +144,14 @@ def retrieve_hybrid_candidates_for_acao(
         profile_product = (
             profile_acao.expected_products.get(product.id) if profile_acao else None
         )
-        ranked = _fused_candidates_for_product(product, profile_product, acronym_map, process_number)
+        cut_after = bool(
+            profile_product is not None
+            and profile_product.genre_filter_before_lane_cut
+            and product.id not in exempt
+        )
+        ranked = _fused_candidates_for_product(
+            product, profile_product, acronym_map, process_number, cut_after
+        )
         if ranked:
             candidates[product.id] = ranked
     return candidates

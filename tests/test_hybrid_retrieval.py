@@ -129,3 +129,85 @@ def test_unknown_acao_returns_empty(db):
     with patch("retrieval.query.vector.search_vector", return_value=[]):
         results = retrieve_hybrid_for_acao(999, "P001")
     assert results == []
+
+
+# ---------------------------------------------------------------------------
+# ADR-0079: lanes cut after the genre filter, per product
+# ---------------------------------------------------------------------------
+
+from ingestion.retrieval_profile import AcaoRetrievalProfile, ExpectedProductProfile
+from retrieval.genre.classifier import INSTRUMENT, OTHER
+from retrieval.query import hybrid
+from retrieval.query.hybrid import retrieve_hybrid_candidates_for_acao
+
+
+def _profile_with_flag(monkeypatch, acao_id: int, product_id: str, flag: bool) -> None:
+    import ingestion.retrieval_profile as _rp
+    pp = ExpectedProductProfile(
+        evidence_intent="a ideia do produto",
+        retrieval_signal_concepts=[],
+        query_terms=[],
+        genre_filter_before_lane_cut=flag,
+    )
+    store = RetrievalProfileStore(acoes={
+        acao_id: AcaoRetrievalProfile(acao_id=acao_id, profile_maturity="seed",
+                                      expected_products={product_id: pp})
+    })
+    monkeypatch.setattr(_rp, "_store", store)
+
+
+def _vector_lane(n: int) -> list[RetrievedChunk]:
+    return [make_vector_chunk(filename="lane.pdf", page_number=p) for p in range(1, n + 1)]
+
+
+def _genres_first_instrument(n_instrument: int):
+    def genres(process_number):
+        return {("lane.pdf", p, 0): (INSTRUMENT if p <= n_instrument else OTHER) for p in range(1, 200)}
+    return genres
+
+
+def test_flag_cuts_the_lane_after_the_genre_filter(db, monkeypatch):
+    """With the flag, the lane goes past the instrument text and keeps 20 non-instrument chunks."""
+    _profile_with_flag(monkeypatch, 1, "1a", True)
+    monkeypatch.setattr(hybrid, "get_chunk_genres", _genres_first_instrument(21))
+    with patch("retrieval.query.vector.search_vector", return_value=_vector_lane(60)) as mock_vector:
+        candidates = retrieve_hybrid_candidates_for_acao(1, "P001")
+    pages = [c.page_number for _, c in candidates["1a"]]
+    assert pages == list(range(22, 42))
+    assert mock_vector.call_args_list[0].kwargs["k"] == hybrid._LANE_DEPTH_AFTER_FILTER
+
+
+def test_without_the_flag_the_lane_takes_its_first_20(db, monkeypatch):
+    """Default path unchanged: the vector lane is asked for 20 and no genre is read."""
+    _profile_with_flag(monkeypatch, 1, "1a", False)
+
+    def no_genres(process_number):
+        raise AssertionError("genres must not be read without the flag")
+
+    monkeypatch.setattr(hybrid, "get_chunk_genres", no_genres)
+    with patch("retrieval.query.vector.search_vector", return_value=_vector_lane(20)) as mock_vector:
+        candidates = retrieve_hybrid_candidates_for_acao(1, "P001")
+    assert [c.page_number for _, c in candidates["1a"]] == list(range(1, 21))
+    assert mock_vector.call_args_list[0].kwargs["k"] == hybrid._CANDIDATE_POOL_SIZE
+
+
+def test_flag_is_ignored_on_a_genre_exempt_product(db, monkeypatch):
+    """42d reads instrument text by design (ADR-0074), so the flag does not cut its lanes."""
+    _profile_with_flag(monkeypatch, 42, "42d", True)
+    monkeypatch.setattr(hybrid, "get_chunk_genres", _genres_first_instrument(21))
+    with patch("retrieval.query.vector.search_vector", return_value=_vector_lane(20)) as mock_vector:
+        candidates = retrieve_hybrid_candidates_for_acao(42, "P001")
+    assert [c.page_number for _, c in candidates["42d"]] == list(range(1, 21))
+    ks = {call.kwargs["k"] for call in mock_vector.call_args_list}
+    assert ks == {hybrid._CANDIDATE_POOL_SIZE}
+
+
+def test_flag_drops_chunks_left_empty_by_the_noise_stripper(db, monkeypatch):
+    """A chunk whose text is only extraction noise never fills a place in the cut lane."""
+    _profile_with_flag(monkeypatch, 1, "1a", True)
+    monkeypatch.setattr(hybrid, "get_chunk_genres", _genres_first_instrument(0))
+    lane = _vector_lane(3)
+    lane[0] = lane[0].model_copy(update={"text": "   "})
+    with patch("retrieval.query.vector.search_vector", return_value=lane):
+        candidates = retrieve_hybrid_candidates_for_acao(1, "P001")
+    assert [c.page_number for _, c in candidates["1a"]] == [2, 3]

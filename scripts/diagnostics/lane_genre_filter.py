@@ -26,7 +26,11 @@ from __future__ import annotations
 _PROFUNDIDADE = 100_000  # a trilha inteira: o corpus do caso tem 1 429 chunks
 
 
-def instala() -> None:
+def instala(produtos: frozenset[str] | None = None) -> None:
+    """Instala F20 em memória. Com `produtos`, só esses produtos recebem o corte depois do
+    filtro (piloto C15, 2026-10-19); os demais seguem o caminho de produção. Sem `produtos`,
+    todos os não isentos (ciclo 10). Desde o ADR-0079 o corte por produto é um campo do perfil
+    lido pela produção, e reproducibility.py --candidates o liga sem passar por aqui."""
     from extraction.noise import strip_extraction_noise
     from ingestion import get_genre_exemption_store, get_ipmp_store
     from retrieval import get_chunk_genres
@@ -40,9 +44,9 @@ def instala() -> None:
         isentos |= set(store.produtos(acao_id))
     generos: dict[str, dict] = {}
 
-    def filtrado(product, profile_product, acronym_map, process_number):
-        if product.id in isentos:
-            return original(product, profile_product, acronym_map, process_number)
+    def filtrado(product, profile_product, acronym_map, process_number, cut_after_genre_filter=False):
+        if product.id in isentos or (produtos is not None and product.id not in produtos):
+            return original(product, profile_product, acronym_map, process_number, cut_after_genre_filter)
         if process_number not in generos:
             generos[process_number] = get_chunk_genres(process_number)
         g = generos[process_number]

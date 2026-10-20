@@ -326,8 +326,26 @@ def _apply_candidates(path: str, products: str | None) -> dict:
     for pid in (x.strip() for x in products.split(",")):
         cand = mod.CANDIDATOS[pid]
         pp = store.acoes[cand["acao"]].expected_products[pid]
+        if cand.get("intent_add") and cand.get("intent_substitui"):
+            raise SystemExit(f"{pid}: intent_add and intent_substitui contradict each other")
         if cand.get("intent_add"):
             pp.evidence_intent = pp.evidence_intent.rstrip() + cand["intent_add"]
+        if cand.get("intent_substitui"):
+            pp.evidence_intent = cand["intent_substitui"]
+        if cand.get("termos_add"):
+            # New query terms (C15 pilot, 2026-10-19). Keys starting with "_" (the
+            # source note of each term) are documentation and are dropped here.
+            from ingestion.retrieval_profile import NearQueryTerm, PhraseQueryTerm
+
+            novos = []
+            for t in cand["termos_add"]:
+                t = {k: v for k, v in t.items() if not k.startswith("_")}
+                novos.append(PhraseQueryTerm(**t) if t["encoding"] == "phrase" else NearQueryTerm(**t))
+            ja = {_term_label(t) for t in pp.query_terms}
+            repetidos = [_term_label(t) for t in novos if _term_label(t) in ja]
+            if repetidos:
+                raise SystemExit(f"{pid}: terms already in the profile: {repetidos}")
+            pp.query_terms = list(pp.query_terms) + novos
         if cand.get("negativo"):
             pp.negative_evidence_patterns = list(pp.negative_evidence_patterns) + [cand["negativo"]]
         if cand.get("negativos_substitui"):
@@ -348,14 +366,22 @@ def _apply_candidates(path: str, products: str | None) -> dict:
                 c.model_copy(update={"text": novos[c.key]}) if c.key in novos else c
                 for c in pp.retrieval_signal_concepts
             ]
-        chaves = ("intent_add", "negativo", "negativos_substitui", "remover_termos", "rebaixar_termos",
-                  "conceitos_texto", "sem_isencao_genero")
+        chaves = ("intent_add", "intent_substitui", "termos_add", "negativo", "negativos_substitui",
+                  "remover_termos", "rebaixar_termos", "conceitos_texto", "sem_isencao_genero",
+                  "corte_depois_filtro")
         applied[pid] = {k: cand[k] for k in chaves if cand.get(k)}
         print(f"candidate applied in memory: {pid} ({', '.join(applied[pid])})")
     assert get_retrieval_profile_store() is store
     sem_isencao = frozenset(pid for pid, a in applied.items() if a.get("sem_isencao_genero"))
     if sem_isencao:
         _drop_genre_exemptions(sem_isencao)
+    corte = frozenset(pid for pid, a in applied.items() if a.get("corte_depois_filtro"))
+    if corte:
+        # Since ADR-0079 the cut is a profile field read by production
+        # (hybrid._fused_candidates_for_product); the candidate only turns it on in memory.
+        for pid in corte:
+            store.acoes[mod.CANDIDATOS[pid]["acao"]].expected_products[pid].genre_filter_before_lane_cut = True
+        print(f"lanes cut after the genre filter, in memory, for: {', '.join(sorted(corte))}")
     return {"file": str(path), "products": applied}
 
 
@@ -422,6 +448,8 @@ def main() -> int:
              "addition / query-term removal or demotion (remover_termos, rebaixar_termos) / "
              "concept text replacement (conceitos_texto) / in-place negative-pattern replacement (negativos_substitui) "
              "/ removal from the genre-exemption list (sem_isencao_genero) "
+             "/ intent replacement (intent_substitui) / new query terms (termos_add) / lanes cut "
+             "after the genre filter for that product only (corte_depois_filtro) "
              "IN MEMORY for this process only. This is how a patch is measured across "
              "independent processes (the only valid constancy measurement, ADR-0071) before it "
              "is written to a profile.",
@@ -483,6 +511,8 @@ def main() -> int:
 
         narrative_sections.instala()
         print("narrative sections of instrument documents (S) released in memory")
+    if args.lane_genre_filter and args.candidates:
+        ap.error("--lane-genre-filter cuts every product; do not combine it with --candidates")
     patch = _apply_candidates(args.candidates, args.apply) if args.candidates else {}
     if args.expansion and args.no_expansion:
         ap.error("--expansion and --no-expansion contradict each other")

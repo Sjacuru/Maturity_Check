@@ -96,7 +96,7 @@ Maturity_Check/
 ├── pyproject.toml               ← Python project packaging
 ├── .gitignore
 ├── docs/
-│   ├── adr/                     ← Architecture Decision Records (78 filled, next: 0079-; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46; 0077 = narrative sections of instrument documents reach the gate; 0078 = re-evaluate selected Ações after gate overrides)
+│   ├── adr/                     ← Architecture Decision Records (79 filled, next: 0080-; 0079 = the idea of the document for Ações 8 and 15, lanes cut after the genre filter; 0074 = genre filter + document index; 0075 = maturity indicator, the IPMP nota; 0076 = "não aplicável" for Ações 45 and 46; 0077 = narrative sections of instrument documents reach the gate; 0078 = re-evaluate selected Ações after gate overrides)
 │   │   ├── 0001–0021            ← Modules 1–4 decisions (see adr/ directory)
 │   │   ├── 0022-module5-orchestration-service.md
 │   │   ├── 0023-review-outcome-contract.md
@@ -233,6 +233,34 @@ Maturity_Check/
 ---
 
 ## ⏭️ Where to Resume
+
+**Session 2026-10-20 (84th pass) — THE USER'S MESSAGE (verbatim): *"1 - adotar só a 15 e 8 / 2 - Não rodar / 3 - 14a, 27a/27b, 41a"*. The C15 idea for 8a, 15a and 15c is ADOPTED in production (ADR-0079); C16 phase 2 not run; C17 = the idea for 14a, 27a, 27b, 41a, phase 1 PASSED for all three Ações. Phase 2 waits for the user's OK. Nothing committed.**
+
+- **Adoption (ADR-0079):** new profile field `ExpectedProductProfile.genre_filter_before_lane_cut` (`src/ingestion/retrieval_profile.py`); `src/retrieval/query/hybrid.py` reads it: each lane (BM25, vector) goes down the whole depth and keeps 20 chunks that are not instrument text (narrative sections released, ADR-0077) and not empty after `strip_extraction_noise`; ignored on genre-exempt products. `data/retrieval_profiles/acao_08.json` (8a) and `acao_15.json` (15a, 15c): the pilot's intent and terms, the flag on, changelog entries (written by session scratchpad `c16/aplica_8_15.py`, CRLF kept). Checked without GPU: the production pools equal the measured harness pools; only the gate prompts of 8a/15a/15c change (per-product digest). 4 new tests in `tests/test_hybrid_retrieval.py`; fast suite **774**. CONTEXT.md: "Idea of the Document". The adopted configuration has not been measured in full processes (C15 measured it with the same pools: 15 = 1 in 10/10, 8 = 1 in 8/10).
+- **Harness:** `reproducibility.py --candidates ... corte_depois_filtro` now sets the profile flag in memory (one code path with production); `lane_genre_filter.instala` passes the new argument through.
+- **C17 phase 1** (`scripts/diagnostics/candidates_ideia_grupo1.py`, new; criterion and reading `scratchpad/acc/criterio_ciclo17.txt`; `ciclo17_dir_G1.json`, 5 single-Ação processes `--acoes 14,27,41`, 12:40–12:49, 0 errors). Pools H→G1: 14a 1→16, 27a 4→16, 27b 0→13, 41a 0→16. Points 14 = 1×5, 27 = 1×5, 41 = 1 1 1 1 0, no 3.
+  - 14a: ALVO the ETP's "resultados pretendidos" `_2` p.160 and the justification `_1` p.3 (5/5); the generic definition of mobiliário urbano (5 pages) debatable; no confusion.
+  - 27a: nine cost pages of the economic study (CAPEX, operating costs) 5/5. Caveat: they are the concession's costs, which here is the solution's financial model (not the 32a case); the scorer in 2 of 5 lists "licenciamento, fiscalização, desapropriações" that the passages do not contain. 27b: only `_1` p.180 (announces the cash flow), 2/5.
+  - 41a: ALVO the CCPAR reply justifying maior oferta `_2` p.145 (5/5) and the PGM's III.6 (justification "parcialmente atendido", 4/5); three debatable PGM/CCPAR pages; one confusion (`_2` p.133, 1/5). Caveat: this is the original justification before publication, not the post-consultation reconfirmation Ação 41 describes.
+  - D1, D2, D5 pass for all three; D4 median 0. Phase 1 PASSES.
+- **Infra, disclosed:** model started after `gpu_livre.ps1` LIVRE (llama-server 23656), tunnel kept by `c16/infra_c16.py` (closed 12:49:49), model stopped 12:52 (`para_8083.ps1`, `$alvo` 23656): task Ready, port closed, OCR 8082 only read.
+- **Open for the user:** C17 phase 2 (10 full processes, one invocation, about 2.5 h of GPU, criterion addendum written first); whether 41a's pre-publication justification should count for a post-consultation Ação; commit of everything since `403f82d` (src, tests, the two profiles, ADR-0079, CONTEXT.md, CLAUDE.md, the harness and the three candidates files).
+
+**Session 2026-10-20 (83rd pass) — THE USER'S MESSAGES *"Vamos alargar a ideia para 6 e 42. Mas e as demais?"* and *"Proceda com fase 1"*. C16 = the C15 idea widened to 6c, 6d, 42c, 42d (`scripts/diagnostics/candidates_ideia_c16.py`, new; pilot candidates reused unchanged). Phase 1 FAILED its new rule D5, so phase 2 was not launched. Nothing in `src/` or `data/`; nothing committed.**
+
+- **Pools without GPU** (session scratchpad `c16/pools_c16.py`): 6c 0→14, 6d 0→15, 42c 0→11, 42d 14→16 (42d is genre-exempt: intent only, no cut, no terms). Terms from the IPMP, Lei 14.133 art. 18 §1 V/VI/VIII/XIII or general vocabulary; "nova versão dos documentos"/"publique-se" left out (case-derived, ADR-0073).
+- **Phase 1** (`--acoes 6,42`, 5 processes, 10:36–10:46, criterion `scratchpad/acc/criterio_ciclo16.txt` written first): 6 = 1×5, 42 = sem 1 1 1 1, no 3. Ação 6's point rests on `_2` p.157 alone in every process (now through 6c 5/5; 6a/6b took it 1/5 each, against 2/5 and 4/5 in C15): the widening moved the point between products, not to a second page. 6d and 42b accepted nothing. 42 gained a target, 42d `_3` p.10 (the act approving the final version; 2/5, scorer T 1 of 2), beside 42a `_2` p.144/145 (debatable); ≥2 credited pairs in 2/5. D1, D2, D4 pass; **D5 (more than one support in ≥3/5) fails.**
+- **Other Ações (answer to "e as demais"):** group 1 with the idea present (14a, 27a/27b, 41a, maybe 17, 20a), group 2 present but worth 0 (7, 18, 28), group 3 content gaps (the process ends at edital publication). Group 1 has no candidates written.
+- **Infra, disclosed:** model started 10:35 after `gpu_livre.ps1` LIVRE (llama-server 24352), stopped 10:47 (`para_8083.ps1`, `$alvo` 24352); `c16/infra_c16.py` kept the tunnel.
+- **Open for the user:** stop the 6/42 line, or adopt only 15 (and 8) from C15; group 1; commit of the harness changes (`reproducibility.py`, `lane_genre_filter.py`, the two candidates files).
+
+**Session 2026-10-19/20 (82nd pass) — THE USER'S REQUESTS AL–AN: work the Ações that require named documents by searching for the IDEA the document must contain, not the document (*"identificar o que se pede que esteja no documento, a alma do documento ... Em caso de ausência do documento ... a presença da ideia deve ser avaliada quanto ao score 0 ou 1"*), then *"Vamos de b"* (measure without GPU, then gate and scorer) and *"Siga com a rodada na GPU"* (the scorer's reasoning is the brake on a 3). Pilot C15 on 7 products (6a 6b 8a 15a 15c 42a 42b) measured in two phases under `scratchpad/acc/criterio_ciclo15.txt`; phase 2 FAILED rule C1, so nothing is adopted. Nothing in `src/` or `data/`; nothing committed.**
+
+- **Pilot** (`scripts/diagnostics/candidates_ideia_piloto.py`, new): intent rewritten as the idea, canonical terms (Lei 14.133 art. 18 §1 V/X/XII and art. 53, Lei 8.987 art. 5, Lei 11.079 art. 10, general vocabulary; none from the case), and the lanes cut AFTER the genre filter for these products only. Harness: `reproducibility.py --candidates` gains `intent_substitui`, `termos_add`, `corte_depois_filtro`; `lane_genre_filter.instala(produtos=...)`. Checked without GPU: the harness builds the pools measured by the scratch prototype (H 3 1 1 2 4 1 0 → QF 13 11 15 13 15 12 13 trechos).
+- **Phase 1** (single-Ação processes, direction only): H all four Ações `sem evidência` 5/5; QF 6 = 1 1 0 0 1, 8 = 1×5, 15 = 1×5, 42 = 1 1 s 1 1; points on ETP/justification pages; no 3; no copy of the economic study accepted. Passed.
+- **Phase 2** (`ciclo15.json`, 10 full processes, 00:21–03:01, 0 errors, 15.5–16.8 min each): rule A 37/46 (C11 40/46). C1 failed: 15 = 1×10, 8 = 1×8/sem×2, 6 = 1×5/0×2/sem×3, 42 = 1×5/sem×5. C2 passed (36 of the other 42, as C11). No 3 in 40 pilot evaluations. Instability sits where the point rests on ONE borderline page (6: `_2` p.157; 42: CCPAR replies `_2` p.144/145); 15 holds because several ETP pages carry it. The atestação checklist (`_2` p.163) is accepted for 15c 10/10 without moving points. The ADR-0068 signal fires on every single-accept 1. Median points 12.5 → 16 (nota 0.087 → 0.116).
+- **Infra, disclosed:** model started 23:59 after `gpu_livre.ps1` LIVRE (llama-server 7088), stopped 03:02 (`para_8083.ps1`, `$alvo` set to 7088); `c15/infra_c15.py` kept the tunnel and read the GPU every 5 min (all LIVRE, tunnel never dropped). Readers in the session scratchpad `c15/` (`analisa_c15.py`, `le_c15.py`, `piloto_b.py`).
+- **Open for the user:** adopt only 15 (and 8?), widen the idea so more than one page carries 6 and 42, or stop; the "no document → at most 1" rule (the user relies on the scorer; 0 threes observed); commit of the harness changes.
 
 **Session 2026-10-19 (81st pass) — THE USER'S REQUESTS AJ–AK: close the frontend for testing the stored case through the current UI, then *"O botão de marcar como relevante está lá, mas como fazer para o sistema reavaliar aquele caso? Após, deve ser possível aplicar novo score para aquela ação. Justificativa é importante."* and the answers *"O auditor pode ver todos e reexecutar no final ou reexecutar todos, sob sua conta e risco"*, reviewed Ação *"apagar com confirmação"*, no justification on accept, *"recalcula as dependentes"*, *"Pode commitar"*. Re-evaluation of selected Ações is built (ADR-0078). Two commits; nothing pushed.**
 
@@ -2071,7 +2099,7 @@ Run tests: `pytest -m "not slow"` (fast) or `pytest` (includes OCR; requires `TE
 - `docs/prd_module_04_evaluation.md` — Module 4 PRD (36 user stories, GitHub issues #16–20)
 - `docs/prd_module_05_assessment.md` — Module 5 PRD (35 user stories, GitHub issues #21–25)
 - `CONTEXT.md` — canonical domain glossary (last updated 2026-10-15: Nota iPMP, Fase, Ponto de Transição)
-- `docs/adr/` — 78 ADRs, next is `0079-`
+- `docs/adr/` — 79 ADRs, next is `0080-`
 - `docs/dan/` — Deferred Architecture Notes (both closed), next is `0003-`
 - `docs/handoffs/retrieval-profile-design-2026-06-17.md` — full design session handoff (evidence ontology, schema, population methodology)
 - `data/ipmp/acao_NN.json` — IPMP source of truth, one file per Ação (46)
