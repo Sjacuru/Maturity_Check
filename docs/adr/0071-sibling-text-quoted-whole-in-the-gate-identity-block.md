@@ -312,7 +312,7 @@ can.
 ## Variant G across ten full processes (2026-10-14)
 
 Test cycle 5 ran variant G in memory over ten independent full processes of the
-baseline commit `5be6d44`. Each process ran `reproducibility.py --runs 1
+baseline commit `bbc3d50`. Each process ran `reproducibility.py --runs 1
 --record-reasoning --gate-variant posicionado`, with the ledger off and the genre
 filter and expansion on. The cycle ran from 11:45 to 14:18 with 0 errors and 0
 gate failures in 5 029 calls. The decision rule was written before launch, with
@@ -384,4 +384,4 @@ scorer's product-block instruction, saying the passages were selected only for
 being about the product, proposed on 2026-10-13 for after G. Nothing changes in
 `src/`. G and G2 stay in the harness (`scripts/diagnostics/gate_positioning.py`;
 `reproducibility.py --gate-variant posicionado` and `posicionado2`) as the record
-of what was tried. The baseline remains `5be6d44`.
+of what was tried. The baseline remains `bbc3d50`.

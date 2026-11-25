@@ -40,7 +40,7 @@ inform vocabulary register when a synthesis session drafts Query Terms for a new
 
 ## Amendment (2026-10-15): two phase schemes, and the transition points marked
 
-- **The five transition points were not marked.** `ponto_transicao` was false in every file, including 16, 37, 38, 45 and 46. The schema validated and nothing read the field, so nothing failed. The five were checked against the rendered flowchart pages (Figuras 3-5) and set to true (commit 30bd386). `tests/test_ipmp_structure.py` now pins them.
+- **The five transition points were not marked.** `ponto_transicao` was false in every file, including 16, 37, 38, 45 and 46. The schema validated and nothing read the field, so nothing failed. The five were checked against the rendered flowchart pages (Figuras 3-5) and set to true (commit 594e7f4). `tests/test_ipmp_structure.py` now pins them.
 - **The Guide has two phase schemes, and this ADR's opening paragraph conflated them.**
   - The flowcharts draw Inicial (Ações 1-16), Intermediária (17-38) and Final (39-46). Each phase ends with "Obtenha aprovações necessárias para a proposta Inicial/Intermediária/completa de Investimento" and its transition points.
   - Chapter 4 groups the Ações as estudo das alternativas (1-20), aprimoramento da alternativa escolhida (21-37) and consulta pública, revisões e atualizações (38-46).

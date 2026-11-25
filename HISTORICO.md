@@ -36,7 +36,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
 - **Fourth message, 2026-11-25 (verbatim):** *"Faça o commit/push para o repositório no github"*
   - `pytest -m "not slow"`: 751 passed, 12 deselected (2 min 49 s). Secret scan of the diff and of the untracked files: nothing found.
   - The GitHub repository is public, and local `main` was 25 commits ahead of `origin/main`. Those commits carried this workstation's two network egress IPs (in `CLAUDE.md` from `e5e5fa1` on, and in this file), next to the description of the server's firewall rule. Asked; the user chose to rewrite the history.
-  - The work since `4473d8e` was committed, then the 24 commits from `e5e5fa1` on were rewritten with an index filter that replaces only those two addresses, byte for byte, in `CLAUDE.md` and `HISTORICO.md`. `d7b9311` and `6ad01ed` keep their hashes; `origin/main` was not touched, so the push is a fast-forward. The old to new hash map is in the entry's follow-up below and the live references were updated.
+  - The work since `4473d8e` was committed (`b8beb78`), then the 24 commits from `e5e5fa1` on were rewritten with an index filter that replaces only those two addresses, byte for byte, in `CLAUDE.md` and `HISTORICO.md`. `d7b9311` and `6ad01ed` keep their hashes; `origin/main` was not touched, so the push is a fast-forward. Old to new hashes: `e5e5fa1` → `e5898c4`; `ae49728` → `cff0017`; `5be6d44` → `bbc3d50`; `b887bcc` → `d7d59cc`; `12cc913` → `bbb9e71`; `81269e4` → `997e97b`; `30bd386` → `594e7f4`; `12385a1` → `70d1d41`; `9fdecfe` → `15028b9`; `4824b14` → `ffec5cb`; `15e752a` → `b97401f`; `e7eee19` → `26d4f7f`; `fad53d4` → `75ea2fd`; `d890b97` → `e3bf4f0`; `a4d5c3a` → `eb051a3`; `48f95eb` → `d610183`; `eee4a45` → `4bf0a7e`; `74b9a28` → `3cf61cc`; `c2555ef` → `6d8cd24`; `cd06722` → `b4427f3`; `176ec3c` → `f0ac18e`; `403f82d` → `fbe5e0c`; `4473d8e` → `33d364d`; `b8beb78` → `fbd9627`. Every reference to them in this file, `CLAUDE.md`, the ADRs, two diagnostic scripts and the memory was replaced by the new hash (the PDFs untouched). The pre-rewrite state stays only locally, in the branch `backup/antes-reescrita-2026-11-25` and in `refs/original/`; neither is pushed.
 
 **Session 2026-11-15 (87th pass): validation and cleanup, Groq/Ollama deleted, C17 adopted and confirmed by C18 (passed), history moved here. Nothing committed.**
 
@@ -144,9 +144,9 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - The API still returns the nota from 0 to 1 (ADR-0075); CONTEXT.md's Nota iPMP entry records the display.
   - Rebuilt and checked in headless Chrome over CDP (`ui/le_indicador.mjs`).
 
-**Session 2026-10-20 (85th pass) — THE USER'S MESSAGE (verbatim): *"Pode commitar. Após precisamos esperar rodar o processo na GPU ou vc não iniciou ainda?"*. The 84th pass is committed as `4473d8e` (not pushed). The message was read as the OK for C17 phase 2, which ran and PASSED for 14, 27 and 41. Adoption is the user's call; nothing is written to `src/` or `data/`.**
+**Session 2026-10-20 (85th pass) — THE USER'S MESSAGE (verbatim): *"Pode commitar. Após precisamos esperar rodar o processo na GPU ou vc não iniciou ainda?"*. The 84th pass is committed as `33d364d` (not pushed). The message was read as the OK for C17 phase 2, which ran and PASSED for 14, 27 and 41. Adoption is the user's call; nothing is written to `src/` or `data/`.**
 
-- **The run:** one `reproducibility.py --runs 10 --record-reasoning --candidates scripts/diagnostics/candidates_ideia_grupo1.py --apply 14a,27a,27b,41a` invocation on HEAD `4473d8e`. It ran from 13:19 to 16:13 with 0 errors. Output: `scratchpad/acc/ciclo17.json`. The criterion addendum and the reading are in `scratchpad/acc/criterio_ciclo17.txt`, written before the model was started.
+- **The run:** one `reproducibility.py --runs 10 --record-reasoning --candidates scripts/diagnostics/candidates_ideia_grupo1.py --apply 14a,27a,27b,41a` invocation on HEAD `33d364d`. It ran from 13:19 to 16:13 with 0 errors. Output: `scratchpad/acc/ciclo17.json`. The criterion addendum and the reading are in `scratchpad/acc/criterio_ciclo17.txt`, written before the model was started.
 - **Constancy** (same points in ≥9 of 10, sem = 0):
   - 41/46 overall (C11 40, C15 37) and 38/43 outside 14, 27 and 41.
   - Below 9: 2 3 10 23 37, the documented residue.
@@ -178,7 +178,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - 41a: ALVO the CCPAR reply justifying maior oferta `_2` p.145 (5/5) and the PGM's III.6 (justification "parcialmente atendido", 4/5); three debatable PGM/CCPAR pages; one confusion (`_2` p.133, 1/5). Caveat: this is the original justification before publication, not the post-consultation reconfirmation Ação 41 describes.
   - D1, D2, D5 pass for all three; D4 median 0. Phase 1 PASSES.
 - **Infra, disclosed:** model started after `gpu_livre.ps1` LIVRE (llama-server 23656), tunnel kept by `c16/infra_c16.py` (closed 12:49:49), model stopped 12:52 (`para_8083.ps1`, `$alvo` 23656): task Ready, port closed, OCR 8082 only read.
-- **Open for the user:** C17 phase 2 (10 full processes, one invocation, about 2.5 h of GPU, criterion addendum written first); whether 41a's pre-publication justification should count for a post-consultation Ação; commit of everything since `403f82d` (src, tests, the two profiles, ADR-0079, CONTEXT.md, CLAUDE.md, the harness and the three candidates files).
+- **Open for the user:** C17 phase 2 (10 full processes, one invocation, about 2.5 h of GPU, criterion addendum written first); whether 41a's pre-publication justification should count for a post-consultation Ação; commit of everything since `fbe5e0c` (src, tests, the two profiles, ADR-0079, CONTEXT.md, CLAUDE.md, the harness and the three candidates files).
 
 **Session 2026-10-20 (83rd pass) — THE USER'S MESSAGES *"Vamos alargar a ideia para 6 e 42. Mas e as demais?"* and *"Proceda com fase 1"*. C16 = the C15 idea widened to 6c, 6d, 42c, 42d (`scripts/diagnostics/candidates_ideia_c16.py`, new; pilot candidates reused unchanged). Phase 1 FAILED its new rule D5, so phase 2 was not launched. Nothing in `src/` or `data/`; nothing committed.**
 
@@ -198,7 +198,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
 
 **Session 2026-10-19 (81st pass) — THE USER'S REQUESTS AJ–AK: close the frontend for testing the stored case through the current UI, then *"O botão de marcar como relevante está lá, mas como fazer para o sistema reavaliar aquele caso? Após, deve ser possível aplicar novo score para aquela ação. Justificativa é importante."* and the answers *"O auditor pode ver todos e reexecutar no final ou reexecutar todos, sob sua conta e risco"*, reviewed Ação *"apagar com confirmação"*, no justification on accept, *"recalcula as dependentes"*, *"Pode commitar"*. Re-evaluation of selected Ações is built (ADR-0078). Two commits; nothing pushed.**
 
-- **Commit `176ec3c`:** `main.py` defaults `LLAMACPP_BASE_URL` to the tunnel (`http://127.0.0.1:18083`); UploadView opens a stored case and replaces an assessment (force, with a confirmation, ADR-0026); AcaoPanel gains the "Fora por gênero" column and drops the alert asking for a per-Ação re-run that did not exist.
+- **Commit `f0ac18e`:** `main.py` defaults `LLAMACPP_BASE_URL` to the tunnel (`http://127.0.0.1:18083`); UploadView opens a stored case and replaces an assessment (force, with a confirmation, ADR-0026); AcaoPanel gains the "Fora por gênero" column and drops the alert asking for a per-Ação re-run that did not exist.
 - **Re-evaluation (ADR-0078):**
   - `POST /api/cases/{p}/reevaluate {acao_ids, delete_reviews}`: retrieval, genre filter, gate and scorer again for each listed Ação from the indexed documents; the ledger replays every recorded verdict and override, only unseen chunks reach the model. 422 unknown Ação or empty list, 404 no evaluation, 409 with the reviewed targets and reviewed dependents until `delete_reviews=true`, 503 server down (nothing changed) or lost midway (report with `not_reached`).
   - Dependents: one ascending walk; an Ação citing with effect (ADR-0070) an Ação whose score changed gets `recompute_dependency_cap` on its stored result (no model, row keeps its `created_at`); its review is deleted only if its score changed, and its own dependents follow.
@@ -280,7 +280,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - `.secrets/llm_server_access.md`, if it describes the old route (not opened);
   - the commit of this entry.
 
-**Session 2026-10-16 (76th pass) — THE USER'S MESSAGE Z (verbatim): *"Prompt do scorer. Vamos manter o prompt de hoje. / Momento ideal. Sai, pela regra E. / Trechos de outro escopo (32a, 13c, 35.2e, 42d). Fica como resíduo documentado, junto com 10, 23, 35 e 37. / Encerrar a verificação do scorer. Verificação está encerrada / Datas dos documentos. Não faremos agora. Será trabalho em paralelo. / Faça o commit (CLAUDE.md, reproducibility.py e os dois scripts de medição); / Pare a tarefa 8083 (PID 24416); um /assess novo; Coloque o rótulo “Inicial”; / execute N/A para 45/46; / fazer a promoção dos perfis seed; / a linha de assinatura que o removedor de ruído deixa passar."* THE SCORER VERIFICATION IS CLOSED, and today's scorer prompt stays. Every item of Z is done: five commits before this record (`e7eee19`, `fad53d4`, `d890b97`, `a4d5c3a`, `48f95eb`), a fresh `/assess` of the stored case, and the 8083 task stopped. Nothing was pushed.**
+**Session 2026-10-16 (76th pass) — THE USER'S MESSAGE Z (verbatim): *"Prompt do scorer. Vamos manter o prompt de hoje. / Momento ideal. Sai, pela regra E. / Trechos de outro escopo (32a, 13c, 35.2e, 42d). Fica como resíduo documentado, junto com 10, 23, 35 e 37. / Encerrar a verificação do scorer. Verificação está encerrada / Datas dos documentos. Não faremos agora. Será trabalho em paralelo. / Faça o commit (CLAUDE.md, reproducibility.py e os dois scripts de medição); / Pare a tarefa 8083 (PID 24416); um /assess novo; Coloque o rótulo “Inicial”; / execute N/A para 45/46; / fazer a promoção dos perfis seed; / a linha de assinatura que o removedor de ruído deixa passar."* THE SCORER VERIFICATION IS CLOSED, and today's scorer prompt stays. Every item of Z is done: five commits before this record (`26d4f7f`, `75ea2fd`, `e3bf4f0`, `eb051a3`, `d610183`), a fresh `/assess` of the stored case, and the 8083 task stopped. Nothing was pushed.**
 
 - **Reading of Z:**
   - today's scorer prompt stays, and the momento leaves by rule E; "tempestiva" stays out until the documents carry dates;
@@ -293,24 +293,24 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - 23 and 37: coins on legitimate partial targets, together with the scorer (23.2 `_2` p.145; 37's six pages);
   - 35: 35.2e `_1` p.3, the procurement justification read as an "avoid" strategy, about one process in five;
   - the wrong-scope passages: 32a `_1` p.303 (the concessionaire's operating-staff cost table, credited in 41 of 47 identical-batch scorings), 13c and 35.2e on `_1` p.3, and 42d on `_1` p.350. Their scope sits in the IPMP's `por_que_importante`; C2 brought that text to the scorer and no outcome changed (M3).
-- **The verification record** (`e7eee19`): the 75th pass in this file, F8 in `reproducibility.py`, and the two measurement scripts (`measure_scorer_reasoning.py`; `measure_scorer_candidates.py` with `--retoma`).
-- **Signature stamps** (`fad53d4`; `src/extraction/noise.py`, `evidence_selection._drop_empty_text`):
+- **The verification record** (`26d4f7f`): the 75th pass in this file, F8 in `reproducibility.py`, and the two measurement scripts (`measure_scorer_reasoning.py`; `measure_scorer_candidates.py` with `--retoma`).
+- **Signature stamps** (`75ea2fd`; `src/extraction/noise.py`, `evidence_selection._drop_empty_text`):
   - The stripper now also removes the "Assinado com senha" and "Autenticado com senha" stamps, a cargo between the signer and the date, the Diário Oficial stamp with the date written out, stamps the chunker cut before or after their date, the url wrapped onto the next line, and the OCR'd system logo.
   - 59 of the 1 429 chunks change, every change a pure deletion of stamp text, read one by one; an edital clause about signing digitally stays.
   - 14 chunks are left with no text. An empty candidate or neighbour no longer reaches the gate.
   - Pools, gate calls (450), document index and genre labels are unchanged on a copy of the database; 64 of the 450 examined pairs carry a cleaner text. `GENRE_RULES_VERSION` is `2026-10-16.1`, so the index is rebuilt.
   - Its effect on constancy is not measured.
-- **The first phase renamed** (`d890b97`; ADR-0057 amendment): the stored fase of Ações 1–20 is now the Guide's "Estudo das alternativas" (4.2), not the flowchart's "Inicial". The Literal keeps the three chapter-4 names. 74 gate prompts change, on the identity line only; gate digest `6919edcc672b8027` → `0f7c14bd2bdada1d`. The scorer prompt does not carry fase. Constancy not measured.
-- **"Não aplicável" for Ações 45 and 46** (`a4d5c3a`; ADR-0076, with ADR-0023 and ADR-0075 amended):
+- **The first phase renamed** (`e3bf4f0`; ADR-0057 amendment): the stored fase of Ações 1–20 is now the Guide's "Estudo das alternativas" (4.2), not the flowchart's "Inicial". The Literal keeps the three chapter-4 names. 74 gate prompts change, on the identity line only; gate digest `6919edcc672b8027` → `0f7c14bd2bdada1d`. The scorer prompt does not carry fase. Constancy not measured.
+- **"Não aplicável" for Ações 45 and 46** (`eb051a3`; ADR-0076, with ADR-0023 and ADR-0075 amended):
   - The Guide admits it as an absolute exception and names 45 and 46 as its typical case (4.1, p. 50). The auditor marks it in the review, with a mandatory motivation; the system never proposes it, and missing evidence stays "não atendida" (0 points).
   - `ReviewOutcome.not_applicable`, no `final_score`, not an override; the route refuses any other Ação (422).
   - `review_outcomes` gains the column and a nullable `final_score`, under a CHECK that spells out `IS NOT NULL`; `init_db` rebuilds an older table in place and keeps its rows.
   - The nota leaves the Ação out of the count, the maximum and the floor; every group reports `n_not_applicable` and stays complete.
   - Checked end to end in headless Chrome on a scratch copy of the database, at desktop and phone width.
   - ADR-0075's stored-case figure corrected: 35 of 138 (0.254), not 0.246.
-- **The 19 seed profiles promoted** (`48f95eb`; ADR-0047 amendment): all 46 profiles are `observed`. The basis is the 50 full processes of cycles 3–7 over SMG-040, recorded per profile in `_meta.changelog`; `stage_b_sources` stays empty. No pipeline code reads `profile_maturity`, so nothing in a prompt, pool or score changes.
+- **The 19 seed profiles promoted** (`d610183`; ADR-0047 amendment): all 46 profiles are `observed`. The basis is the 50 full processes of cycles 3–7 over SMG-040, recorded per profile in `_meta.changelog`; `stage_b_sources` stays empty. No pipeline code reads `profile_maturity`, so nothing in a prompt, pool or score changes.
 - Fast suite 731; gate digest `0f7c14bd2bdada1d`.
-- **Fresh `/assess` of the stored case** (`040_101607_2024` on HEAD `48f95eb`; runner `$W/assess_runner.py`, outputs in `$W/assess_z/`, reader `$W/compara_assess.py` → `$W/assess_z/comparacao.txt`):
+- **Fresh `/assess` of the stored case** (`040_101607_2024` on HEAD `d610183`; runner `$W/assess_runner.py`, outputs in `$W/assess_z/`, reader `$W/compara_assess.py` → `$W/assess_z/comparacao.txt`):
   - **Run:** POST 17:27–17:43, 16.2 min, status 200, 46 Ações. The three PDFs were reused by fingerprint, so nothing was re-extracted. The GPU read LIVRE before the run and at every check during it (one every 2 min). `data/app.db` was backed up first (`$W/assess_z/app_backup.db`); no restore was needed. The runner closed its server and its tunnel.
   - **Nota 0.109 (15 of 138), band alerta;** floor 13 points (0.094). By phase block 0.133 / 0.137 / 0; transition points 0.2 (Ação 37). The 2026-09-07 evaluation it replaced gave 0.254 (35 of 138); 17 Ações changed against it.
   - **Against cycle 7, by the accepted margin:** C7 notas 0.058–0.109, median 0.087 (12 points). The new nota is +0.022 from that median, inside ±0.05, and in the same band. Every dimension is within ±0.1 of its C7 median.
@@ -487,7 +487,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - promoting the seed profiles;
   - the signature-line gap in the noise stripper.
 
-**Session 2026-10-15 (74th pass) — C7, THE CONFIRMATION CYCLE OF THE COMMITTED HEAD `4824b14`, RAN on the user message *"Servidor livre. Pode continuar o teste."* (item 1 of message W). 42 of 46 Ações have the same points in 9 or more of 10, as expected, and the proposed stability margin is met. Cycle 7 replaces cycle 3 as the constancy baseline. Recorded in ADR-0074 ("Confirmation cycle 7").**
+**Session 2026-10-15 (74th pass) — C7, THE CONFIRMATION CYCLE OF THE COMMITTED HEAD `ffec5cb`, RAN on the user message *"Servidor livre. Pode continuar o teste."* (item 1 of message W). 42 of 46 Ações have the same points in 9 or more of 10, as expected, and the proposed stability margin is met. Cycle 7 replaces cycle 3 as the constancy baseline. Recorded in ADR-0074 ("Confirmation cycle 7").**
 
 - **Launch** (every check read-only before anything started):
   - **15:07:** GPU free (0 %, 2 665 MiB), llama-server down, task 8083 Ready, no local ssh.exe or python.exe. The background waiter had read LIVRE twice in a row.
@@ -505,7 +505,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
     - `$W/analisa_ciclo2.py ciclo7_run ciclo6_run` → `$W/acc_ciclo7_vs6_analisa2.txt`;
     - `$W/estabilidade_total.py` → `$W/acc_estabilidade_total_c7.txt`;
     - `$W/margem_proposta.py` → `$W/acc_margem_v2_c7.txt`.
-- **Same configuration across cycles:** from `5be6d44` to `4824b14`, `src/` changed only in the assessment module, and `data/` only in `_meta`, `shared_with_acao`, `ponto_transicao` and the exemption of 45. Ações 1–44 ran the same prompts and pools in cycles 3 and 7, and every Ação but 35 ran the same in cycles 6 and 7.
+- **Same configuration across cycles:** from `bbc3d50` to `ffec5cb`, `src/` changed only in the assessment module, and `data/` only in `_meta`, `shared_with_acao`, `ponto_transicao` and the exemption of 45. Ações 1–44 ran the same prompts and pools in cycles 3 and 7, and every Ação but 35 ran the same in cycles 6 and 7.
 - **Results (cycle 3 / cycle 6 / cycle 7):**
   - same points in 9+ of 10: 41 / 42 / **42** (rule A: as expected);
   - replicate block (Ações 1–34): 32 / 32 / 31 (rule B: one below, Ação 32);
@@ -543,7 +543,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - 35: a false credit that passes about one process in five.
   - No other Ação moved by more than one change.
 - **Method note:** a coin rate taken from one cycle is a poor expectation. Under one prompt, 35.2e p.3 passed in 5/10, 1/10 and 0/10 of three cycles, so pool the cycles that share a prompt before writing an expectation.
-- **Commit (no push):** ADR-0074 (new section) and this CLAUDE.md; the 73rd-pass commit line now names `4824b14`.
+- **Commit (no push):** ADR-0074 (new section) and this CLAUDE.md; the 73rd-pass commit line now names `ffec5cb`.
 - **Open for the user:**
   - the stability margin (the new baseline meets the proposal);
   - stopping the 8083 task now that the cycle is over (left running; nothing else needs it);
@@ -563,16 +563,16 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - 6: an IPMP field the data does not carry is a relevant failure, not a cosmetic one;
   - 8: every bookkeeping topic except the rotation of the fallback password;
   - the GPU server is released for tests; the read-only check before each launch still applies.
-- **Item 6, IPMP data (commit `30bd386`):**
+- **Item 6, IPMP data (commit `594e7f4`):**
   - `ponto_transicao` is true on 16, 37, 38, 45 and 46: the boxes of the "PONTOS DE TRANSIÇÃO" lane of Figuras 3–5, checked on the rendered pages. It had been false in every file since ADR-0057, and nothing read it.
   - "Termos de Referência" (7b) and "termo de referência" (23.1) are tagged `shared_with_acao`, as 30c already was. Documentary: the field reaches no search and no prompt.
   - The repeated 33/34 header is the Guide's own wording (pp. 153 and 156), so it stays.
   - New `tests/test_ipmp_structure.py` (5 tests) pins: all 46 Ações load (a file that fails validation is skipped silently, ADR-0010); the transition set; the three chapter-4 phase blocks; the dimension counts; the 164 scored products.
-- **Item 4, the review path end to end (commit `12385a1`):** exercised on a scratch copy of the database (`$W/exercita_revisao.py`; `data/app.db` untouched). Two gaps around ADR-0023's mandatory override note were fixed:
+- **Item 4, the review path end to end (commit `70d1d41`):** exercised on a scratch copy of the database (`$W/exercita_revisao.py`; `data/app.db` untouched). Two gaps around ADR-0023's mandatory override note were fixed:
   - a justification of spaces was accepted and stored unstripped; `ReviewSubmission` now strips it, and both it and `ReviewOutcome` reject a blank note;
   - on an Ação without evidence the form's button was enabled with no score chosen (it posted null and got a 422); it now waits for a score.
   - Everything else held: accept 201, read back, second review 409, override without a note 422, assignment on a no-evidence Ação 201, the old undefined URL 422, an Ação with no evaluation 404.
-- **Item 3, the maturity indicator (ADR-0075, commit `9fdecfe`):**
+- **Item 3, the maturity indicator (ADR-0075, commit `15028b9`):**
   - **What it is:** the case's IPMP nota, the points over three times the Ações counted (138 for all 46; Guide 3.1, 3.4.4, FAQ Q6).
   - **Points per Ação:** the review's final score, else the proposed score (after the cap); `sem evidência` counts 0; a parse failure is left out and the nota is marked partial.
   - **Floor:** from ADR-0068's open review signals; no upward claim.
@@ -607,7 +607,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
     - Written by `$W/aplica_item8_seed.py` and checked against HEAD by `$W/confere_item8.py`: only `_meta.last_updated` and `_meta.changelog` change, one entry per profile. Gate digest unchanged; fast suite 708.
   - **Strategic Decisions updated:** #2 (the Rio Manual covers Ações 1 and 2 only, so steps A/B never fire elsewhere), #4 (the nota) and #8 (scope: all 46 Ações).
   - **Status lines refreshed:** the project tree, the module sequence, the ADR count (75, next `0076-`), the routes, the tests and the reference files.
-  - **The 72nd pass's commit line** is completed (`81269e4`).
+  - **The 72nd pass's commit line** is completed (`997e97b`).
   - **Not addressed:** the rotation of the fallback password (the user, W).
 - **C7, approved and waiting for the GPU:**
   - **Blocker:** the waiter (`$W/espera_gpu_livre.py`, the read-only `gpu_livre.ps1` every 3 min) has read EM_USO since 12:22.
@@ -615,11 +615,11 @@ scratchpad de sessões antigas e na maior parte não existem mais.
     - The GPU holds 3 633 of 16 303 MiB with the llama-server not loaded.
     - The ~12 670 MiB left is below the ~13 400 MiB the model takes at start, so nothing starts until Roblox is closed.
   - **On LIVRE:**
-    1. Add an addendum to `scratchpad/acc/criterio_ciclo7.txt`: HEAD is this commit, not 81269e4, and everything since is inert for the pipeline. `ponto_transicao` and `shared_with_acao` reach no search and no prompt; the review and indicator code sits outside evaluation; `_meta` is read by neither retrieval nor the prompts; the gate digest is unchanged.
+    1. Add an addendum to `scratchpad/acc/criterio_ciclo7.txt`: HEAD is this commit, not 997e97b, and everything since is inert for the pipeline. `ponto_transicao` and `shared_with_acao` reach no search and no prompt; the review and indicator code sits outside evaluation; `_meta` is read by neither retrieval nor the prompts; the gate digest is unchanged.
     2. Run `sobe_8083.ps1`, then check `/health`.
     3. Launch `$W/ciclo7_runner.py` detached: 10 full processes, ledger off, about 2.5 h.
     4. Read it by rules A–E, then add C7 to the stability table.
-- **Commits (no push):** `30bd386` (item 6), `12385a1` (item 4), `9fdecfe` (item 3), `4824b14` (item 8: the 19 profiles' `_meta` and this CLAUDE.md).
+- **Commits (no push):** `594e7f4` (item 6), `70d1d41` (item 4), `15028b9` (item 3), `ffec5cb` (item 8: the 19 profiles' `_meta` and this CLAUDE.md).
 - **Open for the user:**
   - the stability margin;
   - a fresh `/assess` after C7 to refresh `data/app.db`;
@@ -636,7 +636,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
 - **Review form fixed.** `ReviewForm.vue` declared its prop `acoaId` while `AcaoPanel.vue` passes `:acao-id` → `props.acoaId` was undefined → the URL `evaluations/undefined/review` → 422 (int path param). Renamed to `acaoId` (two occurrences); `npm run build` clean. The body already matched `ReviewSubmission`. Not exercised against `data/app.db` (it would persist a ReviewOutcome); the route has its own tests.
 - **GPU (read-only check at 09:26 server time):** EM_USO — Dead by Daylight pid 17320, 43 % engine, 3.1 GB; console session since 08:37. llama-server absent, task 8083 Ready (no trigger), port 8083 closed; reboots at 08:07 and 08:33. **On the go-ahead with the GPU free:** `sobe_8083.ps1`, then C7 = 10 full processes of the committed state (no `--candidates`), runner to be derived from `$W/ciclo6_runner.py`, criterion written before launch. Expected: 42 ± chance (Ações 2, 3, 13 and 40 sit at one change each; the replicate block is at 32/34 in three cycles).
 - **What cycle 6 already says about the committed state:** it differs from the measured configuration in one prompt only (35.2e, back to its cycle-3 text); Ação 35 is below 9 of 10 under both texts, so the 42 does not rest on it. Everything gated before 35.2e is byte-identical; Ações 36–46 keep their prompts and 45 keeps its measured pool.
-- **Commits (no push):** `b887bcc` records and harness of cycles 4–6; `12cc913` 45 out of the exemption list; `81269e4` this CLAUDE.md and the review-form fix.
+- **Commits (no push):** `d7d59cc` records and harness of cycles 4–6; `bbb9e71` 45 out of the exemption list; `997e97b` this CLAUDE.md and the review-form fix.
 - **Next steps, consolidated from the record (2026-10-15), in the recommended order; the user confirms:**
   1. **C7, the confirmation cycle of the committed state** — GPU, ~2.5 h, on the go-ahead. Closes the constancy line with a baseline measured on the exact commit.
   2. **A second case document.** Every measurement so far is on SMG-040. Known case-specific limits: `strip_extraction_noise` (header/signature patterns are Rio SMG's, recorded in ADR-0074), the genre classifier validated on one corpus, the ETP structure, the 25a retrieval gap. Needs the user to supply the PDFs of another PPP process. The user's own method rule (the next file will not break in the same items) makes this the strongest test available.
@@ -937,7 +937,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
   - Ações 3, 10, 37 and 45 stay as documented residue: the review signal of ADR-0068 covers 10 and 45, the cap notice covers 3, and 37 is a known gap of the signal (its accepts vanish together);
   - 35.2e is unchanged; another round is the decision of the user;
   - the cycle-3 state is committed as the baseline (hash below, recorded after the commit).
-- **Commit `5be6d44`** (the baseline; nothing pushed; this line is not in it).
+- **Commit `bbc3d50`** (the baseline; nothing pushed; this line is not in it).
 - **The gate does not know the scorer.** Its only cue is one clause of `_INSTRUCTIONS` in `relevance_builder.py`: "julgar o cumprimento é da etapa seguinte, não deste classificador" (ADR-0066). The prompt does not say:
   - that the accepted passages of every product are read together by a later stage that decides fulfilment per product;
   - that one passage rarely carries the whole set the criterion asks for;
@@ -998,7 +998,7 @@ scratchpad de sessões antigas e na maior parte não existem mais.
       - 32a also lowers the constancy of its Ação.
       - 23.3 raises Ação 23 in points only because two coins rarely land together, and it switches off P1 on p.144.
       - Read in points alone, 23.3 would pass for Ação 23; this is recorded for the user.
-      - The result is in ADR-0074 ("Test cycle 4") and in the docstring of the candidates file. The baseline stays `5be6d44`.
+      - The result is in ADR-0074 ("Test cycle 4") and in the docstring of the candidates file. The baseline stays `bbc3d50`.
     - **Round-2 draft** (`$W/candidatos_rodada2_23_32.py`; NOT measured, NOT applied; overfitting audit clean):
       - It uses markers the passage itself decides: for 23.3, whether the recipient of the value is the public authority; for 32a, whether the staff's function is to operate or maintain the service.
       - It cannot keep p.144, which arrives only as a neighbour of p.145.
@@ -1219,7 +1219,7 @@ The residue, exempt neighbours and the commit were decided in the 66th pass.
 - **Harness** (`scripts/diagnostics/reproducibility.py`): `--candidates FILE --apply PIDS` (a candidate patch in memory, the way to measure it across independent processes before writing it), `--gate-variant rotulado` (P1a's `rotula_alvo` installed over `evidence_selection.build_relevance_system_prompt`, dry-checked on 164/164 prompts), `--record-reasoning` (every verdict's reasoning in `gate.reasoning`), and every run now records ADR-0068's margin (`gate.margin`: review flag, floor, band, fragile products) and the patch/variant it ran with.
 - **Item 7 — commit: one commit, no push** (the user's message H authorised it): the queue of the 59th–61st passes — 21 retrieval profiles (`acao_{03,06,08,11,16,17,18,20,21,22,28,29,31,33,34,35,37,39,42,43,44}.json`), `main.py` (`LLAMACPP_BASE_URL`), `src/evaluation/prompt/relevance_builder.py` + `tests/test_relevance_builder.py` (ADR-0071), `scripts/diagnostics/{reproducibility,measure_sibling_text}.py`, new `scripts/diagnostics/{measure_integral_candidates,candidates_citing_originals,candidates_acao35_round5}.py`, `docs/prompts/05_retrieval-profile-validation.md`, ADRs 0071–0073, `CLAUDE.md`. `.secrets/`, `.env`, `scratchpad/` verified ignored and the content scanned for secrets before staging. The hash is recorded in the item-9 update below, which was written after the commit and is NOT committed.
 - **Item 8 — port 8080, reported, nothing changed**: nothing listens on 8080 now (the scheduled task is down; the owner's instance runs on 8083, which the router does not forward), so the exposure is closed de facto until the 8080 task runs again. Client side is ready for every option (`LLAMACPP_API_KEY`; `LLAMACPP_BASE_URL` + SSH tunnel, used for two nights). The remaining steps are the user's: (a) Norton rule; (b) the server-side `--api-key` (denied to Claude, never retry); (c) drop the router's 8080 forward and use the tunnel — recommended.
-- **Item 9 — `rotulado` across independent processes** launched right after the commit — three full independent processes with `--gate-variant rotulado --record-reasoning`, ledger off (`$W/rot_runner.py` → `scratchpad/acc/rot_conf{1,2,3}.{json,log}`, ~40 min each), compared against A+B+C (`abc_conf1-3`) on the 42 Ações whose prompts and pools this pass did not touch (all but 11, 35, 37, 42; `$W/compara_rotulado.py`). **Done after commit `ae49728`; this update is NOT committed.**
+- **Item 9 — `rotulado` across independent processes** launched right after the commit — three full independent processes with `--gate-variant rotulado --record-reasoning`, ledger off (`$W/rot_runner.py` → `scratchpad/acc/rot_conf{1,2,3}.{json,log}`, ~40 min each), compared against A+B+C (`abc_conf1-3`) on the 42 Ações whose prompts and pools this pass did not touch (all but 11, 35, 37, 42; `$W/compara_rotulado.py`). **Done after commit `cff0017`; this update is NOT committed.**
   - **Runs.** Process 3 was rerun by `$W/rot3b_runner.py`, which watches the tunnel, after the client's SSH tunnel dropped mid-run at about 13:22. The failed run is kept as `scratchpad/acc/rot_conf3_tunel_caiu.*` and not counted. rot1 lost Ação 9 to a `LlamaCppTimeout`, so Ação 9 is excluded.
   - **Comparison.** The unit is a pair of processes, over the 41 Ações untouched between the arms (`$W/compara_rotulado.py`, `$W/diff_aceites_rotulado.py`; readings in `$W/le_aceites_rot.py` and `$W/le_perdidos_rot.py`). Per pair, A+B+C → rotulado: batch 23.3 → 20.7, bits 28.0 → 25.7, outcome 33.7 → 30.3, verdicts 97.6 → 97.4 %. Over 3 processes, score-variable Ações went 10 → 15 (7 → 12 counting sem ≡ 0). Accepts per process went 69.3 → 77.0 (+11 %). Target confusion was 0 of 6 665 reasoning texts.
   - **P1a's in-process harms did not reproduce.** 1d p.144 was F×3, so Ação 1 stays at 1. 2d p.4 was T×3. 12c and 12e are 1-in-3 coins.

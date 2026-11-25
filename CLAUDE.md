@@ -184,7 +184,7 @@ will supply. The full record is in `HISTORICO.md`; the 87th pass (2026-11-15) is
 - No reviews: the 13 written during UI tests were deleted on 2026-11-15, at the user's request. The nota is 16/138 (11.6 %).
 - These evaluations predate the adoption of 14a, 27a, 27b and 41a (Ação 27 is stored as `sem evidência`). A new `/assess` would bring them up to date.
 
-**Repository:** everything up to the 88th pass is committed and pushed to `origin/main` (2026-11-25). The 24 commits from `e5e5fa1` on were rewritten before the push to drop two network addresses; `HISTORICO.md`, 88th pass, has the old to new hash map.
+**Repository:** everything up to the 88th pass is committed and pushed to `origin/main` (2026-11-25). The 24 commits from `e5e5fa1` on (now `e5898c4`) were rewritten before the push to drop two network addresses; `HISTORICO.md`, 88th pass, has the old to new hash map.
 
 **Open for the user:**
 - **The model does not start on the GPU server (since 2026-11-25).** Smart App Control is in enforcement there and blocks the unsigned `llama-server.exe` (task result 0x800711C7, CodeIntegrity events 3033/3077/3118). Turning it off on the server is the user's decision; Windows cannot turn it back on without a reset. `HISTORICO.md`, 88th pass.

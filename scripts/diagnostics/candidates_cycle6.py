@@ -1,4 +1,4 @@
-"""Ciclo 6 (2026-10-14): três candidatos para o resíduo da linha de base 5be6d44,
+"""Ciclo 6 (2026-10-14): três candidatos para o resíduo da linha de base bbc3d50,
 depois do descarte de G. Abaixo de 9 de 10 nos ciclos 3 e 4: Ações 10, 23, 35,
 37 e 45.
 

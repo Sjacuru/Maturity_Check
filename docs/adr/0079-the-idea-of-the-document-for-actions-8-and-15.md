@@ -40,7 +40,7 @@ The user adopted the C17 candidates on 2026-11-15 ("Pode aplicar, mas teste apó
   - the negatives swapped in 14a and 27a;
   - the flag.
 
-  Examined pools against `4473d8e`: 14a 1→16, 27a 4→16, 27b 0→13, 41a 0→16.
+  Examined pools against `33d364d`: 14a 1→16, 27a 4→16, 27b 0→13, 41a 0→16.
 - **Production equals what was measured.** Without a model, with a stub gate, production builds the same pools and the same 164 gate system prompts as the harness with the C17 candidates. In C18 the pre-gate counters of every product equal those of C17 process 1.
 - **C18:** 10 full processes in one invocation, on 2026-11-15 from 12:01 to 14:54, ledger off, 0 errors. The criterion is in `scratchpad/acc/criterio_ciclo18.txt`, written first.
   - Overall: 39/46 with the same points in ≥9/10 (C17: 41). The Ações below 9 are 2 3 10 23 32 35 37, all in the documented residue.

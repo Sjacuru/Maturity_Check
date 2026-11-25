@@ -106,7 +106,7 @@ O que se repete é o agregado: argumentos só de suficiência nas rejeições,
 Consequência: uma variante que muda os 164 prompts não se avalia par a par num
 processo; só ciclos de processos completos a medem.
 
-Ciclo 5, 14/10/2026: G em 10 processos completos do commit 5be6d44, ledger
+Ciclo 5, 14/10/2026: G em 10 processos completos do commit bbc3d50, ledger
 desligado, filtro de gênero e expansão ligados (scratchpad/acc/ciclo5_run1..10;
 critério registrado antes em scratchpad/acc/criterio_ciclo5.txt). Resultado:
 sem ganho além do acaso; o critério recomenda descartar G.

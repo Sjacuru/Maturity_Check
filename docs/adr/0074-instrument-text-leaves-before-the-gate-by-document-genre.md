@@ -633,12 +633,12 @@ The user read the cycle-6 report and decided:
 ## Confirmation cycle 7 (2026-10-15)
 
 The user approved a confirmation cycle of the committed configuration (message
-W). It measured HEAD `4824b14`: 45 out of the exemption list, 35.2e at its
+W). It measured HEAD `ffec5cb`: 45 out of the exemption list, 35.2e at its
 cycle-3 text, and no candidate in memory. The reading rule was written before
 the launch (`scratchpad/acc/criterio_ciclo7.txt`). It is a baseline
 measurement, so nothing is approved or rejected.
 
-Between the cycle-3 baseline (`5be6d44`) and `4824b14`:
+Between the cycle-3 baseline (`bbc3d50`) and `ffec5cb`:
 
 - `src/` changed only in the assessment module (the maturity indicator and the
   review validation);
@@ -739,12 +739,12 @@ in cycle 7.
 
 The user asked for a battery of ten full processes "usando só código do
 projeto sem orquestração sua para rodar lacunas" (message AB). It measured
-HEAD `eee4a45`, which differs from cycle 7 in two inputs of the pipeline:
+HEAD `4bf0a7e`, which differs from cycle 7 in two inputs of the pipeline:
 
-- `fad53d4`: the noise stripper removes more signature stamps. Against the
+- `75ea2fd`: the noise stripper removes more signature stamps. Against the
   cycle-7 stripper, 59 chunks on 45 pages read differently, and 14 chunks
   become empty; an empty chunk no longer reaches the gate.
-- `d890b97`: the stored phase of Ações 1 to 20 is "Estudo das alternativas".
+- `e3bf4f0`: the stored phase of Ações 1 to 20 is "Estudo das alternativas".
   It changes the identity line of their gate prompts (digest
   `0f7c14bd2bdada1d`); the scorer prompt carries no phase.
 
