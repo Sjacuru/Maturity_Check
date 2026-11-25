@@ -8,9 +8,9 @@
       <template v-else-if="indicator">
         <div class="d-flex align-start flex-wrap" style="gap: 24px;">
           <div>
-            <div class="text-caption text-medium-emphasis">Nota iPMP</div>
+            <div class="text-caption text-medium-emphasis">Percentual de aderência</div>
             <div class="text-h3 font-weight-bold" style="line-height: 1;">
-              {{ formatNota(overall.nota) }}
+              {{ formatPercent(overall.nota) }}
             </div>
           </div>
           <div class="text-body-2" style="flex: 1; min-width: 240px;">
@@ -62,7 +62,7 @@
 
         <!-- ADR-0068: the nota if every fragile product fell at once. -->
         <div v-if="openReviews.length" class="text-caption mt-1">
-          Piso {{ formatNota(overall.nota_floor) }} ({{ overall.floor_points }} pontos) se caírem
+          Piso {{ formatPercent(overall.nota_floor) }} ({{ overall.floor_points }} pontos) se caírem
           os produtos frágeis das Ações com revisão sugerida:
           {{ openReviews.map((a) => `Ação ${a.acao_id} (${a.points} → ${a.floor_points})`).join(', ') }}.
         </div>
@@ -74,7 +74,7 @@
               <div class="d-flex text-body-2" style="gap: 8px;">
                 <span>{{ g.title }}</span>
                 <v-spacer />
-                <span class="text-no-wrap">{{ g.points }}/{{ g.max_points }} · {{ formatNota(g.nota) }}</span>
+                <span class="text-no-wrap">{{ g.points }}/{{ g.max_points }} · {{ formatPercent(g.nota) }}</span>
               </div>
               <v-progress-linear :model-value="percent(g.nota)" color="secondary" height="6" rounded />
               <div v-if="!g.complete" class="text-caption text-warning">
@@ -162,18 +162,18 @@ const BANDS = {
   alert: {
     color: 'error',
     text:
-      'Abaixo de 0,2: o Guia lê como alerta de fragilidades no planejamento, que pede ' +
+      'Abaixo de 20%: o Guia lê como alerta de fragilidades no planejamento, que pede ' +
       'revisitar as causas; não é juízo de insucesso (3.4.3).',
   },
   intermediate: {
     color: 'primary',
     text:
-      'Entre 0,2 e 0,8: o Guia ainda não tem notas de corte para esta faixa (3.4.3); ' +
+      'Entre 20% e 80%: o Guia ainda não tem notas de corte para esta faixa (3.4.3); ' +
       'a leitura vem das Ações não atendidas e das dimensões mais baixas.',
   },
   satisfactory: {
     color: 'success',
-    text: 'Acima de 0,8: o Guia lê como satisfatória, sem ser atestado de excelência (3.4.4).',
+    text: 'Acima de 80%: o Guia lê como satisfatória, sem ser atestado de excelência (3.4.4).',
   },
 }
 const band = computed(() => BANDS[indicator.value.band] ?? { color: 'default', text: '' })
@@ -201,14 +201,15 @@ const transitionAcoes = computed(() =>
   indicator.value.acoes.filter((a) => indicator.value.transition_points.acao_ids.includes(a.acao_id))
 )
 
-function formatNota(n) {
+// The nota (0 to 1, ADR-0075) is shown as the percentual de aderência.
+function formatPercent(n) {
   return n === null || n === undefined
     ? '—'
-    : n.toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 })
+    : n.toLocaleString('pt-BR', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 })
 }
 
 function formatLimit(n) {
-  return n.toLocaleString('pt-BR', { minimumFractionDigits: 1 })
+  return n.toLocaleString('pt-BR', { style: 'percent' })
 }
 
 function percent(n) {

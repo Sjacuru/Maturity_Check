@@ -4,7 +4,7 @@ import pytest
 
 from evaluation import evaluator
 from evaluation.evaluator import _SCORER_VOTES
-from evaluation import configure_llm, evaluate, EvaluationResult
+from evaluation import evaluate, EvaluationResult
 from evaluation._config import _reset
 from retrieval import RetrievedChunk
 
@@ -71,7 +71,7 @@ def reset_config():
 
 
 def _wire(stub: StubLLMClient) -> None:
-    """Inject stub directly — bypasses OllamaClient/GroqClient instantiation."""
+    """Inject stub directly — no real client is constructed."""
     import evaluation._config as cfg
     cfg._client = stub
     cfg._provider = "ollama"
@@ -83,11 +83,6 @@ def _wire(stub: StubLLMClient) -> None:
 def test_evaluate_raises_before_configure():
     with pytest.raises(RuntimeError, match="configure_llm"):
         evaluate(1, "0023.001234/2024-01", [])
-
-
-def test_configure_unknown_provider_raises():
-    with pytest.raises(ValueError, match="unknown"):
-        configure_llm("unknown", "model")
 
 
 # --- no_evidence_found short-circuit ---

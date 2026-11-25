@@ -147,7 +147,7 @@ def test_preflight_probes_the_scorer_client(db_path, dummy_pdf):
 
 
 def test_preflight_skips_clients_without_health_check(db_path, dummy_pdf):
-    """A stub or an OllamaClient has no health_check(); that must not break the run."""
+    """A stub has no health_check(); that must not break the run."""
     assert not hasattr(eval_cfg._client, "health_check")
     svc = AssessmentService()
 

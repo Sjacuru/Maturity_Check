@@ -197,8 +197,8 @@ class AssessmentService:
         process_number: str,
         document_paths: list[Path],
     ) -> tuple[list[EvaluationResult], list[dict[str, str]]]:
-        get_llm_client()  # raises RuntimeError if configure_llm() was not called
-        get_gate_llm_client()  # raises RuntimeError if configure_gate_llm() was not called
+        get_llm_client()  # raises RuntimeError if configure_llm_client() was not called
+        get_gate_llm_client()  # raises RuntimeError if configure_gate_llm_client() was not called
 
         db_path = get_db_path()
 
@@ -288,7 +288,7 @@ def _preflight_llm(process_number: str) -> None:
     The wiring is GPU-only with no fallback, so a switched-off server otherwise
     surfaces as a connect timeout on the first gate call of every Ação in turn.
     One cheap /health probe turns that into an immediate, unambiguous failure.
-    Clients that do not expose health_check() (test stubs, Ollama) are skipped.
+    Clients that do not expose health_check() (test stubs) are skipped.
     """
     for label, client in (("avaliador", get_llm_client()), ("gate", get_gate_llm_client())):
         probe = getattr(client, "health_check", None)

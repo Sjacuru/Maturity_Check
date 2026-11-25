@@ -330,9 +330,6 @@ def select_evidence(
     exempt = get_genre_exemption_store().produtos(acao_id)
 
     gate_client = get_gate_llm_client()
-    describe_route = getattr(gate_client, "describe_route", None)
-    if describe_route is not None:
-        report("selecionando_llm", f"Gate de relevância: {describe_route()}.")
 
     mode = (
         "em sequência, 1 chamada em voo (ADR-0065)"
@@ -967,9 +964,8 @@ def _gate_chunk(
 
 
 def _gate_provider(client) -> str | None:
-    """Provider label for whichever client served the call. last_provider_used
-    covers a FallbackLLMClient that may have switched; provider_label covers a
-    bare client. Stubs in tests have neither, hence the None."""
+    """Provider label of the client that served the call (provider_label on
+    LlamaCppClient). Stubs in tests have none, hence the None."""
     return getattr(client, "last_provider_used", None) or getattr(client, "provider_label", None)
 
 

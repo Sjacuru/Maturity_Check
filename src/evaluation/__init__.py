@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from evaluation._config import (
     configure_gate_ledger,
-    configure_gate_llm,
     configure_gate_llm_client,
-    configure_llm,
     configure_llm_client,
 )
 from evaluation.dependency_cap import recompute_dependency_cap
@@ -27,8 +25,6 @@ from evaluation.interfaces.contracts import (
 
 __all__ = [
     "GATE_MAX_IN_FLIGHT",
-    "configure_llm",
-    "configure_gate_llm",
     "configure_llm_client",
     "configure_gate_llm_client",
     "configure_gate_ledger",

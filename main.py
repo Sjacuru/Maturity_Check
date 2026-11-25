@@ -25,7 +25,7 @@ _DB_PATH = Path("data") / "app.db"
 
 # The user's personal llama.cpp server, hosted outside the corporate network,
 # serves BOTH the scorer and the gate. It is the ONLY provider — see
-# _bootstrap() for why the ADR-0054 fallback is no longer wired in.
+# _bootstrap() for why the ADR-0054 fallback was removed.
 # The default is the SSH tunnel on the client (local port 18083 to the
 # server's port 8083, opened over port 443): the server's port 8080 serves
 # another service and is blocked on the client network (2026-10-10).
@@ -71,10 +71,9 @@ def _bootstrap() -> None:
     #      that silently degrades into it takes many hours.
     #
     # Decision: the GPU is the only provider. If it is down, nothing runs and
-    # the failure is explicit. evaluation.llm.fallback / .groq / .ollama are
-    # intentionally KEPT in the repo — they document an approach that was
-    # built, measured and rejected, and the OllamaClient is still reachable
-    # through configure_gate_llm() for anyone who wants it back.
+    # the failure is explicit. The fallback, Groq and Ollama clients were kept
+    # unwired until 2026-11-15 and then deleted at the owner's request (both
+    # providers had proved inefficient); ADR-0054 and git history record them.
     #
     # Both roles share one server, so both get their own client instance: the
     # gate needs a tighter token cap and a longer read timeout than the scorer.

@@ -362,7 +362,6 @@ def test_cascade_lexical_results_have_lexical_mode(db_path):
     lexical_chunk = _make_lexical_chunk()
 
     with patch("retrieval.query.cascade.retrieve_hybrid_for_acao", return_value=[lexical_chunk]), \
-         patch("retrieval.query.regex_search.search_regex", return_value=[]), \
          patch("retrieval.query.document.retrieve_document_focused", return_value=None):
         result = retrieve_for_acao(1, "P001")
 

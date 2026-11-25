@@ -59,17 +59,21 @@ def _stub_gate_llm_client(monkeypatch):
     """Configure the relevance gate (ADR-0050) with a client object for every test.
 
     AssessmentService.run_assessment() calls get_gate_llm_client() unconditionally
-    and raises RuntimeError if it was never configured. Constructing an
-    OllamaClient does not itself make a network call (only .complete() does),
-    and the empty-profile fixture above means most tests never reach a product
-    with an evidence_intent to gate against, so .complete() is rarely invoked.
-    Tests that specifically exercise select_evidence() with a real profile
-    patch evaluation._config._gate_client directly with a stub.
+    and raises RuntimeError if it was never configured. The empty-profile
+    fixture above means most tests never reach a product with an
+    evidence_intent to gate against, so .complete() is rarely invoked; if it
+    is, the placeholder raises instead of reaching a network. It has no
+    health_check(), so the preflight skips it. Tests that specifically
+    exercise select_evidence() with a real profile patch
+    evaluation._config._gate_client directly with a stub.
     """
     import evaluation._config as _eval_cfg
-    from evaluation.llm.ollama import OllamaClient
 
-    monkeypatch.setattr(_eval_cfg, "_gate_client", OllamaClient(model="mistral"))
+    class _PlaceholderGateClient:
+        def complete(self, system, user, schema=None):
+            raise RuntimeError("no gate model in tests: patch _gate_client with a stub")
+
+    monkeypatch.setattr(_eval_cfg, "_gate_client", _PlaceholderGateClient())
 
 
 @pytest.fixture(autouse=True)

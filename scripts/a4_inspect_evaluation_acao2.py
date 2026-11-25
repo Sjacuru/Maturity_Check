@@ -10,9 +10,9 @@ Prints:
   - The assembled system/user prompts
   - The LLM's raw response, reasoning, score, uncertainty
 
-Imports main.py to reuse the exact production LLM wiring (ADR-0054:
-llama.cpp primary + Groq/Ollama fallback via FallbackLLMClient) — this
-calls the real GPU server, not a stub or a different model.
+Imports main.py to reuse the exact production LLM wiring (ADR-0059: the
+GPU server only, no fallback) — this calls the real GPU server, not a stub
+or a different model.
 
 No synthetic test corpus exists for Ação 2 yet (Componente 5 of the Ação 2
 stabilization plan is deliberately last) — this inspects the real indexed
@@ -48,8 +48,8 @@ def main() -> None:
 
     print(f"A4 — Evaluation Inspection for Ação {ACAO_ID} (caso real, sem corpus sintético — Componente 5 pendente)")
     print(
-        f"LLM: llama.cpp primary ({app_main._LLAMACPP_MODEL} @ {app_main._LLAMACPP_BASE_URL}), "
-        "fallback Groq (scorer) / Ollama (gate) — ADR-0054"
+        f"LLM: servidor GPU ({app_main._LLAMACPP_MODEL} @ {app_main._LLAMACPP_BASE_URL}), "
+        "sem fallback — ADR-0059"
     )
 
     doc_result = retrieve_document_focused(ACAO_ID, process_number)

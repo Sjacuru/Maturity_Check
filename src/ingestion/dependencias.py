@@ -66,11 +66,6 @@ class DependencyStore(BaseModel):
         return [d for d in self.dependencias
                 if d.citante == citante and d.tipo == "artefato"]
 
-    def citantes_de(self, citada: int) -> list[Dependencia]:
-        """Quem depende (com efeito) desta Ação — o leque de propagação."""
-        return [d for d in self.dependencias
-                if d.citada == citada and d.tipo in _TIPOS_COM_EFEITO]
-
 
 _store: DependencyStore | None = None
 

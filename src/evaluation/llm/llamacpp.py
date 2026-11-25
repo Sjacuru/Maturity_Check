@@ -59,8 +59,8 @@ class LlamaCppUnavailable(Exception):
     """Connection refused / DNS failure — server not listening at all.
 
     Fast, definitive signal. Not retried inside complete(): a dead server
-    won't come back within the same call, so the caller (FallbackLLMClient)
-    decides whether/when to retry the primary again later.
+    won't come back within the same call. There is no fallback provider
+    (ADR-0059): the caller lets it abort the run.
     """
 
 
@@ -104,8 +104,8 @@ class LlamaCppTruncated(Exception):
     rejects. Before this exception existed, that outcome reached
     parse_relevance_response() and became relevant=False: a truncated call was
     indistinguishable from a genuine "not relevant" verdict, silently, with no
-    log and no counter (2026-09-27 diagnosis). Deliberately NOT one of
-    _PRIMARY_FAILURES in fallback.py — swapping providers cannot fix a token cap.
+    log and no counter (2026-09-27 diagnosis). The gate counts it as a failure,
+    not a rejection (ADR-0060).
     """
 
 
@@ -120,9 +120,8 @@ class LlamaCppClient:
     """LLM client for a self-hosted llama.cpp server (OpenAI-compatible
     /v1/chat/completions), with grammar-constrained JSON output support
     (ADR-0053) and a bounded timeout-retry loop (ADR-0054). Connection
-    failures and busy responses are not retried here — see
-    evaluation.llm.fallback.FallbackLLMClient for the circuit-breaker that
-    decides when to retry the primary vs. fall back.
+    failures and busy responses are not retried here: it is the only
+    provider (ADR-0059), so they surface to the caller and abort the run.
     """
 
     def __init__(
@@ -189,9 +188,8 @@ class LlamaCppClient:
         self._api_key = api_key if api_key is not None else _default_api_key()
         self._headers = {"Authorization": f"Bearer {self._api_key}"} if self._api_key else {}
         self.model_label = model
-        # Provider label for per-call audit trails. A bare client (the GPU-only
-        # wiring in main.py) is read via getattr by callers that also accept a
-        # FallbackLLMClient's last_provider_used.
+        # Provider label for per-call audit trails (read via getattr, so test
+        # stubs without it still work).
         self.provider_label = "llamacpp"
         self.last_model_used: str | None = None
 

@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from evaluation.llm.protocol import LLMClient
 
-_SUPPORTED_PROVIDERS = {"ollama", "groq"}
+# The only provider is the owner's GPU server (LlamaCppClient, ADR-0059);
+# main.py builds both clients and registers them here. The Groq and Ollama
+# clients and the ADR-0054 fallback chain were deleted on 2026-11-15.
 
 _client: LLMClient | None = None
 _provider: str | None = None
 _model: str | None = None
 
-# Relevance gate (ADR-0050) uses a separate, independently-configured client —
-# always local Ollama in practice, decoupled from whatever provider handles
-# final scoring (Groq's account-level rate limit can't absorb the gate's call
-# volume). Mirrors the configure_llm()/get_llm_client() pair above.
+# Relevance gate (ADR-0050) uses a separate client instance on the same
+# server: it needs a tighter token cap, a longer read timeout and one call in
+# flight (ADR-0065). Mirrors the configure_llm_client()/get_llm_client() pair.
 _gate_client: LLMClient | None = None
 
 # Gate verdict ledger (ADR-0067). None = off: every gate call reaches the model.
@@ -19,46 +20,10 @@ _gate_client: LLMClient | None = None
 _gate_ledger = None
 
 
-def configure_llm(
-    provider: str,
-    model: str,
-    base_url: str | None = None,
-    num_predict: int | None = None,
-    num_ctx: int | None = None,
-    timeout: float | None = None,
-) -> None:
-    global _client, _provider, _model
-    if provider not in _SUPPORTED_PROVIDERS:
-        raise ValueError(
-            f"Unsupported LLM provider '{provider}'. "
-            f"Supported providers: {sorted(_SUPPORTED_PROVIDERS)}"
-        )
-    from evaluation.llm.ollama import OllamaClient
-    from evaluation.llm.groq import GroqClient
-
-    if provider == "ollama":
-        kwargs = {"model": model, "base_url": base_url}
-        if num_predict is not None:
-            kwargs["num_predict"] = num_predict
-        if num_ctx is not None:
-            kwargs["num_ctx"] = num_ctx
-        if timeout is not None:
-            kwargs["timeout"] = timeout
-        _client = OllamaClient(**kwargs)
-    else:
-        _client = GroqClient(model=model)
-    _provider = provider
-    _model = model
-
-
 def configure_llm_client(client: LLMClient, provider: str, model: str) -> None:
-    """Register an already-constructed LLMClient directly (ADR-0054) — for
-    composed clients (e.g. FallbackLLMClient wrapping a primary + secondary
-    provider) that configure_llm()'s provider-string dispatch can't express.
-    provider/model are the labels recorded at configure time; evaluate()
-    prefers the client's own last_provider_used/last_model_used when present
-    (set per call by clients like FallbackLLMClient that can serve a given
-    call from more than one underlying provider)."""
+    """Register the scorer's LLMClient. provider/model are the labels recorded
+    at configure time; evaluate() prefers the client's own last_model_used
+    (the name the server reports) when present."""
     global _client, _provider, _model
     _client = client
     _provider = provider
@@ -66,7 +31,7 @@ def configure_llm_client(client: LLMClient, provider: str, model: str) -> None:
 
 
 def configure_gate_llm_client(client: LLMClient) -> None:
-    """Gate counterpart to configure_llm_client() — see its docstring."""
+    """Gate counterpart to configure_llm_client()."""
     global _gate_client
     _gate_client = client
 
@@ -74,7 +39,7 @@ def configure_gate_llm_client(client: LLMClient) -> None:
 def get_llm_client() -> LLMClient:
     if _client is None:
         raise RuntimeError(
-            "LLM client not initialised. Call configure_llm() before evaluate()."
+            "LLM client not initialised. Call configure_llm_client() before evaluate()."
         )
     return _client
 
@@ -91,36 +56,6 @@ def get_model() -> str:
     return _model
 
 
-def configure_gate_llm(
-    provider: str,
-    model: str,
-    base_url: str | None = None,
-    num_predict: int | None = None,
-    num_ctx: int | None = None,
-    timeout: float | None = None,
-) -> None:
-    global _gate_client
-    if provider not in _SUPPORTED_PROVIDERS:
-        raise ValueError(
-            f"Unsupported LLM provider '{provider}'. "
-            f"Supported providers: {sorted(_SUPPORTED_PROVIDERS)}"
-        )
-    from evaluation.llm.ollama import OllamaClient
-    from evaluation.llm.groq import GroqClient
-
-    if provider == "ollama":
-        kwargs = {"model": model, "base_url": base_url}
-        if num_predict is not None:
-            kwargs["num_predict"] = num_predict
-        if num_ctx is not None:
-            kwargs["num_ctx"] = num_ctx
-        if timeout is not None:
-            kwargs["timeout"] = timeout
-        _gate_client = OllamaClient(**kwargs)
-    else:
-        _gate_client = GroqClient(model=model)
-
-
 def configure_gate_ledger(ledger) -> None:
     """Register the GateLedger that select_evidence() consults before calling
     the gate model, or None to switch it off (ADR-0067)."""
@@ -135,7 +70,7 @@ def get_gate_ledger():
 def get_gate_llm_client() -> LLMClient:
     if _gate_client is None:
         raise RuntimeError(
-            "Gate LLM client not initialised. Call configure_gate_llm() before select_evidence()."
+            "Gate LLM client not initialised. Call configure_gate_llm_client() before select_evidence()."
         )
     return _gate_client
 

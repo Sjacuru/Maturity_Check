@@ -1,10 +1,11 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-16",
+    "last_updated": "2026-11-15",
     "changelog": [
       {"date": "2026-10-15", "summary": "Exercitado, não populado: os ciclos de teste 3-6 rodaram este perfil em 40 processos completos sobre SMG-040_101607_2024 (2026-10-13/15, quatro configurações do gate). Saída: sem evidência 40/40. Nenhum produto teve trecho aceito. Depois do filtro de gênero (ADR-0074) o gate não examinou trecho algum: a saída se decide antes do gate. profile_maturity segue seed: nenhuma sessão de Stage B usou documento real; promover com base nos ciclos é decisão do usuário."},
-      {"date": "2026-10-16", "summary": "Promovido a observed por decisão do usuário (mensagem Z, 2026-10-16). Base: o perfil rodou sobre um documento real, SMG-040_101607_2024, em 50 processos completos (ciclos de teste 3-7, 2026-10-13/15; o ciclo 5 com a variante G do prompt do gate, depois descartada). Saída nos 50: sem evidência 50/50; no ciclo 7, a configuração confirmada: sem evidência 10/10. Nenhum produto teve trecho aceito. Não houve sessão de população (Stage B): nenhum termo veio do documento (ADR-0073), e stage_b_sources segue vazio."}
+      {"date": "2026-10-16", "summary": "Promovido a observed por decisão do usuário (mensagem Z, 2026-10-16). Base: o perfil rodou sobre um documento real, SMG-040_101607_2024, em 50 processos completos (ciclos de teste 3-7, 2026-10-13/15; o ciclo 5 com a variante G do prompt do gate, depois descartada). Saída nos 50: sem evidência 50/50; no ciclo 7, a configuração confirmada: sem evidência 10/10. Nenhum produto teve trecho aceito. Não houve sessão de população (Stage B): nenhum termo veio do documento (ADR-0073), e stage_b_sources segue vazio."},
+      {"date": "2026-11-15", "summary": "Adoção da ideia do documento (pedido do usuário, 2026-11-15: 'Pode aplicar, mas teste após implementação e meça o resultado'; ADR-0079): evidence_intent reescrito pela ideia do produto (o conteúdo, onde quer que esteja escrito, não o nome do documento), termos canônicos novos e genre_filter_before_lane_cut = true (raias cortadas em 20 depois do filtro de gênero). Medido no C17 (fase 2, 10 processos completos, 2026-10-20): Ação 41 = 1 em 10/10, sem nenhum 3; cinco páginas PGM/CCPAR aceitas em 10/10, a confusão _2 p.133 da fase 1 não apareceu. Ressalva de estágio: é a justificativa anterior à publicação, não a reconfirmação pós-consulta que a Ação 41 descreve. Termos e fontes (nenhum tirado do caso, ADR-0073): 41a: NEAR(critério, julgamento; 3) [Lei 14.133/2021 art. 33 (critérios de julgamento das propostas)]; maior oferta [Lei 8.987/1995 art. 15 (critérios de julgamento na licitação de concessão)]; NEAR(melhor, proposta; 3) [texto do IPMP do próprio produto]; NEAR(proposta, mais, vantajosa; 4) [Lei 14.133/2021 art. 11 I (proposta apta a gerar o resultado de contratação mais vantajoso)]."}
     ],
     "population_stages_completed": [
       "A"
@@ -16,7 +17,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "41a": {
-      "evidence_intent": "Confirmação interna, documentada no Processo Administrativo, sobre os critérios de seleção da melhor proposta econômica, utilizando a avaliação das eventuais propostas apresentadas durante o processo de consulta ao mercado e à sociedade.",
+      "evidence_intent": "Trecho de qualquer documento interno do processo (manifestação, nota técnica, despacho, resposta a órgão de controle ou à análise jurídica) que confirma ou justifica o critério de julgamento escolhido para selecionar a melhor proposta econômica — por exemplo maior oferta, menor tarifa, menor preço ou técnica e preço. Vale onde quer que esteja escrito; o critério apenas transcrito numa cláusula de edital não é a confirmação.",
       "retrieval_signal_concepts": [
         {
           "key": "selection_criteria_internal_reconfirmation",
@@ -58,6 +59,37 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "selection_criteria_internal_reconfirmation"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["critério", "julgamento"],
+          "distance": 3,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "phrase",
+          "text": "maior oferta",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["melhor", "proposta"],
+          "distance": 3,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["proposta", "mais", "vantajosa"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
         }
       ],
       "evidence_logic_patterns": [
@@ -65,7 +97,8 @@
       ],
       "negative_evidence_patterns": [
         "Manifestações da sociedade e do mercado, ou solicitação de revisão por órgão de controle, que não foram formalmente analisadas para reconfirmar os critérios de seleção econômica, nem documentadas antes da homologação da licitação, configuram não atendimento -- padrão do exemplo Não Atendido"
-      ]
+      ],
+      "genre_filter_before_lane_cut": true
     },
     "41b": {
       "evidence_intent": "Declaração formal sobre a permanência ou alteração da Opção Mais Vantajosa, com justificativa para qualquer mudança ocorrida, avaliando o mérito da escolha (não apenas seu valor econômico) diante de novas informações técnicas, institucionais ou sociais, incluindo eventuais alternativas ou tecnologias novas surgidas durante a consulta.",

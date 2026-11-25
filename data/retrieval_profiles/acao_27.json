@@ -1,10 +1,11 @@
 {
   "_meta": {
     "schema_version": "1.0",
-    "last_updated": "2026-10-16",
+    "last_updated": "2026-11-15",
     "changelog": [
       {"date": "2026-10-15", "summary": "Exercitado, não populado: os ciclos de teste 3-6 rodaram este perfil em 40 processos completos sobre SMG-040_101607_2024 (2026-10-13/15, quatro configurações do gate). Saída: sem evidência 39/40, score 1 1/40 (ciclo 6: sem evidência 10/10). Produtos com trecho aceito: 27a em 1 processo(s). Depois do filtro de gênero (ADR-0074) o gate examinou no máximo 27a: 6; 27b: 0; 27c: 2; 27d: 0 (trechos por produto). profile_maturity segue seed: nenhuma sessão de Stage B usou documento real; promover com base nos ciclos é decisão do usuário."},
-      {"date": "2026-10-16", "summary": "Promovido a observed por decisão do usuário (mensagem Z, 2026-10-16). Base: o perfil rodou sobre um documento real, SMG-040_101607_2024, em 50 processos completos (ciclos de teste 3-7, 2026-10-13/15; o ciclo 5 com a variante G do prompt do gate, depois descartada). Saída nos 50: sem evidência 49/50, score 1 1/50; no ciclo 7, a configuração confirmada: sem evidência 10/10. Produtos com trecho aceito: 27a em 1 processo(s). Não houve sessão de população (Stage B): nenhum termo veio do documento (ADR-0073), e stage_b_sources segue vazio."}
+      {"date": "2026-10-16", "summary": "Promovido a observed por decisão do usuário (mensagem Z, 2026-10-16). Base: o perfil rodou sobre um documento real, SMG-040_101607_2024, em 50 processos completos (ciclos de teste 3-7, 2026-10-13/15; o ciclo 5 com a variante G do prompt do gate, depois descartada). Saída nos 50: sem evidência 49/50, score 1 1/50; no ciclo 7, a configuração confirmada: sem evidência 10/10. Produtos com trecho aceito: 27a em 1 processo(s). Não houve sessão de população (Stage B): nenhum termo veio do documento (ADR-0073), e stage_b_sources segue vazio."},
+      {"date": "2026-11-15", "summary": "Adoção da ideia do documento (pedido do usuário, 2026-11-15: 'Pode aplicar, mas teste após implementação e meça o resultado'; ADR-0079): evidence_intent reescrito pela ideia do produto (o conteúdo, onde quer que esteja escrito, não o nome do documento), termos canônicos novos e genre_filter_before_lane_cut = true (raias cortadas em 20 depois do filtro de gênero). Padrão negativo trocado em 27a (o antigo excluía a própria ideia; o novo guarda só a distinção de sentido). Medido no C17 (fase 2, 10 processos completos, 2026-10-20): Ação 27 = 1 em 10/10, sem nenhum 3; 27a repousa em páginas de custo do estudo econômico (quatro em 10/10); as páginas de receita _1 p.185 e _2 p.478 são confusão aceita em 3/10 cada; 27b só _1 p.180, discutível, 4/10. Ressalva: em 8/10 o avaliador diz que a estrutura de custos inclui 'desapropriações, licenças e fiscalização', palavras do próprio critério; só fiscalização aparece num trecho (_2 p.902, 2/10). Não move pontos. Termos e fontes (nenhum tirado do caso, ADR-0073): 27a: estimativa do valor da contratação [Lei 14.133/2021 art. 18 §1 VI (estimativa do valor da contratação)]; NEAR(custos, investimento; 4) [vocabulário geral de análise em português administrativo]; NEAR(custos, operação; 4) [vocabulário geral de análise em português administrativo]; NEAR(despesas, operacionais; 3) [vocabulário geral de análise em português administrativo] | 27b: NEAR(fluxo, caixa, projetado; 6) [vocabulário geral de análise em português administrativo]; NEAR(premissas, adotadas; 4) [vocabulário geral de análise em português administrativo]; NEAR(horizonte, projeção; 6) [vocabulário geral de análise em português administrativo]."}
     ],
     "population_stages_completed": [
       "A"
@@ -16,7 +17,7 @@
   "profile_maturity": "observed",
   "expected_products": {
     "27a": {
-      "evidence_intent": "Estrutura de custos organizada por categoria (investimento, operação, manutenção, ajustes futuros), incluindo especificamente desapropriações, licenciamento ambiental e fiscalização como categorias próprias, com indicação da necessidade de capacidade de custeio da opção escolhida via Orçamento Geral da União ou outras fontes, calibrada pelo histórico entre orçamento estimado e efetivamente necessário.",
+      "evidence_intent": "Trecho de qualquer documento do processo que organiza os custos da solução escolhida por categoria — investimento, operação, manutenção, desapropriações, licenças, fiscalização ou outras —, em valores ou em estimativas. O que conta é a estrutura de custos, onde quer que esteja escrita (orçamento, estudo econômico, estudo técnico preliminar, planilha); o nome do documento não decide.",
       "retrieval_signal_concepts": [
         {
           "key": "cost_structure_by_category",
@@ -163,6 +164,37 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "historical_cost_variance_calibration"
+        },
+        {
+          "encoding": "phrase",
+          "text": "estimativa do valor da contratação",
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["custos", "investimento"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["custos", "operação"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["despesas", "operacionais"],
+          "distance": 3,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
         }
       ],
       "evidence_logic_patterns": [
@@ -170,14 +202,15 @@
         "Para obras menores e/ou rotineiras, um modelo de orçamento simplificado -- com riscos estimados a partir de contratos passados ou tabelas paramétricas, em vez de uma estrutura de custos e cenários de estresse completos -- é aceitável e não deve ser tratado como lacuna, conforme a exceção explícita desta Ação."
       ],
       "negative_evidence_patterns": [
-        "Orçamento restrito aos custos operacionais do empreendimento, sem valores referentes a desapropriações, reassentamentos, licenciamento ambiental ou fiscalização, não atende a este produto (padrão do exemplo Não Atendido).",
+        "Um valor global único da contratação, sem desdobrar os custos em categorias, não é uma estrutura de custos.",
         "Menção de 'fiscalização' no sentido de capacidade/suficiência da equipe de fiscalização de obra (sentido das Ações 11a/11b) não deve ser confundida com o custeio orçamentário da atividade de fiscalização como categoria de custo, exigido aqui.",
         "Nomeação de 'capacidade de custeio' apenas como Fator Crítico de Sucesso (Ação 5b), avaliação institucional preliminar pré-seleção (Ação 10b) ou demonstração definitiva ano a ano pós-seleção (Ação 26c) não substitui a indicação, no próprio modelo financeiro, da necessidade de custeio da opção via OGU ou outras fontes exigida por este produto.",
         "Custos de licenciamento, desapropriação ou remoção de interferências tratados como catálogo de risco estratégico (Ação 4), critério de FCS (Ação 5), delimitação de escopo de estudos AIAS (Ação 7), levantamento contratual preliminar (Ação 8), marco de cronograma gerencial (Ação 12), registro de identificação e mitigação de risco (Ação 15), julgamento qualitativo de risco/benefício (Ação 19), confirmação pós-seleção no PGAS (Ação 21) ou item da matriz de risco contratual definitiva (Ação 22.2) não substituem a efetiva quantificação monetária desses itens como categorias de custo dentro do modelo financeiro, exigida por este produto."
-      ]
+      ],
+      "genre_filter_before_lane_cut": true
     },
     "27b": {
-      "evidence_intent": "Projeção de fluxo de caixa para o período de execução da alternativa já escolhida, se for o caso, com parâmetros e pressupostos claros e explicitados.",
+      "evidence_intent": "Trecho de qualquer documento do processo que projeta ao longo do tempo as entradas e saídas de recursos da solução escolhida — fluxo de caixa por período —, com as premissas ou os parâmetros que a sustentam. Vale onde quer que esteja escrito; o nome do documento não decide.",
       "retrieval_signal_concepts": [
         {
           "key": "cash_flow_projection",
@@ -242,6 +275,30 @@
           "provenance": "canonical",
           "status": "active",
           "concept_ref": "explicit_assumptions_and_parameters"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["fluxo", "caixa", "projetado"],
+          "distance": 6,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["premissas", "adotadas"],
+          "distance": 4,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
+        },
+        {
+          "encoding": "near",
+          "tokens": ["horizonte", "projeção"],
+          "distance": 6,
+          "type": "C",
+          "provenance": "canonical",
+          "status": "active"
         }
       ],
       "evidence_logic_patterns": [
@@ -249,7 +306,8 @@
       ],
       "negative_evidence_patterns": [
         "Modelagem de fluxo de caixa descontado como parte de um estudo de viabilidade econômico-financeira na fase de diagnóstico inicial do projeto (sentido da Ação 1, EVTEA) não substitui a projeção de fluxo de caixa definitiva, com parâmetros e premissas claros, para o período de execução da alternativa já escolhida, exigida por este produto."
-      ]
+      ],
+      "genre_filter_before_lane_cut": true
     },
     "27c": {
       "evidence_intent": "Inclusão, no modelo financeiro, de cenários de estresse e variações relevantes de mercado, margens de contingência e análise de riscos sistemáticos e não sistemáticos.",

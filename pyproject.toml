@@ -15,7 +15,6 @@ dependencies = [
   "numpy>=1.26",
   "lancedb>=0.17",
   "sentence-transformers>=3.0",
-  "groq>=0.9",
   "httpx>=0.27",
   "rapidfuzz>=3.0",
 ]

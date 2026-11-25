@@ -124,3 +124,7 @@ here.
 - `evaluator.py` records `actual_provider` alongside the existing `actual_model`
   pattern.
 - New tests: `tests/test_llamacpp_client.py`, `tests/test_fallback_llm_client.py`.
+
+## Note (2026-11-15)
+
+`FallbackLLMClient`, `GroqClient`, `OllamaClient`, `configure_llm()`, `configure_gate_llm()` and `tests/test_fallback_llm_client.py` were deleted, at the user's request ("Groq não será mais usado. Ollama tão pouco. Se mostraram ineficientes em diversos momentos. Pode excluir, ficaremos só com a máquina 'local'"). The chain had been unwired since 2026-09-27 (ADR-0059). The `groq` dependency was removed from `pyproject.toml`. This ADR stays as the record of what was tried. `LlamaCppClient` keeps its failure types (`LlamaCppUnavailable`, `LlamaCppTimeout`, `LlamaCppBusy`, `LlamaCppTruncated`); with nothing to fall back to, they only surface as explicit errors.

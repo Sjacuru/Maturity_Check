@@ -279,15 +279,6 @@ def test_absent_finish_reason_returns_content_normally():
     assert _client(lambda req: _ok_response(req, content="ok")).complete("sys", "usr") == "ok"
 
 
-def test_truncated_is_not_a_primary_failure_for_the_fallback_client():
-    """LlamaCppTruncated must not trigger a provider swap: changing provider
-    cannot fix a token cap, and swapping models silently is exactly the
-    behaviour the GPU-only wiring removed."""
-    from evaluation.llm.fallback import _PRIMARY_FAILURES
-
-    assert LlamaCppTruncated not in _PRIMARY_FAILURES
-
-
 # --- health_check (fail-fast preflight) ---
 
 def test_health_check_passes_when_server_is_ready():

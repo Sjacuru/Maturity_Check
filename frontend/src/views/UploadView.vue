@@ -77,17 +77,6 @@
         </span>
       </v-card-title>
 
-      <v-alert
-        v-if="fallbackActive"
-        type="warning"
-        variant="tonal"
-        density="compact"
-        class="mx-4 mb-3"
-      >
-        <v-icon start size="small">mdi-server-network-off</v-icon>
-        <strong>Usando LLM local (fallback)</strong> — {{ lastFallbackReason }}
-      </v-alert>
-
       <v-list density="compact" class="px-2 pb-3" style="max-height: 320px; overflow-y: auto;">
         <v-list-item v-for="ev in reversedEvents" :key="ev.seq" class="py-1">
           <template #prepend>
@@ -179,24 +168,6 @@ function dispositionColor(d) {
 const reversedEvents = computed(() => [...events.value].reverse())
 const lastEvent = computed(() => events.value[events.value.length - 1] ?? null)
 
-// True from a "fallback" event until the next "concluido"/"erro" — i.e. for
-// the rest of the run, since ADR-0054's circuit breaker keeps using the
-// fallback for a cooldown window rather than reverting call-by-call.
-const fallbackActive = computed(() => {
-  for (let i = events.value.length - 1; i >= 0; i--) {
-    const ev = events.value[i]
-    if (ev.stage === 'fallback') return true
-    if (ev.stage === 'concluido' || ev.stage === 'erro') return false
-  }
-  return false
-})
-
-const lastFallbackReason = computed(() => {
-  for (let i = events.value.length - 1; i >= 0; i--) {
-    if (events.value[i].stage === 'fallback') return events.value[i].message
-  }
-  return ''
-})
 
 const statusColor = computed(() => levelColor(lastEvent.value?.level))
 

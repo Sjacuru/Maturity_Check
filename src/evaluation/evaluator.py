@@ -160,7 +160,7 @@ def evaluate(
     result says so (`dependency_cap is None`), which is NOT the same as "no cap
     applied": a measurement that must reproduce production has to pass them.
     """
-    client = get_llm_client()  # raises if configure_llm() not called
+    client = get_llm_client()  # raises if configure_llm_client() not called
     provider = get_provider()
     model = get_model()
     rejected_chunks = rejected_chunks or []
@@ -245,9 +245,8 @@ def evaluate(
     actual_provider, actual_model = provider, model
     for vote in range(1, _SCORER_VOTES + 1):
         raw = client.complete(system_prompt, user_prompt, schema=SCORER_SCHEMA)
-        # Prefer the client's own reporting of what actually served the call —
-        # matters when client is a FallbackLLMClient (ADR-0054) that may have
-        # served this specific call from its secondary provider.
+        # Prefer the client's own reporting of what served the call: the
+        # model name the server returned (LlamaCppClient.last_model_used).
         actual_provider = getattr(client, "last_provider_used", None) or provider
         actual_model = getattr(client, "last_model_used", None) or model
         candidates.append(parse_llm_response(raw, expected_product_ids=expected_product_ids))

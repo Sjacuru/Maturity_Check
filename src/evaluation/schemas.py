@@ -2,10 +2,10 @@ from __future__ import annotations
 
 # Grammar-constrained JSON schemas for the two LLM interaction points
 # (ADR-0053). Passed to LLMClient.complete() as the `schema` argument —
-# providers that support structured outputs (Ollama's `format`, Groq's
-# `response_format: json_schema`) enforce these at the token-generation
-# level, so `score` cannot be an out-of-rubric value and the response
-# cannot omit a required field the way free-text sentinel parsing could.
+# the GPU server (llama.cpp's `response_format: json_schema`) enforces these
+# at the token-generation level, so `score` cannot be an out-of-rubric value
+# and the response cannot omit a required field the way free-text sentinel
+# parsing could.
 
 # "products" carries one verdict per scored Expected Product, and is listed
 # FIRST so the grammar makes the model commit to each product individually

@@ -67,3 +67,7 @@ accepted chunk cites the expected legal grounding) and for informing future `que
   `cascade_step="regex"` never appears in `retrieve_for_acao()` results.
 - `test_regex_hits_are_capped_at_max_regex_hits` in `test_assessment_service.py` removed.
 - `_MAX_REGEX_HITS` constant removed from service.py.
+
+## Note (2026-11-15)
+
+`search_regex()` (`src/retrieval/query/regex_search.py`) was deleted, with its 10 unit tests, after the user approved the removal of code with no caller. The test asserting that `cascade_step="regex"` never appears in `retrieve_for_acao()` results stays. The value `"regex"` stays in the `RetrievedChunk.cascade_step` Literal, so rows persisted earlier still validate.

@@ -24,3 +24,7 @@ The effective `provider` and `model` are recorded in every `EvaluationResult` fo
 ## Consequences
 
 No additional abstraction layers are introduced unless a third materially different provider creates a demonstrated need. Provider defaults for model name are permitted, but the effective pair must always appear in evaluation metadata and audit logs.
+
+## Note (2026-11-15)
+
+`configure_llm()` and `configure_gate_llm()`, with their provider-string dispatch, were deleted together with the Groq and Ollama clients, at the user's request ("Groq não será mais usado. Ollama tão pouco."). The `LLMClient` Protocol stays; `main.py` builds the two `LlamaCppClient` instances for the GPU server and registers them with `configure_llm_client()` and `configure_gate_llm_client()` (ADR-0059).
